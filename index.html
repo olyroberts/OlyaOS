@@ -1,0 +1,4312 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Моя система — дашборд</title>
+<style>
+  :root {
+    --bg: #f4f2ec;
+    --surface: #ffffff;
+    --surface-2: #faf9f5;
+    --text: #2c2a26;
+    --text-dim: #5f5d57;
+    --text-faint: #908d85;
+    --gold: #9a7b30;
+    --line: rgba(0,0,0,0.09);
+    --line-soft: rgba(0,0,0,0.05);
+    --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    padding: 0 0 60px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 22px; }
+
+  /* ---- Шапка ---- */
+  header {
+    padding: 30px 0 18px;
+    text-align: center;
+  }
+  .kicker {
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 8px;
+  }
+  header h1 { font-size: 25px; font-weight: 500; letter-spacing: 0.2px; }
+  header .today { font-size: 12.5px; color: var(--text-faint); margin-top: 5px; }
+  .header-title-row {
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .header-edit-btn {
+    font-family: inherit; font-size: 12px; line-height: 1;
+    width: 26px; height: 26px; padding: 0; border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text-faint);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.12s;
+  }
+  .header-edit-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ---- Полоса сохранения ---- */
+  .savebar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 9px; padding: 8px 14px; margin-bottom: 14px;
+    font-size: 12px;
+  }
+  .savebar .status { color: #1d6b51; font-weight: 500; margin-right: auto; }
+  .savebar .status.unsaved { color: #a33636; }
+  .savebar button {
+    font-family: inherit; font-size: 11.5px;
+    padding: 5px 11px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--line); background: transparent; color: var(--text-dim);
+    transition: all 0.12s;
+  }
+  .savebar button:hover { border-color: var(--gold); color: var(--text); }
+  .savebar button.danger:hover { border-color: #a33636; color: #a33636; }
+
+
+  /* ---- Полоса таймера (сквозная) ---- */
+  .timerbar {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: 10px 16px; margin-bottom: 10px;
+  }
+  .timer-clock {
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    font-size: 23px; font-weight: 600; color: var(--text);
+    line-height: 1; min-width: 92px;
+  }
+  .timer-clock.running { color: #1d6b51; }
+  .timer-clock.paused  { color: #b18913; }
+  .timer-state {
+    font-size: 10px; letter-spacing: 0.4px; text-transform: uppercase;
+    color: var(--text-faint); margin-top: 3px;
+  }
+  .timer-clock-block { display: flex; flex-direction: column; }
+  .timerbar .spacer { flex: 1; }
+  .timerbar button {
+    font-family: inherit; font-size: 12px; font-weight: 500;
+    padding: 7px 14px; border-radius: 7px; cursor: pointer;
+    border: 1px solid transparent; color: #fff; transition: all 0.12s;
+  }
+  .timerbar button:disabled { opacity: 0.32; cursor: not-allowed; }
+  .tb-start  { background: #1d6b51; }
+  .tb-start:hover:not(:disabled) { background: #185b44; }
+  .tb-pause  { background: #b18913; }
+  .tb-pause:hover:not(:disabled) { background: #977311; }
+  .tb-stop   { background: #a33636; }
+  .tb-stop:hover:not(:disabled)  { background: #8a2c2c; }
+  .timerbar button.tb-manual {
+    background: var(--surface-2);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .timerbar button.tb-manual:hover { background: var(--gold); color: #fff; }
+
+  /* ---- Табы ---- */
+  .tabs {
+    display: flex; gap: 3px; flex-wrap: wrap;
+    border-bottom: 2px solid var(--text);
+    margin-bottom: 22px;
+  }
+  .tab {
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    padding: 9px 17px; cursor: pointer;
+    background: transparent; border: none; color: var(--text-faint);
+    border-radius: 7px 7px 0 0; transition: all 0.12s;
+  }
+  .tab:hover { background: #ebe8e0; color: var(--text); }
+  .tab.active { background: var(--text); color: var(--bg); }
+  .tab-page { display: none; }
+  .tab-page.active { display: block; animation: fade 0.2s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  /* ---- Фильтр по сферам ---- */
+  .sphere-filter {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .sf-btn {
+    font-family: inherit; font-size: 11.5px;
+    padding: 5px 12px; border-radius: 20px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text-dim);
+    transition: all 0.12s; display: flex; align-items: center; gap: 6px;
+  }
+  .sf-btn:hover { border-color: var(--gold); }
+  .sf-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .sf-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ---- Обзор: сфера ---- */
+  .sphere-block { margin-bottom: 30px; }
+  .sphere-head {
+    display: flex; align-items: center; gap: 10px;
+    padding-bottom: 8px; margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .sphere-mark {
+    width: 24px; height: 24px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .sphere-head h2 { font-size: 17px; font-weight: 500; }
+  .sphere-head .s-count { font-size: 11.5px; color: var(--text-faint); margin-left: auto; }
+
+  /* ---- Сетка плиток ---- */
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 720px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .tiles { grid-template-columns: 1fr; } }
+
+  .tile {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0; cursor: pointer;
+    overflow: hidden; position: relative;
+    transition: transform 0.12s, box-shadow 0.12s;
+    display: flex; flex-direction: column;
+  }
+  .tile:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .tile.dimmed { opacity: 0.6; }
+  .tile-stripe { height: 4px; width: 100%; }
+  .tile-body { padding: 13px 15px 14px; flex: 1; display: flex; flex-direction: column; }
+  .tile-name {
+    font-size: 14px; font-weight: 600; line-height: 1.35;
+    display: flex; align-items: flex-start; gap: 6px;
+  }
+  .tile-key {
+    font-size: 9px; letter-spacing: 0.5px; text-transform: uppercase;
+    background: #f3e6c4; color: #876a26;
+    padding: 2px 6px; border-radius: 10px; font-weight: 600;
+    white-space: nowrap; flex-shrink: 0; margin-top: 1px;
+  }
+  .tile-sub { font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+  .tile-stat {
+    font-size: 11.5px; color: var(--text-dim);
+    margin-top: 10px; padding-top: 9px;
+    border-top: 1px dashed var(--line);
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .tile-stat b { color: var(--text); font-weight: 600; }
+  .tile-badge {
+    font-size: 9.5px; letter-spacing: 0.4px; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 10px; font-weight: 500;
+  }
+  .bg-paused { background: #ebe9e3; color: #807d75; }
+  .bg-backlog { background: #f7dcdc; color: #a33636; }
+
+  /* ---- Управление структурой в Обзоре ---- */
+  .overview-toolbar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .ov-mode-btn {
+    font-family: inherit; font-size: 12px;
+    padding: 6px 13px; border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text-dim);
+    transition: all 0.12s;
+  }
+  .ov-mode-btn:hover { border-color: var(--gold); color: var(--text); }
+  .ov-mode-btn.on { background: var(--gold); color: #fff; border-color: var(--gold); }
+  .ov-hint { font-size: 11.5px; color: var(--text-faint); }
+
+  .edit-icon-btn {
+    font-family: inherit; font-size: 12px; line-height: 1;
+    width: 26px; height: 26px; padding: 0;
+    border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text-dim);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.12s; flex-shrink: 0;
+  }
+  .edit-icon-btn:hover { border-color: var(--gold); color: var(--text); }
+  .edit-icon-btn.del:hover { border-color: #a33636; color: #a33636; }
+  .edit-icon-btn.on-date { background: var(--gold); color: #fff; border-color: var(--gold); }
+  .edit-icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .sphere-edit-actions { display: flex; gap: 4px; align-items: center; }
+
+  .add-row {
+    display: flex; gap: 7px; margin-top: 11px; flex-wrap: wrap;
+  }
+  .add-row input {
+    flex: 1; min-width: 180px;
+    font-family: inherit; font-size: 13px;
+    padding: 8px 11px; border-radius: 7px;
+    border: 1px dashed var(--line); background: var(--surface-2); color: var(--text);
+  }
+  .add-row input:focus { outline: none; border-style: solid; border-color: var(--gold); background: var(--surface); }
+  .add-row button {
+    font-family: inherit; font-size: 12px;
+    padding: 8px 14px; border-radius: 7px; cursor: pointer;
+    border: none; background: var(--text); color: var(--bg);
+  }
+  .add-sphere-row {
+    margin-top: 8px;
+    background: var(--surface-2); border: 1px dashed var(--line);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .add-sphere-row .ar-title { font-size: 12px; color: var(--text-dim); margin-bottom: 8px; font-weight: 500; }
+
+  .tile.editing { cursor: default; }
+  .tile.editing:hover { transform: none; box-shadow: none; }
+  .tile-edit-bar {
+    display: flex; gap: 4px; padding: 7px 10px;
+    border-top: 1px dashed var(--line); background: var(--surface-2);
+  }
+  /* стрелки перемещения */
+  .move-arrows { display: inline-flex; gap: 2px; margin-right: 4px; }
+  .move-btn {
+    font-family: inherit; font-size: 9px; line-height: 1;
+    width: 20px; height: 20px; padding: 0;
+    border-radius: 5px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text-dim);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.12s;
+  }
+  .move-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--text); }
+  .move-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+
+  /* модалка-редактор */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(20,18,14,0.45);
+    display: none; align-items: center; justify-content: center;
+    z-index: 100; padding: 20px;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: 14px;
+    padding: 24px; max-width: 440px; width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  .modal h3 { font-size: 17px; font-weight: 600; margin-bottom: 16px; }
+  .modal label {
+    display: block; font-size: 11px; letter-spacing: 0.4px;
+    text-transform: uppercase; color: var(--text-faint); margin: 12px 0 5px;
+  }
+  .modal input, .modal textarea {
+    width: 100%; font-family: inherit; font-size: 13.5px;
+    padding: 9px 11px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text);
+  }
+  .modal input:focus, .modal textarea:focus { outline: none; border-color: var(--gold); background: var(--surface); }
+  .modal textarea { resize: vertical; min-height: 60px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+  .modal-actions button {
+    font-family: inherit; font-size: 13px;
+    padding: 8px 16px; border-radius: 8px; cursor: pointer;
+  }
+  .modal-actions .btn-save { background: var(--text); color: var(--bg); border: none; }
+  .modal-actions .btn-cancel { background: transparent; color: var(--text-dim); border: 1px solid var(--line); }
+
+  /* ---- Страница проекта (overlay) ---- */
+  .proj-overlay {
+    position: fixed; inset: 0; z-index: 80;
+    background: var(--bg); overflow-y: auto;
+    display: none;
+  }
+  .proj-overlay.open { display: block; animation: fade 0.2s ease; }
+  .proj-inner { max-width: 760px; margin: 0 auto; padding: 0 22px 80px; }
+
+  .proj-topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 22px; flex-wrap: wrap;
+    position: sticky; top: 0; z-index: 5;
+    margin: 0 -22px 8px;
+    background: rgba(244,242,236,0.94);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .proj-back {
+    font-family: inherit; font-size: 12.5px; font-weight: 500;
+    padding: 7px 13px; border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text-dim);
+    transition: all 0.12s;
+  }
+  .proj-back:hover { border-color: var(--gold); color: var(--text); }
+  .proj-topbar .spacer { flex: 1; }
+  .proj-edit-toggle {
+    font-family: inherit; font-size: 12px;
+    padding: 7px 13px; border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text-dim);
+    transition: all 0.12s;
+  }
+  .proj-edit-toggle:hover { border-color: var(--gold); color: var(--text); }
+  .proj-edit-toggle.on { background: var(--gold); color: #fff; border-color: var(--gold); }
+
+  .proj-head {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; overflow: hidden; margin-bottom: 22px;
+  }
+  .proj-head-stripe { height: 5px; width: 100%; }
+  .proj-head-body { padding: 18px 22px 20px; }
+  .proj-head-top { display: flex; align-items: flex-start; gap: 10px; }
+  .proj-sphere-tag {
+    font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase;
+    color: #fff; padding: 3px 9px; border-radius: 11px;
+    font-weight: 600; white-space: nowrap;
+  }
+  .proj-key-tag {
+    font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase;
+    background: #f3e6c4; color: #876a26;
+    padding: 3px 9px; border-radius: 11px; font-weight: 600; white-space: nowrap;
+  }
+  .proj-status-tag {
+    font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 11px; font-weight: 600; white-space: nowrap;
+  }
+  .proj-title {
+    font-size: 22px; font-weight: 600; line-height: 1.3;
+    margin: 12px 0 4px;
+  }
+  .proj-goal-label {
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--gold); margin: 14px 0 5px;
+  }
+  .proj-goal { font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+  .proj-goal.empty { color: var(--text-faint); font-style: italic; }
+  .proj-head-edit {
+    margin-top: 14px; padding-top: 14px;
+    border-top: 1px dashed var(--line);
+    display: flex; gap: 7px; flex-wrap: wrap;
+  }
+  .proj-head-edit button {
+    font-family: inherit; font-size: 12px;
+    padding: 6px 12px; border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+    transition: all 0.12s;
+  }
+  .proj-head-edit button:hover { border-color: var(--gold); color: var(--text); }
+
+  /* счётчик прогресса */
+  .proj-progress {
+    display: flex; align-items: center; gap: 12px;
+    margin: 12px 0 0; font-size: 12px; color: var(--text-dim);
+  }
+  .proj-progress-bar {
+    flex: 1; height: 7px; border-radius: 4px;
+    background: var(--line-soft); overflow: hidden; min-width: 80px;
+  }
+  .proj-progress-fill { height: 100%; border-radius: 4px; transition: width 0.25s; }
+
+  /* секция задач */
+  .tasks-section-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 6px;
+  }
+  .tasks-section-head h3 { font-size: 15px; font-weight: 600; }
+  .tasks-section-head .t-count { font-size: 11.5px; color: var(--text-faint); }
+  .tasks-section-hint { font-size: 11.5px; color: var(--text-faint); margin-bottom: 14px; }
+
+  /* группа задач по типу */
+  .task-group { margin-bottom: 20px; }
+  .task-group-label {
+    font-size: 10.5px; letter-spacing: 0.6px; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .tg-dot { width: 8px; height: 8px; border-radius: 3px; flex-shrink: 0; }
+  .tg-rep   { color: #1d6b51; } .tg-rep   .tg-dot { background: #1d6b51; }
+  .tg-once  { color: #45528f; } .tg-once  .tg-dot { background: #45528f; }
+  .tg-cond  { color: #9a7b30; } .tg-cond  .tg-dot { background: #9a7b30; }
+  .tg-back  { color: #a33636; } .tg-back  .tg-dot { background: #a33636; }
+  .tg-none  { color: var(--text-faint); } .tg-none .tg-dot { background: var(--text-faint); }
+
+  /* карточка задачи */
+  .task-card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; margin-bottom: 8px; overflow: hidden;
+  }
+  .task-card.t-done { opacity: 0.6; }
+  .task-main {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 11px 13px;
+  }
+  .task-check {
+    width: 19px; height: 19px; border-radius: 6px; flex-shrink: 0;
+    border: 1.5px solid var(--line); background: var(--surface-2);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: #fff; transition: all 0.12s; margin-top: 1px;
+  }
+  .task-check:hover { border-color: var(--gold); }
+  .task-check.checked { background: #1d6b51; border-color: #1d6b51; }
+  .task-text-block { flex: 1; min-width: 0; }
+  .task-name { font-size: 13.5px; line-height: 1.45; }
+  .task-pri { font-size: 11px; vertical-align: 1px; }
+  .task-card.t-done .task-name { text-decoration: line-through; }
+  .task-hint {
+    font-size: 11px; color: var(--text-faint); margin-top: 2px;
+    font-style: italic;
+  }
+  /* плашка даты задачи */
+  .task-date {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10.5px; font-weight: 600;
+    padding: 2px 8px; border-radius: 9px;
+    background: #e9e3d2; color: #6f5a22;
+    white-space: nowrap;
+  }
+  .task-date.unplanned {
+    background: var(--surface-2); color: var(--text-faint);
+    font-weight: 500; border: 1px dashed var(--line);
+  }
+  .task-date.rhythm {
+    background: #dceee6; color: #1d6b51;
+  }
+  /* блок выбора даты в режиме правки */
+  .task-date-edit {
+    display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+    padding: 8px 13px; background: var(--surface-2);
+    border-top: 1px dashed var(--line);
+  }
+  .task-date-edit label {
+    font-size: 10px; letter-spacing: 0.4px; text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .task-date-edit input[type="date"],
+  .task-date-edit input[type="time"] {
+    font-family: inherit; font-size: 12px;
+    padding: 5px 8px; border-radius: 6px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text);
+  }
+  .task-date-edit input:focus { outline: none; border-color: var(--gold); }
+  .task-date-edit .clear-date {
+    font-family: inherit; font-size: 11px;
+    padding: 5px 9px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text-dim);
+  }
+  .task-date-edit .clear-date:hover { border-color: #a33636; color: #a33636; }
+  .task-date-edit .rhythm-note {
+    font-size: 11px; color: #1d6b51; font-weight: 500;
+  }
+  .task-type-pill {
+    font-size: 9px; letter-spacing: 0.4px; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 9px; font-weight: 600;
+    white-space: nowrap; flex-shrink: 0; margin-top: 1px;
+  }
+  .ttp-rep  { background: #dceee6; color: #1d6b51; }
+  .ttp-once { background: #dee1f0; color: #45528f; }
+  .ttp-cond { background: #f3e9d2; color: #876a26; }
+  .ttp-back { background: #f7dcdc; color: #a33636; }
+  .ttp-none { background: #ebe9e3; color: #807d75; }
+
+  .task-meta-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 5px; flex-wrap: wrap;
+  }
+  .subs-toggle {
+    font-family: inherit; font-size: 11px;
+    background: none; border: none; cursor: pointer;
+    color: var(--text-dim); padding: 0; display: inline-flex;
+    align-items: center; gap: 4px;
+  }
+  .subs-toggle:hover { color: var(--gold); }
+  .subs-arrow { font-size: 8px; transition: transform 0.15s; }
+  .subs-toggle.open .subs-arrow { transform: rotate(90deg); }
+
+  /* подзадачи */
+  .subs-wrap {
+    border-top: 1px dashed var(--line);
+    background: var(--surface-2); padding: 8px 13px 10px 13px;
+  }
+  .sub-row {
+    display: flex; align-items: flex-start; gap: 9px;
+    padding: 5px 0;
+  }
+  .sub-check {
+    width: 16px; height: 16px; border-radius: 5px; flex-shrink: 0;
+    border: 1.5px solid var(--line); background: var(--surface);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: #fff; transition: all 0.12s; margin-top: 1px;
+  }
+  .sub-check:hover { border-color: var(--gold); }
+  .sub-check.checked { background: #1d6b51; border-color: #1d6b51; }
+  .sub-name { flex: 1; font-size: 12.5px; line-height: 1.4; color: var(--text-dim); }
+  .sub-row.s-done .sub-name { text-decoration: line-through; color: var(--text-faint); }
+  .sub-mini-btn {
+    font-family: inherit; font-size: 10px; line-height: 1;
+    width: 19px; height: 19px; padding: 0; border-radius: 5px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text-dim);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.12s; flex-shrink: 0;
+  }
+  .sub-mini-btn:hover { border-color: var(--gold); color: var(--text); }
+  .sub-mini-btn.del:hover { border-color: #a33636; color: #a33636; }
+  .sub-mini-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+  .sub-actions { display: flex; gap: 3px; flex-shrink: 0; }
+  .sub-add-row {
+    display: flex; gap: 6px; margin-top: 6px;
+  }
+  .sub-add-row input {
+    flex: 1; font-family: inherit; font-size: 12px;
+    padding: 6px 9px; border-radius: 6px;
+    border: 1px dashed var(--line); background: var(--surface); color: var(--text);
+  }
+  .sub-add-row input:focus { outline: none; border-style: solid; border-color: var(--gold); }
+  .sub-add-row button {
+    font-family: inherit; font-size: 11px;
+    padding: 6px 11px; border-radius: 6px; cursor: pointer;
+    border: none; background: var(--text); color: var(--bg);
+  }
+
+  /* панель правки задачи */
+  .task-edit-bar {
+    display: flex; gap: 4px; padding: 6px 10px;
+    border-top: 1px dashed var(--line); background: var(--surface-2);
+    align-items: center;
+  }
+  .task-edit-bar select {
+    font-family: inherit; font-size: 11px;
+    padding: 4px 7px; border-radius: 6px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text-dim);
+    cursor: pointer;
+  }
+  .task-edit-bar select:focus { outline: none; border-color: var(--gold); }
+  .task-edit-bar .te-spacer { flex: 1; }
+
+  /* строка добавления задачи */
+  .task-add-box {
+    background: var(--surface-2); border: 1px dashed var(--line);
+    border-radius: 10px; padding: 13px 14px; margin-top: 8px;
+  }
+  .task-add-box .tab-title {
+    font-size: 12px; color: var(--text-dim); margin-bottom: 8px; font-weight: 500;
+  }
+  .task-add-box .add-row { margin-top: 0; }
+  .task-add-box select {
+    font-family: inherit; font-size: 12.5px;
+    padding: 8px 10px; border-radius: 7px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text-dim);
+    cursor: pointer;
+  }
+  .task-add-box select:focus { outline: none; border-color: var(--gold); }
+
+  .tasks-empty {
+    text-align: center; padding: 30px 20px;
+    color: var(--text-faint); font-size: 13px;
+  }
+
+  /* ---- Таб «Время» ---- */
+  .time-modeswitch {
+    display: inline-flex; gap: 0; margin-bottom: 14px;
+    border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
+  }
+  .time-modeswitch button {
+    font-family: inherit; font-size: 12px;
+    padding: 7px 16px; cursor: pointer; border: none;
+    background: var(--surface); color: var(--text-dim);
+    transition: all 0.12s;
+  }
+  .time-modeswitch button + button { border-left: 1px solid var(--line); }
+  .time-modeswitch button.on { background: var(--gold); color: #fff; }
+
+  .time-nav {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: 9px 14px; margin-bottom: 16px;
+  }
+  .time-nav-btn {
+    font-family: inherit; font-size: 15px; line-height: 1;
+    width: 32px; height: 32px; padding: 0; border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.12s; flex-shrink: 0;
+  }
+  .time-nav-btn:hover { border-color: var(--gold); color: var(--text); }
+  .time-nav-label { flex: 1; text-align: center; }
+  .time-nav-label .tn-range { font-size: 14.5px; font-weight: 600; }
+  .time-nav-label .tn-sub { font-size: 11px; color: var(--text-faint); margin-top: 1px; }
+  .time-nav-label .tn-total {
+    color: var(--gold); font-weight: 600;
+  }
+  .time-today-btn {
+    font-family: inherit; font-size: 11.5px;
+    padding: 6px 11px; border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+    transition: all 0.12s; flex-shrink: 0;
+  }
+  .time-today-btn:hover { border-color: var(--gold); color: var(--text); }
+  .time-today-btn.hidden { visibility: hidden; }
+
+  .time-section-title {
+    font-size: 13px; font-weight: 600; margin: 18px 0 10px;
+  }
+
+  /* сводка по сферам/проектам — полоски-доли */
+  .time-bar-row {
+    margin-bottom: 11px;
+  }
+  .time-bar-head {
+    display: flex; align-items: baseline; gap: 8px;
+    font-size: 12.5px; margin-bottom: 4px;
+  }
+  .time-bar-head .tbh-name { flex: 1; font-weight: 500; min-width: 0; }
+  .time-bar-head .tbh-val { color: var(--text-dim); font-weight: 600; }
+  .time-bar-head .tbh-pct { color: var(--text-faint); font-size: 11px; }
+  .time-bar-track {
+    height: 9px; border-radius: 5px; background: var(--line-soft);
+    overflow: hidden;
+  }
+  .time-bar-fill { height: 100%; border-radius: 5px; transition: width 0.25s; }
+
+  .time-proj-sub {
+    margin: 5px 0 0 14px; padding-left: 10px;
+    border-left: 2px solid var(--line);
+  }
+  .time-proj-sub .tps-row {
+    display: flex; align-items: baseline; gap: 8px;
+    font-size: 11.5px; padding: 2px 0; color: var(--text-dim);
+  }
+  .time-proj-sub .tps-name { flex: 1; min-width: 0; }
+  .time-proj-sub .tps-val { font-weight: 600; }
+
+  /* список записей по дням */
+  .time-day-group { margin-bottom: 16px; }
+  .time-day-label {
+    font-size: 11.5px; font-weight: 600; color: var(--text-dim);
+    margin-bottom: 7px; display: flex; align-items: baseline; gap: 8px;
+  }
+  .time-day-label .tdl-sum { color: var(--text-faint); font-weight: 500; }
+  .time-entry {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; margin-bottom: 7px;
+    display: flex; align-items: flex-start; gap: 11px;
+    padding: 11px 13px;
+  }
+  .time-entry-dur {
+    font-size: 13px; font-weight: 700; color: #6f5a22;
+    background: #e9e3d2; padding: 3px 9px; border-radius: 8px;
+    white-space: nowrap; flex-shrink: 0; font-variant-numeric: tabular-nums;
+  }
+  .time-entry-body { flex: 1; min-width: 0; }
+  .time-entry-top {
+    display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+  }
+  .time-entry-proj {
+    font-size: 11px; color: #fff; padding: 2px 8px; border-radius: 9px;
+    font-weight: 500; white-space: nowrap;
+  }
+  .time-entry-task { font-size: 12.5px; color: var(--text-dim); }
+  .time-entry-note {
+    font-size: 12px; color: var(--text); margin-top: 4px; line-height: 1.45;
+  }
+  .time-entry-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .time-mini-btn {
+    font-family: inherit; font-size: 10px; line-height: 1;
+    width: 24px; height: 24px; padding: 0; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.12s;
+  }
+  .time-mini-btn:hover { border-color: var(--gold); color: var(--text); }
+  .time-mini-btn.del:hover { border-color: #a33636; color: #a33636; }
+
+  .time-empty {
+    text-align: center; padding: 46px 20px;
+    color: var(--text-faint); font-size: 13.5px;
+  }
+  .time-empty .big { font-size: 32px; margin-bottom: 12px; }
+
+  /* поля окна записи времени */
+  .te-modal-field { margin: 11px 0; }
+  .te-modal-field label {
+    font-size: 11px; letter-spacing: 0.4px; text-transform: uppercase;
+    color: var(--text-faint); display: block; margin-bottom: 4px;
+  }
+  .te-modal-field input, .te-modal-field select, .te-modal-field textarea {
+    font-family: inherit; font-size: 13px; width: 100%;
+    padding: 8px 10px; border-radius: 7px; box-sizing: border-box;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text);
+  }
+  .te-modal-field textarea { resize: vertical; min-height: 52px; }
+  .te-modal-field input:focus, .te-modal-field select:focus,
+  .te-modal-field textarea:focus { outline: none; border-color: var(--gold); }
+  .te-modal-row { display: flex; gap: 10px; }
+  .te-modal-row .te-modal-field { flex: 1; }
+  .te-dur-display {
+    font-size: 13px; color: var(--text-dim);
+    background: #e9e3d2; padding: 8px 11px; border-radius: 7px;
+    margin-bottom: 4px;
+  }
+  .te-dur-display b { color: #6f5a22; font-size: 15px; }
+
+  /* ---- Таб «Календарь» ---- */
+  .cal-nav {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: 9px 14px; margin-bottom: 16px;
+  }
+  .cal-nav-btn {
+    font-family: inherit; font-size: 15px; line-height: 1;
+    width: 32px; height: 32px; padding: 0;
+    border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.12s; flex-shrink: 0;
+  }
+  .cal-nav-btn:hover { border-color: var(--gold); color: var(--text); }
+  .cal-nav-label { flex: 1; text-align: center; }
+  .cal-nav-label .cn-month { font-size: 14.5px; font-weight: 600; }
+  .cal-nav-label .cn-sub { font-size: 11px; color: var(--text-faint); margin-top: 1px; }
+  .cal-today-btn {
+    font-family: inherit; font-size: 11.5px;
+    padding: 6px 11px; border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+    transition: all 0.12s; flex-shrink: 0;
+  }
+  .cal-today-btn:hover { border-color: var(--gold); color: var(--text); }
+  .cal-today-btn.hidden { visibility: hidden; }
+
+  .cal-summary {
+    font-size: 12px; color: var(--text-dim); margin-bottom: 14px;
+    display: flex; gap: 14px; flex-wrap: wrap;
+  }
+  .cal-summary b { color: var(--text); }
+
+  /* сетка */
+  .cal-grid {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 11px; overflow: hidden;
+  }
+  .cal-weekdays {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    background: var(--surface-2); border-bottom: 1px solid var(--line);
+  }
+  .cal-weekdays div {
+    text-align: center; font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.4px; text-transform: uppercase;
+    color: var(--text-faint); padding: 8px 2px;
+  }
+  .cal-weekdays div.cw-end { color: #a3683a; }
+  .cal-cells {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+  }
+  .cal-cell {
+    min-height: 74px; border-right: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--line-soft);
+    padding: 5px 6px; cursor: pointer; position: relative;
+    transition: background 0.1s; display: flex; flex-direction: column;
+  }
+  .cal-cell:nth-child(7n) { border-right: none; }
+  .cal-cell:hover { background: var(--surface-2); }
+  .cal-cell.cc-blank { background: var(--surface-2); cursor: default; opacity: 0.5; }
+  .cal-cell.cc-blank:hover { background: var(--surface-2); }
+  .cal-cell.cc-today { background: #f6f1e2; }
+  .cal-cell.cc-today:hover { background: #f1ead4; }
+  .cal-cell.cc-selected { box-shadow: inset 0 0 0 2px var(--gold); }
+  .cal-cell.cc-other { opacity: 0.4; }
+  .cal-daynum {
+    font-size: 12px; font-weight: 600; color: var(--text-dim);
+    margin-bottom: 3px;
+  }
+  .cal-cell.cc-today .cal-daynum {
+    background: var(--gold); color: #fff;
+    width: 20px; height: 20px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+  .cal-dots { display: flex; flex-wrap: wrap; gap: 3px; margin-top: auto; }
+  .cal-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  }
+  .cal-dot.cd-crit { background: #c0392b; }
+  .cal-dot.cd-imp  { background: #d4a02a; }
+  .cal-dot.cd-norm { background: #9b988f; }
+  .cal-dot.cd-done { background: #1d6b51; opacity: 0.5; }
+  .cal-count {
+    font-size: 10px; color: var(--text-faint); margin-top: 3px;
+  }
+  .cal-count.has-crit { color: #a33636; font-weight: 600; }
+
+  /* раскрытый список дня под календарём */
+  .cal-day-panel {
+    margin-top: 16px; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 11px;
+    overflow: hidden;
+  }
+  .cal-day-panel-head {
+    padding: 12px 15px; border-bottom: 1px solid var(--line);
+    background: var(--surface-2);
+    display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap;
+  }
+  .cal-day-panel-head h3 { font-size: 14.5px; font-weight: 600; }
+  .cal-day-panel-head .cdp-count { font-size: 11.5px; color: var(--text-faint); }
+  .cal-day-panel-body { padding: 10px 15px 14px; }
+  .cal-day-item {
+    display: flex; align-items: flex-start; gap: 9px;
+    padding: 8px 0; border-top: 1px dashed var(--line-soft);
+  }
+  .cal-day-item:first-child { border-top: none; }
+  .cal-day-item.cdi-done { opacity: 0.55; }
+  .cal-day-item-icon { font-size: 11px; margin-top: 2px; flex-shrink: 0; }
+  .cal-day-item-body { flex: 1; min-width: 0; }
+  .cal-day-item-name { font-size: 13px; line-height: 1.4; }
+  .cal-day-item.cdi-done .cal-day-item-name { text-decoration: line-through; }
+  .cal-day-item-meta {
+    display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+    margin-top: 3px;
+  }
+  .cal-day-item-proj {
+    font-size: 10px; color: #fff; padding: 2px 7px; border-radius: 8px;
+    font-weight: 500;
+  }
+  .cal-day-item-time {
+    font-size: 10.5px; font-weight: 600; color: #6f5a22;
+    background: #e9e3d2; padding: 1px 6px; border-radius: 7px;
+  }
+  .cal-day-goto {
+    font-family: inherit; font-size: 10.5px;
+    padding: 4px 9px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text-dim);
+    transition: all 0.12s; flex-shrink: 0;
+  }
+  .cal-day-goto:hover { border-color: var(--gold); color: var(--text); }
+  .cal-day-empty {
+    font-size: 12.5px; color: var(--text-faint);
+    text-align: center; padding: 14px 8px;
+  }
+  .cal-hint {
+    font-size: 11.5px; color: var(--text-faint);
+    text-align: center; margin-top: 14px;
+  }
+
+  /* ---- Таб «День» ---- */
+  .day-nav {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: 9px 14px; margin-bottom: 16px;
+  }
+  .day-nav-btn {
+    font-family: inherit; font-size: 15px; line-height: 1;
+    width: 32px; height: 32px; padding: 0;
+    border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.12s; flex-shrink: 0;
+  }
+  .day-nav-btn:hover { border-color: var(--gold); color: var(--text); }
+  .day-nav-label { flex: 1; text-align: center; }
+  .day-nav-label .dn-date { font-size: 14.5px; font-weight: 600; }
+  .day-nav-label .dn-sub { font-size: 11px; color: var(--text-faint); margin-top: 1px; }
+  .day-nav-label .dn-sub.is-today { color: #1d6b51; font-weight: 600; }
+  .day-today-btn {
+    font-family: inherit; font-size: 11.5px;
+    padding: 6px 11px; border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+    transition: all 0.12s; flex-shrink: 0;
+  }
+  .day-today-btn:hover { border-color: var(--gold); color: var(--text); }
+  .day-today-btn.hidden { visibility: hidden; }
+
+  .day-summary {
+    font-size: 12px; color: var(--text-dim);
+    margin-bottom: 16px; display: flex; gap: 14px; flex-wrap: wrap;
+  }
+  .day-summary b { color: var(--text); }
+  .day-summary .ds-done { color: #1d6b51; }
+
+  /* группа приоритета */
+  .day-group { margin-bottom: 18px; }
+  .day-group-label {
+    font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .dg-crit { color: #a33636; }
+  .dg-imp  { color: #9a7b30; }
+  .dg-norm { color: var(--text-dim); }
+  .dg-done { color: #1d6b51; }
+
+  /* карточка дела дня */
+  .day-task {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; margin-bottom: 8px; overflow: hidden;
+  }
+  .day-task.dt-done { opacity: 0.62; }
+  .day-task-main {
+    display: flex; align-items: flex-start; gap: 11px;
+    padding: 12px 13px;
+  }
+  .day-check {
+    width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0;
+    border: 2px solid var(--line); background: var(--surface-2);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: #fff; transition: all 0.12s; margin-top: 1px;
+  }
+  .day-check:hover { border-color: var(--gold); }
+  .day-check.checked { background: #1d6b51; border-color: #1d6b51; }
+  .day-task-body { flex: 1; min-width: 0; }
+  .day-task-top { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
+  .day-task-name { font-size: 14px; line-height: 1.4; font-weight: 500; }
+  .day-task.dt-done .day-task-name { text-decoration: line-through; font-weight: 400; }
+  .day-task-time {
+    font-size: 11.5px; font-weight: 600; color: #6f5a22;
+    background: #e9e3d2; padding: 1px 7px; border-radius: 8px;
+    white-space: nowrap;
+  }
+  .day-task-meta {
+    display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .day-proj-tag {
+    font-size: 10.5px; color: #fff; padding: 2px 8px; border-radius: 9px;
+    font-weight: 500; white-space: nowrap;
+  }
+  .day-rep-tag {
+    font-size: 10px; letter-spacing: 0.3px;
+    background: #dceee6; color: #1d6b51;
+    padding: 2px 7px; border-radius: 9px; font-weight: 600;
+  }
+  .day-task-hint {
+    font-size: 11px; color: var(--text-faint); font-style: italic;
+    margin-top: 3px;
+  }
+  .day-subs-line {
+    font-size: 11px; color: var(--text-dim); margin-top: 4px;
+  }
+  .day-subs-line .dsl-bar {
+    display: inline-block; width: 46px; height: 5px; border-radius: 3px;
+    background: var(--line-soft); vertical-align: middle; margin: 0 5px;
+    overflow: hidden;
+  }
+  .day-subs-line .dsl-fill {
+    display: block; height: 100%; background: #1d6b51; border-radius: 3px;
+  }
+
+  /* действия дела */
+  .day-task-actions {
+    display: flex; gap: 5px; padding: 7px 11px;
+    border-top: 1px dashed var(--line); background: var(--surface-2);
+    align-items: center; flex-wrap: wrap;
+  }
+  .day-act-btn {
+    font-family: inherit; font-size: 11px;
+    padding: 5px 10px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text-dim);
+    transition: all 0.12s;
+  }
+  .day-act-btn:hover { border-color: var(--gold); color: var(--text); }
+  .day-act-btn.move:hover { border-color: #45528f; color: #45528f; }
+  .day-act-btn .ab-ico { margin-right: 3px; }
+  .day-act-btn.arrow {
+    padding: 5px 8px; min-width: 26px; text-align: center;
+  }
+  .day-act-btn.arrow:hover:not(:disabled) { border-color: #45528f; color: #45528f; }
+  .day-task-actions .da-spacer { flex: 1; }
+  .day-act-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .day-empty {
+    text-align: center; padding: 50px 20px;
+    color: var(--text-faint); font-size: 13.5px;
+  }
+  .day-empty .big { font-size: 32px; margin-bottom: 12px; }
+  .day-alldone {
+    text-align: center; padding: 22px 18px; margin-bottom: 16px;
+    background: #f0f5f1; border: 1px solid #cfe3d6;
+    border-radius: 11px; color: #1d6b51; font-size: 13.5px;
+  }
+  .day-alldone .big { font-size: 26px; margin-bottom: 6px; }
+
+  /* модалка переноса */
+  .move-modal-row {
+    display: flex; gap: 9px; flex-wrap: wrap; margin: 12px 0;
+  }
+  .move-modal-row label {
+    font-size: 11px; letter-spacing: 0.4px; text-transform: uppercase;
+    color: var(--text-faint); display: block; margin-bottom: 4px;
+  }
+  .move-modal-row input {
+    font-family: inherit; font-size: 13px;
+    padding: 8px 10px; border-radius: 7px;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text);
+  }
+  .move-modal-row input:focus { outline: none; border-color: var(--gold); }
+  .move-quick {
+    display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 4px;
+  }
+  .move-quick button {
+    font-family: inherit; font-size: 11.5px;
+    padding: 6px 11px; border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+    transition: all 0.12s;
+  }
+  .move-quick button:hover { border-color: var(--gold); color: var(--text); }
+
+  /* ---- Таб «Неделя» ---- */
+  .week-nav {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: 9px 14px; margin-bottom: 18px;
+  }
+  .week-nav-btn {
+    font-family: inherit; font-size: 15px; line-height: 1;
+    width: 32px; height: 32px; padding: 0;
+    border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.12s; flex-shrink: 0;
+  }
+  .week-nav-btn:hover { border-color: var(--gold); color: var(--text); }
+  .week-nav-label { flex: 1; text-align: center; }
+  .week-nav-label .wn-range { font-size: 14.5px; font-weight: 600; }
+  .week-nav-label .wn-sub { font-size: 11px; color: var(--text-faint); margin-top: 1px; }
+  .week-today-btn {
+    font-family: inherit; font-size: 11.5px;
+    padding: 6px 11px; border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+    transition: all 0.12s; flex-shrink: 0;
+  }
+  .week-today-btn:hover { border-color: var(--gold); color: var(--text); }
+  .week-today-btn.hidden { visibility: hidden; }
+
+  .week-summary {
+    font-size: 12px; color: var(--text-dim);
+    margin-bottom: 16px; display: flex; gap: 14px; flex-wrap: wrap;
+  }
+  .week-summary b { color: var(--text); }
+  .week-summary .ws-crit { color: #a33636; }
+
+  .week-toolbar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  /* стрелки перестановки плитки недели */
+  .week-tile-order {
+    display: flex; gap: 5px; padding: 7px 14px 10px;
+    border-top: 1px dashed var(--line-soft); background: var(--surface-2);
+  }
+  .week-tile-order .move-btn { width: 26px; height: 24px; font-size: 11px; }
+  .week-tile-order .wto-label {
+    flex: 1; font-size: 10.5px; color: var(--text-faint);
+    display: flex; align-items: center;
+  }
+  .week-tile.ordering { cursor: default; }
+  .week-tile.ordering:hover { transform: none; box-shadow: none; }
+
+  /* плитки недели */
+  .week-tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 13px; }
+  @media (max-width: 640px) { .week-tiles { grid-template-columns: 1fr; } }
+
+  .week-tile {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 11px; overflow: hidden; cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.12s;
+    display: flex; flex-direction: column;
+  }
+  .week-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .week-tile-stripe { height: 4px; width: 100%; }
+  .week-tile-head {
+    display: flex; align-items: flex-start; gap: 7px;
+    padding: 12px 14px 8px;
+  }
+  .week-tile-head .wt-mark {
+    width: 20px; height: 20px; border-radius: 6px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: #fff;
+  }
+  .week-tile-titles { flex: 1; min-width: 0; }
+  .week-tile-name { font-size: 13.5px; font-weight: 600; line-height: 1.3; }
+  .week-tile-sub { font-size: 10.5px; color: var(--text-faint); margin-top: 1px; }
+  .week-tile-keytag {
+    font-size: 8.5px; letter-spacing: 0.4px; text-transform: uppercase;
+    background: #f3e6c4; color: #876a26;
+    padding: 2px 6px; border-radius: 9px; font-weight: 600;
+    white-space: nowrap; flex-shrink: 0;
+  }
+
+  .week-task-list { padding: 2px 14px 6px; }
+  .week-task {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 6px 0; border-top: 1px dashed var(--line-soft);
+  }
+  .week-task:first-child { border-top: none; }
+  .week-task-icon { font-size: 11px; flex-shrink: 0; margin-top: 2px; }
+  .week-task-body { flex: 1; min-width: 0; }
+  .week-task-name { font-size: 12.5px; line-height: 1.4; }
+  .week-task-when {
+    font-size: 10.5px; color: var(--text-faint); margin-top: 1px;
+  }
+  .week-task-when .wtw-day {
+    font-weight: 600; color: var(--text-dim);
+  }
+  .week-task-when .wtw-today { color: #1d6b51; }
+  .week-task-when .wtw-over { color: #a33636; }
+
+  .week-tile-more {
+    font-size: 11px; color: var(--text-faint);
+    padding: 7px 14px 11px; border-top: 1px dashed var(--line-soft);
+    margin-top: 2px;
+  }
+  .week-rep-line {
+    font-size: 11px; color: #1d6b51;
+    padding: 8px 14px 11px;
+    border-top: 1px dashed var(--line-soft);
+    background: #f3f7f5;
+  }
+  .week-rep-line b { font-weight: 600; }
+
+  .week-empty {
+    text-align: center; padding: 50px 20px;
+    color: var(--text-faint); font-size: 13.5px;
+  }
+  .week-empty .big { font-size: 32px; margin-bottom: 12px; }
+
+  /* ---- Заглушка для будущих табов ---- */
+  .stub {
+    text-align: center; padding: 60px 20px;
+    color: var(--text-faint); font-size: 14px;
+  }
+  .stub .big { font-size: 30px; margin-bottom: 10px; }
+
+  footer {
+    text-align: center; font-size: 11.5px; color: var(--text-faint);
+    margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--line);
+  }
+  footer a {
+    color: var(--gold); text-decoration: none;
+  }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="kicker" id="app-kicker">Моя система</div>
+    <div class="header-title-row">
+      <h1 id="app-title">Рабочий дашборд</h1>
+      <button class="header-edit-btn" title="Переименовать" onclick="editHeader()">✎</button>
+    </div>
+    <div class="today" id="today-label"></div>
+  </header>
+
+  <div class="timerbar">
+    <div class="timer-clock-block">
+      <div class="timer-clock" id="timer-clock">0:00:00</div>
+      <div class="timer-state" id="timer-state">остановлен</div>
+    </div>
+    <button class="tb-start"  id="tb-start"  onclick="timerStart()">▶ Старт</button>
+    <button class="tb-pause"  id="tb-pause"  onclick="timerPause()" disabled>❚❚ Пауза</button>
+    <button class="tb-stop"   id="tb-stop"   onclick="timerStop()"  disabled>■ Стоп</button>
+    <div class="spacer"></div>
+    <button class="tb-manual" onclick="openManualEntry()">+ Ввести время вручную</button>
+  </div>
+
+  <div class="savebar">
+    <span class="status" id="save-status">Сохранено</span>
+    <button onclick="exportData()">Экспорт</button>
+    <button onclick="importData()">Импорт</button>
+    <button class="danger" onclick="resetData()">Сброс</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="week"     onclick="showTab('week')">Неделя</button>
+    <button class="tab"        data-tab="day"      onclick="showTab('day')">День</button>
+    <button class="tab"        data-tab="overview" onclick="showTab('overview')">Обзор</button>
+    <button class="tab"        data-tab="calendar" onclick="showTab('calendar')">Календарь</button>
+    <button class="tab"        data-tab="time"     onclick="showTab('time')">Время</button>
+  </div>
+
+  <!-- НЕДЕЛЯ -->
+  <div class="tab-page" id="page-week">
+    <div class="week-nav">
+      <button class="week-nav-btn" onclick="weekShift(-1)" title="Прошлая неделя">‹</button>
+      <div class="week-nav-label">
+        <div class="wn-range" id="week-range">—</div>
+        <div class="wn-sub" id="week-sub"></div>
+      </div>
+      <button class="week-nav-btn" onclick="weekShift(1)" title="Следующая неделя">›</button>
+      <button class="week-today-btn" id="week-today-btn" onclick="weekToday()">Эта неделя</button>
+    </div>
+    <div class="week-toolbar">
+      <button class="ov-mode-btn" id="week-order-btn" onclick="toggleWeekOrder()">↕ Порядок плиток</button>
+      <span class="ov-hint" id="week-order-hint"></span>
+    </div>
+    <div class="week-summary" id="week-summary"></div>
+    <div id="week-body"></div>
+  </div>
+
+  <!-- ДЕНЬ -->
+  <div class="tab-page" id="page-day">
+    <div class="day-nav">
+      <button class="day-nav-btn" onclick="dayShift(-1)" title="Вчера">‹</button>
+      <div class="day-nav-label">
+        <div class="dn-date" id="day-date">—</div>
+        <div class="dn-sub" id="day-sub"></div>
+      </div>
+      <button class="day-nav-btn" onclick="dayShift(1)" title="Завтра">›</button>
+      <button class="day-today-btn" id="day-today-btn" onclick="dayToday()">Сегодня</button>
+    </div>
+    <div class="day-summary" id="day-summary"></div>
+    <div id="day-body"></div>
+  </div>
+
+  <!-- КАЛЕНДАРЬ -->
+  <div class="tab-page" id="page-calendar">
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="calShift(-1)" title="Прошлый месяц">‹</button>
+      <div class="cal-nav-label">
+        <div class="cn-month" id="cal-month">—</div>
+        <div class="cn-sub" id="cal-sub"></div>
+      </div>
+      <button class="cal-nav-btn" onclick="calShift(1)" title="Следующий месяц">›</button>
+      <button class="cal-today-btn" id="cal-today-btn" onclick="calToday()">Этот месяц</button>
+    </div>
+    <div class="cal-summary" id="cal-summary"></div>
+    <div id="cal-grid-wrap"></div>
+    <div id="cal-day-panel-wrap"></div>
+  </div>
+
+  <!-- ОБЗОР -->
+  <div class="tab-page" id="page-overview">
+    <div class="overview-toolbar">
+      <button class="ov-mode-btn" id="ov-mode-btn" onclick="toggleEditMode()">✎ Редактировать структуру</button>
+      <span class="ov-hint" id="ov-hint"></span>
+    </div>
+    <div class="sphere-filter" id="sphere-filter"></div>
+    <div id="overview-body"></div>
+  </div>
+
+  <!-- ВРЕМЯ -->
+  <div class="tab-page" id="page-time">
+    <div class="time-modeswitch">
+      <button id="tm-week" onclick="timeSetMode('week')">Неделя</button>
+      <button id="tm-month" onclick="timeSetMode('month')">Месяц</button>
+    </div>
+    <div class="time-nav">
+      <button class="time-nav-btn" onclick="timeShift(-1)" title="Назад">‹</button>
+      <div class="time-nav-label">
+        <div class="tn-range" id="time-range">—</div>
+        <div class="tn-sub" id="time-sub"></div>
+      </div>
+      <button class="time-nav-btn" onclick="timeShift(1)" title="Вперёд">›</button>
+      <button class="time-today-btn" id="time-today-btn" onclick="timeToday()">Сейчас</button>
+    </div>
+    <div id="time-body"></div>
+  </div>
+
+  <footer>© 2026 · <a href="https://olyrobertsdesigns.com/" target="_blank" rel="noopener">olyrobertsdesigns.com</a></footer>
+</div>
+
+<!-- Модалка-редактор -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal" id="modal-box"></div>
+</div>
+
+<!-- Страница проекта (overlay) -->
+<div class="proj-overlay" id="proj-overlay">
+  <div class="proj-inner">
+    <div class="proj-topbar">
+      <button class="proj-back" onclick="closeProject()">← К обзору</button>
+      <div class="spacer"></div>
+      <button class="proj-edit-toggle" id="proj-edit-toggle" onclick="toggleProjEdit()">✎ Редактировать</button>
+    </div>
+    <div id="proj-content"></div>
+  </div>
+</div>
+
+<script>
+// ===== Всплывающее уведомление (мягкая подсказка пользователю) =====
+let noticeTimer = null;
+function showErrorBar(msg) {
+  let bar = document.getElementById('app-notice');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'app-notice';
+    bar.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);' +
+      'z-index:9999;background:#3a3733;color:#fff;' +
+      'font:13px/1.45 system-ui,-apple-system,sans-serif;' +
+      'padding:11px 18px;border-radius:9px;max-width:90%;' +
+      'box-shadow:0 6px 22px rgba(0,0,0,0.28);text-align:center;';
+    if (document.body) document.body.appendChild(bar);
+    else document.addEventListener('DOMContentLoaded', function () {
+      if (!document.getElementById('app-notice')) document.body.appendChild(bar);
+    });
+  }
+  bar.textContent = String(msg);
+  bar.style.display = 'block';
+  if (noticeTimer) clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(function () {
+    const b = document.getElementById('app-notice');
+    if (b) b.style.display = 'none';
+  }, 4000);
+}
+
+
+// генератор коротких уникальных id (объявлен до T() — используется при создании задач)
+function genId() {
+  return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+// Сферы: id, имя, короткая подпись, цвет
+const STARTER_SPHERES = [
+  { id: 'A', name: 'Тело и здоровье',   tag: 'здоровье',  color: '#1d6b51' },
+  { id: 'B', name: 'Дом и быт',         tag: 'хозяйство', color: '#9a7b30' },
+  { id: 'C', name: 'Доход и работа',    tag: 'доход',     color: '#45528f' },
+  { id: 'D', name: 'Творчество',        tag: 'творчество',color: '#9a3a5a' },
+  { id: 'E', name: 'Отношения и связи', tag: 'связи',     color: '#2f5a82' },
+  { id: 'F', name: 'Системы и порядок', tag: 'порядок',   color: '#56544e' },
+  { id: 'G', name: 'Движение по Мосту', tag: 'Мост',      color: '#1d6b51' }
+];
+
+// Тип задачи: 'rep' повторяющаяся, 'once' разовая, 'back' backlog, 'cond' условная, '' не выбран
+// Каждая задача: { name, type, hint, date, time, rhythm, priority, subs:[{name,done}] }
+//   date    — 'YYYY-MM-DD' или '' (для разовых задач — день в плане)
+//   time    — 'HH:MM' или '' (по желанию)
+//   rhythm  — для повторяющихся: 'daily' (каждый день) или ''
+//   priority— 'crit' критично / 'imp' важно / 'norm' обычное (по умолчанию)
+// Проект: { sphere, num, title, short, goal, isKey, status, tasks:[] }
+function T(name, opts) {
+  opts = opts || {};
+  return { tid: genId(),
+           name: name, type: opts.type || '', hint: opts.hint || '',
+           date: opts.date || '', time: opts.time || '',
+           rhythm: opts.type === 'rep' ? 'daily' : (opts.rhythm || ''),
+           priority: opts.priority || 'norm',
+           subs: (opts.subs || []).map(function(s){ return { name: s, done: false }; }) };
+}
+
+const STARTER_PROJECTS = [
+  // ===== СФЕРА A =====
+  { sphere:'A', num:1, title:'Тело: вес и движение', short:'Тело', isKey:false, status:'active',
+    goal:'Сбросить ~9–10 кг здоровым, поддерживаемым образом; тело здоровое и с энергией.',
+    tasks:[
+      T('Утренняя зарядка'),
+      T('Принять витамины к завтраку'),
+      T('Принять витамины к ужину'),
+      T('Прогулка 30–60 минут'),
+      T('Велотренажёр ~10 минут'),
+      T('Танцы дома ~30 минут'),
+      T('Взвеситься и отметить вес'),
+      T('Разработать «образ питания» — постоянный формат еды, не диета для похудения'),
+      T('Определить целевой вес и реалистичный темп снижения'),
+      T('Решить, какие витамины и в какой дозировке принимать'),
+      T('Проверить эксперимент «витамины в 15:00 для энергии»', {hint:'триггер — итог 2–3 недель'}),
+      T('Пересмотреть образ питания, если вес встал', {hint:'триггер — 3+ недели без движения'})
+    ]},
+  { sphere:'A', num:2, title:'Уход за собой', short:'Уход за собой', isKey:false, status:'active',
+    goal:'Ввести в систему регулярный уход, который сейчас не делается.',
+    tasks:[
+      T('Сделать маникюр'),
+      T('Сделать педикюр'),
+      T('Зарядка для лица'),
+      T('Уход за кожей рук'),
+      T('Уход за лицом'),
+      T('Подобрать уход за лицом с учётом, что кожа потеет от кремов'),
+      T('Подобрать средство от припухлостей под глазами'),
+      T('Разобраться, как сдерживать грибок в бытовом режиме'),
+      T('Завести уход за лицом в рутину, когда продукт подобран', {hint:'триггер — продукт найден'})
+    ]},
+  { sphere:'A', num:3, title:'Здоровье', short:'Здоровье', isKey:false, status:'active',
+    goal:'Закрыть отложенные вопросы здоровья и держать состояние под наблюдением.',
+    tasks:[
+      T('Вечерняя чистка зубов + ирригатор'),
+      T('Записаться на консультацию по имплантам'),
+      T('Пройти лечение зубов / импланты', {subs:[
+        'Пройти консультацию, получить план лечения и смету',
+        'Решить вопрос с оплатой — сразу / рассрочка / по этапам',
+        'Записаться на первый этап лечения']}),
+      T('Записаться к врачу по желчному пузырю и обследоваться'),
+      T('Записаться к гинекологу'),
+      T('Завести задачи по наблюдению/диете для желчного, если назначат', {hint:'триггер — назначение врача'})
+    ]},
+  // ===== СФЕРА B =====
+  { sphere:'B', num:4, title:'Ведение дома', short:'Дом и быт', isKey:false, status:'active',
+    goal:'Поддерживать дом в порядке без накопления хаоса и без авралов — и без раздражения.',
+    tasks:[
+      T('Загрузить и запустить посудомойку вечером'),
+      T('Разобрать чистую посуду'),
+      T('Запустить стирку'),
+      T('Развесить и убрать бельё'),
+      T('Протереть пыль'),
+      T('Пропылесосить'),
+      T('Помыть ванную'),
+      T('Помыть кухню'),
+      T('Помыть полы'),
+      T('Сходить в магазин за продуктами'),
+      T('Приготовить еду на 3–4 дня (2 салата)', {subs:[
+        'Выбрать 2 салата из меню недели',
+        'Купить недостающие продукты',
+        'Помыть и нарезать овощи',
+        'Собрать оба салата, разложить по контейнерам']}),
+      T('Поддержать порядок в одежде мужа'),
+      T('Мелкий быт — текущие мелочи по дому'),
+      T('Подобрать средства для уборки без удушья, без аэрозолей'),
+      T('Проверить эксперимент «дело под музыку» — уборка и готовка под музыку', {hint:'триггер — итог 2–3 недель'})
+    ]},
+  { sphere:'B', num:5, title:'Меню на неделю', short:'Меню на неделю', isKey:false, status:'active',
+    goal:'Построить систему питания на неделю — чтобы не думать каждый раз, что купить и приготовить.',
+    tasks:[
+      T('Собрать список блюд, которые реально нравятся и не бесят в готовке'),
+      T('Составить шаблон меню на неделю'),
+      T('Свести из меню постоянный список покупок'),
+      T('Обновлять меню на неделю', {hint:'после настройки — повторяется'})
+    ]},
+  { sphere:'B', num:6, title:'Квартира', short:'Квартира', isKey:false, status:'backlog',
+    goal:'Привести съёмную квартиру в порядок по списку доделок (покраска, трещины, подклейка).',
+    tasks:[
+      T('Составить полный список доделок по квартире (покраска, трещины, подклейка)'),
+      T('Подготовить материалы и инструменты'),
+      T('Привести в порядок одну комнату', {subs:[
+        'Выбрать комнату и составить список доделок именно по ней',
+        'Освободить рабочие зоны — отодвинуть мебель, накрыть',
+        'Сделать ремонтные работы — подклейка, трещины, мелочи',
+        'Покрасить',
+        'Убрать комнату после работ, вернуть на места']})
+    ]},
+  { sphere:'B', num:7, title:'Семейные финансы', short:'Семейные финансы', isKey:false, status:'active',
+    goal:'Вести таблицу доходов и расходов регулярно, без откладывания.',
+    tasks:[
+      T('Внести расходы за неделю — чеки'),
+      T('Внести расходы за неделю — банковские выписки'),
+      T('Составить бюджет на следующую неделю'),
+      T('Свести итоги месяца', {hint:'возможно ежемесячно'})
+    ]},
+  // ===== СФЕРА C =====
+  { sphere:'C', num:8, title:'Digital Product Lab', short:'Digital Product Lab', isKey:true, status:'active',
+    goal:'Построить онлайн-доход через систему цифровых продуктов (настроил → поддерживаешь).',
+    tasks:[
+      T('Разработать детальный пошаговый план проекта'),
+      T('Решить вопрос с блогом — нужен или нет'),
+      T('Выбрать тему и формат первого micro-tool'),
+      T('Сделать первый micro-tool'),
+      T('Сделать остальные micro-tools (план — 8 штук)'),
+      T('Написать и опубликовать пост в LinkedIn'),
+      T('Выбрать 1–2 micro-tools для платной версии'),
+      T('Сделать платную версию выбранного продукта'),
+      T('Настроить «формулу» в систему — чтобы новый продукт делался по шаблону'),
+      T('Ежедневный минимум ~1 час на проект', {hint:'защита от откладывания — ежедневно'}),
+      T('Пройти внутренний дедлайн-чекпоинт', {hint:'искусственные дедлайны по плану'})
+    ]},
+  { sphere:'C', num:9, title:'Borough Council', short:'Borough Council', isKey:false, status:'active',
+    goal:'Этап 1 — разобраться в Uniform и Power BI, собрать карту точек ввода, выявить корневые проблемы.',
+    tasks:[
+      T('Разобраться в системе Uniform'),
+      T('Разобраться в Power BI'),
+      T('Собрать карту точек ввода данных'),
+      T('Выявить корневые проблемы в процессе'),
+      T('Подготовить выводы по этапу 1 — что дальше'),
+      T('Решить про контракт с Council, когда этап 1 закрыт', {hint:'триггер — итоги этапа 1'}),
+      T('Вести проект в формате контракта 3–6 месяцев', {hint:'триггер — контракт заключён'})
+    ]},
+  { sphere:'C', num:10, title:'Бухгалтерия компании мужа', short:'Бухгалтерия мужа', isKey:false, status:'active',
+    goal:'Сделать минимум корректно и снять с себя как можно больше работы.',
+    tasks:[
+      T('Определить необходимый минимум — чек-лист документов к сдаче'),
+      T('Перенести данные в Xero вручную', {subs:[
+        'Получить доступ к Xero, разобраться в интерфейсе',
+        'Понять, за какой период переносить данные',
+        'Свести исходные данные из старой программы в один список',
+        'Внести данные в Xero по частям — по периодам или разделам',
+        'Сверить итоги в Xero со старыми — баланс сошёлся']}),
+      T('Подготовить документы к сдаче отчётности'),
+      T('Сдать отчётность', {hint:'периодично, по срокам'}),
+      T('Найти, как упростить и минимизировать свою работу по бухгалтерии'),
+      T('Перенести данные вручную, если старая программа не открывается', {hint:'триггер — программа не запускается'})
+    ]},
+  // ===== СФЕРА D =====
+  { sphere:'D', num:11, title:"Olya's Angels — Вселенная ангелов", short:"Olya's Angels", isKey:false, status:'active',
+    goal:'Развивать вселенную ангелов как живую тему — выставки, аудитория, люди, которым это нужно.',
+    tasks:[
+      T('Собрать в одном месте всё, что уже есть — картины, принты, открытки, ткань для сумок', {subs:[
+        'Собрать физически в одно место все принты, открытки, ткани, фурнитуру, кожу',
+        'Сфотографировать каждую вещь / группу',
+        'Составить список: что это, сколько, в каком состоянии',
+        'Отметить, что готово к показу/продаже, а что — материал на будущее']}),
+      T('Дописать новую картину, когда приходит идея', {hint:'по мере появления идей'}),
+      T('Собрать наброски для Glass Cube — эскизы в разных ракурсах', {subs:[
+        'Определить, что именно за объект — что внутри куба, общая идея сцены',
+        'Сделать черновые наброски с разных ракурсов — спереди, сбоку, сверху',
+        'Выбрать сильные ракурсы, отрисовать их чище']}),
+      T('Определить масштаб и форму Glass Cube'),
+      T('Дошить коллекцию сумок из готовых напечатанных тканей', {subs:[
+        'Разложить напечатанные нарезанные ткани и подобрать к ним фурнитуру и кожу',
+        'Определить модель и порядок сборки одной сумки',
+        'Сшить пробную сумку, проверить и поправить процесс',
+        'Сшить остальные сумки из коллекции']}),
+      T('Решить, как и где показывать вселенную людям — выставки, площадки, аудитория'),
+      T('Найти и подать заявки на подходящие выставки / open calls', {subs:[
+        'Найти подходящие выставки и open calls, собрать список с дедлайнами',
+        'Подготовить материалы заявки — фото работ, описание, био',
+        'Подать заявку — шаблон, повторяется для каждой выставки']}),
+      T('Разобрать и описать старые арт-материалы как ассет на хранении')
+    ]},
+  { sphere:'D', num:12, title:'Музыка', short:'Музыка', isKey:false, status:'paused',
+    goal:'Гитара, пианино, пение. Сознательно не в приоритете до появления свободного времени.',
+    tasks:[]},
+  { sphere:'D', num:13, title:'«Холлоуз»', short:'«Холлоуз»', isKey:false, status:'paused',
+    goal:'Sci-fi / фэнтези книга. Возможно, когда-нибудь как 3-месячный проект.',
+    tasks:[]},
+  // ===== СФЕРА E =====
+  { sphere:'E', num:14, title:'Семья: муж', short:'Муж', isKey:false, status:'active',
+    goal:'Проводить время вместе, общаться, строить совместное будущее; совместные поездки.',
+    tasks:[
+      T('Общение за завтраком утром', {hint:'ежедневно, окно 8:00–10:00'}),
+      T('Придумать и провести что-то совместное — не бытовое'),
+      T('Обсудить и планировать совместные поездки'),
+      T('Обсуждать семейные финансы вместе', {hint:'возможно еженедельно'})
+    ]},
+  { sphere:'E', num:15, title:'Семья: мама', short:'Мама', isKey:false, status:'active',
+    goal:'Поддерживать общение и двигаться к тому, чтобы видеться.',
+    tasks:[
+      T('Созвон / связь с мамой', {hint:'регулярно'}),
+      T('Решить техническую преграду со связью — WhatsApp работает плохо', {subs:[
+        'Понять, в чём именно проблема — связь, приложение, блокировки',
+        'Собрать варианты — другие мессенджеры, VPN, звонки иначе',
+        'Проверить варианты вместе с мамой, что реально работает у вас обеих',
+        'Закрепить рабочий способ связи']}),
+      T('Проработать варианты «видеться» — съездить / приезд на несколько месяцев / жить рядом')
+    ]},
+  { sphere:'E', num:16, title:'Семья: сестра и племянница', short:'Сестра и племянница', isKey:false, status:'active',
+    goal:'Поддерживать контакт с сестрой и принимать рисунки племянницы.',
+    tasks:[
+      T('Связь с сестрой', {hint:'регулярно'}),
+      T('Принять и сохранить рисунки племянницы, когда присылает', {hint:'по мере поступления'})
+    ]},
+  { sphere:'E', num:17, title:'Друзья', short:'Друзья', isKey:false, status:'active',
+    goal:'Поддерживать связь с подругами (Пуэрто-Рико, Испания, Колорадо) и найти способ видеться чаще.',
+    tasks:[
+      T('Связь с подругой в Пуэрто-Рико', {hint:'периодически'}),
+      T('Связь с подругой в Испании', {hint:'периодически'}),
+      T('Связь с подругой в Колорадо', {hint:'периодически'}),
+      T('Найти способ видеться чаще — продумать варианты')
+    ]},
+  { sphere:'E', num:18, title:'Новые контакты (митапы)', short:'Митапы', isKey:false, status:'active',
+    goal:'Выйти «в свет» после долгих лет за экраном — митапы в Лондоне, живое общение.',
+    tasks:[
+      T('Найти подходящие митапы в Лондоне — бизнес, ИИ, продакт-дизайн'),
+      T('Выбрать конкретный митап и записаться'),
+      T('Сходить на митап', {hint:'повторяется по мере выбора'})
+    ]},
+  // ===== СФЕРА F =====
+  { sphere:'F', num:19, title:'Цифровая уборка', short:'Цифровая уборка', isKey:false, status:'backlog',
+    goal:'Навести порядок в цифровой жизни — файлы, имейлы и аккаунты, книжка паролей.',
+    tasks:[
+      T('Разобрать файлы на компьютере по категориям', {subs:[
+        'Придумать простую структуру папок — основные категории',
+        'Разобрать рабочий стол и папку «Загрузки»',
+        'Разобрать документы и проекты по папкам',
+        'Разобрать фото и картинки',
+        'Удалить дубли и явный мусор']}),
+      T('Разобрать ~20 имейлов и аккаунтов — удалить ненужное, оставить нужное', {subs:[
+        'Составить список всех имейлов и аккаунтов, что вообще есть',
+        'Отметить по каждому: нужен / не нужен / под вопросом',
+        'Закрыть или удалить ненужные аккаунты',
+        'Отписаться от ненужных рассылок в оставшихся ящиках',
+        'Навести порядок в нужных ящиках — папки, разбор накопленного']}),
+      T('Перенести логины и пароли в новую книжку'),
+      T('Отписаться от ненужных рассылок')
+    ]},
+  { sphere:'F', num:20, title:'Языки', short:'Языки', isKey:false, status:'paused',
+    goal:'Французский и испанский, своя система обучения. Пересмотр в августе.',
+    tasks:[]},
+  // ===== СФЕРА G =====
+  { sphere:'G', num:21, title:'Курс по самосовершенствованию', short:'Курс (Мост)', isKey:false, status:'active',
+    goal:'Продвигаться по Мосту через регулярное прохождение заочного курса.',
+    tasks:[
+      T('Прочитать материал урока', {hint:'~по часу, несколько раз в неделю'}),
+      T('Пройти урок'),
+      T('Разработать систему, как проходить курс без перебарывания себя')
+    ]},
+  { sphere:'G', num:22, title:'Поездка в Тампу (Флаг)', short:'Поездка в Тампу', isKey:true, status:'active',
+    goal:'Поехать в Тампу (~ноябрь 2026), пройти программу на Флаге, уладить давнюю личную проблему.',
+    tasks:[
+      T('Посчитать полную стоимость поездки — билеты, гостиница, питание, ~$10 000 на программу'),
+      T('Спланировать 2–3 недели под поездку'),
+      T('Забронировать билеты и гостиницу', {hint:'триггер — ближе к ноябрю'})
+    ]},
+  { sphere:'G', num:23, title:'Е-метр', short:'Е-метр', isKey:false, status:'active',
+    goal:'Выяснить последствия просрочки и реальный срок — затем решить, продлевать ли сейчас.',
+    tasks:[
+      T('Выяснить последствия просрочки и реальный срок'),
+      T('Решить, продлевать ли регистрацию сейчас', {hint:'триггер — после выяснения'})
+    ]}
+];
+
+</script>
+<script>
+// ===== СОСТОЯНИЕ =====
+const STORAGE_KEY = 'olyaSystemDashboard_v1';
+let state = null;
+
+function defaultState() {
+  return {
+    appKicker: 'Моя система',
+    appTitle: 'Рабочий дашборд',
+    spheres: JSON.parse(JSON.stringify(STARTER_SPHERES)),
+    projects: JSON.parse(JSON.stringify(STARTER_PROJECTS)),
+    log: [],                 // записи учёта времени
+    dayLog: [],              // выполненные дела дня: {date, projectNum, taskName, ...}
+    dayPlan: {},             // правки плана по датам: { 'YYYY-MM-DD': {order:[], removed:[], moved:{}} }
+    weekOrder: [],           // свой порядок плиток в табе «Неделя» (номера проектов)
+    timer: { running: false, startedAt: null, accumMs: 0 },
+    lastTab: 'week',
+    sphereFilter: 'all'
+  };
+}
+
+// приводим задачу к актуальной схеме (миграция старых сохранений)
+function normalizeTask(t) {
+  if (typeof t.date !== 'string') t.date = '';
+  if (typeof t.time !== 'string') t.time = '';
+  if (typeof t.rhythm !== 'string') t.rhythm = (t.type === 'rep' ? 'daily' : '');
+  if (['crit','imp','norm'].indexOf(t.priority) === -1) t.priority = 'norm';
+  if (!Array.isArray(t.subs)) t.subs = [];
+  if (!t.tid) t.tid = genId();
+  delete t.done;   // выполнение задачи больше не живёт на странице проекта
+  return t;
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      state = JSON.parse(raw);
+      if (!state.spheres)  state.spheres  = JSON.parse(JSON.stringify(STARTER_SPHERES));
+      if (!state.projects) state.projects = JSON.parse(JSON.stringify(STARTER_PROJECTS));
+      if (!state.log)      state.log = [];
+      if (!state.dayLog)   state.dayLog = [];
+      if (!state.dayPlan)  state.dayPlan = {};
+      if (!Array.isArray(state.weekOrder)) state.weekOrder = [];
+      if (typeof state.appKicker !== 'string') state.appKicker = 'Моя система';
+      if (typeof state.appTitle !== 'string') state.appTitle = 'Рабочий дашборд';
+      if (!state.timer)    state.timer = { running: false, startedAt: null, accumMs: 0 };
+      if (!state.sphereFilter) state.sphereFilter = 'all';
+      // миграция: дотягиваем задачи до новой схемы
+      state.projects.forEach(function (p) {
+        if (Array.isArray(p.tasks)) p.tasks.forEach(normalizeTask);
+      });
+    } else {
+      state = defaultState();
+    }
+  } catch (e) {
+    console.error('Ошибка загрузки:', e);
+    state = defaultState();
+  }
+}
+
+let saveTimer = null;
+function saveState(immediate) {
+  setSaveStatus('Сохранение…', true);
+  if (saveTimer) clearTimeout(saveTimer);
+  const doSave = function () {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      setSaveStatus('Сохранено', false);
+    } catch (e) {
+      setSaveStatus('Ошибка сохранения', true);
+      console.error(e);
+    }
+  };
+  if (immediate) doSave();
+  else saveTimer = setTimeout(doSave, 400);
+}
+
+function setSaveStatus(text, unsaved) {
+  const el = document.getElementById('save-status');
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle('unsaved', !!unsaved);
+}
+
+// ===== ТАБЫ =====
+function showTab(name) {
+  document.querySelectorAll('.tab-page').forEach(function (p) { p.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+  const page = document.getElementById('page-' + name);
+  const tab  = document.querySelector('.tab[data-tab="' + name + '"]');
+  if (page) page.classList.add('active');
+  if (tab)  tab.classList.add('active');
+  if (name === 'week') renderWeek();
+  if (name === 'day') renderDay();
+  if (name === 'calendar') renderCalendar();
+  if (name === 'time') renderTimeLog();
+  state.lastTab = name;
+  saveState();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ===== ВСПОМОГАТЕЛЬНОЕ =====
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function sphereById(id) {
+  return state.spheres.find(function (s) { return s.id === id; });
+}
+function plural(n, one, few, many) {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
+  return many;
+}
+function projectStats(p) {
+  let typed = 0, subs = 0, subsDone = 0;
+  p.tasks.forEach(function (t) {
+    if (t.type) typed++;
+    if (t.subs) { subs += t.subs.length; subsDone += t.subs.filter(function (s){return s.done;}).length; }
+  });
+  return { total: p.tasks.length, typed: typed, subs: subs, subsDone: subsDone };
+}
+
+// ===== ТАЙМЕР (сквозной) =====
+function timerLiveMs() {
+  let ms = state.timer.accumMs;
+  if (state.timer.running && state.timer.startedAt) {
+    ms += Date.now() - state.timer.startedAt;
+  }
+  return ms;
+}
+function fmtClock(ms) {
+  const total = Math.floor(ms / 1000);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  return h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+function timerStart() {
+  if (state.timer.running) return;
+  state.timer.running = true;
+  state.timer.startedAt = Date.now();
+  saveState();
+  renderTimer();
+  startTicker();
+}
+function timerPause() {
+  if (!state.timer.running) return;
+  state.timer.accumMs += Date.now() - state.timer.startedAt;
+  state.timer.running = false;
+  state.timer.startedAt = null;
+  saveState();
+  renderTimer();
+}
+function timerStop() {
+  // фиксируем накопленное и открываем окно записи
+  if (state.timer.running) {
+    state.timer.accumMs += Date.now() - state.timer.startedAt;
+    state.timer.running = false;
+    state.timer.startedAt = null;
+  }
+  const ms = state.timer.accumMs;
+  saveState();
+  renderTimer();
+  if (ms < 1000) { resetTimer(); return; }   // ничего не насчитано
+  openStopEntry(ms);
+}
+function resetTimer() {
+  state.timer = { running: false, startedAt: null, accumMs: 0 };
+  saveState();
+  renderTimer();
+}
+// ===== ШАПКА (редактируемые названия) =====
+function renderHeader() {
+  const k = document.getElementById('app-kicker');
+  const t = document.getElementById('app-title');
+  if (k) k.textContent = state.appKicker || 'Моя система';
+  if (t) t.textContent = state.appTitle || 'Рабочий дашборд';
+}
+function editHeader() {
+  openModal('Название дашборда', [
+    { key: 'kicker', label: 'Надстрочник (мелкий текст сверху)', value: state.appKicker || '' },
+    { key: 'title',  label: 'Заголовок', value: state.appTitle || '' }
+  ], function (vals) {
+    state.appKicker = vals.kicker.trim() || 'Моя система';
+    state.appTitle  = vals.title.trim()  || 'Рабочий дашборд';
+    saveState(true);
+    renderHeader();
+  });
+}
+
+function renderTimer() {
+  const clock = document.getElementById('timer-clock');
+  const stateEl = document.getElementById('timer-state');
+  const bStart = document.getElementById('tb-start');
+  const bPause = document.getElementById('tb-pause');
+  const bStop  = document.getElementById('tb-stop');
+  if (!clock) return;
+  clock.textContent = fmtClock(timerLiveMs());
+  clock.classList.toggle('running', state.timer.running);
+  clock.classList.toggle('paused', !state.timer.running && state.timer.accumMs > 0);
+  if (state.timer.running) {
+    stateEl.textContent = 'идёт';
+    bStart.disabled = true; bPause.disabled = false; bStop.disabled = false;
+  } else if (state.timer.accumMs > 0) {
+    stateEl.textContent = 'на паузе';
+    bStart.disabled = false; bPause.disabled = true; bStop.disabled = false;
+  } else {
+    stateEl.textContent = 'остановлен';
+    bStart.disabled = false; bPause.disabled = true; bStop.disabled = true;
+  }
+}
+let ticker = null;
+function startTicker() {
+  if (ticker) return;
+  ticker = setInterval(function () {
+    if (!state.timer.running) { clearInterval(ticker); ticker = null; return; }
+    const clock = document.getElementById('timer-clock');
+    if (clock) clock.textContent = fmtClock(timerLiveMs());
+  }, 1000);
+}
+
+// ===== ОКНО ЗАПИСИ ВРЕМЕНИ =====
+// Запись лога: { id, date, minutes, projectNum, taskTid, taskName, note, createdAt }
+
+// окно после остановки таймера (время уже насчитано)
+function openStopEntry(ms) {
+  const minutes = Math.max(1, Math.round(ms / 60000));
+  openTimeEntryModal({
+    mode: 'stop',
+    minutes: minutes,
+    fixedDuration: true,           // длительность с таймера — не редактируется
+    date: todayISO(),
+    onSaved: function () { resetTimer(); },
+    onCancel: function () { resetTimer(); }
+  });
+}
+
+// окно ручного ввода (с нуля)
+function openManualEntry() {
+  openTimeEntryModal({
+    mode: 'manual',
+    minutes: 30,
+    fixedDuration: false,
+    date: todayISO()
+  });
+}
+
+// окно редактирования существующей записи
+function openTimeEntryEdit(id) {
+  const rec = state.log.find(function (r) { return r.id === id; });
+  if (!rec) return;
+  openTimeEntryModal({
+    mode: 'edit',
+    editId: id,
+    minutes: rec.minutes,
+    fixedDuration: false,
+    date: rec.date,
+    projectNum: rec.projectNum,
+    taskTid: rec.taskTid,
+    note: rec.note
+  });
+}
+
+// универсальное окно записи времени
+function openTimeEntryModal(opts) {
+  opts = opts || {};
+  const minutes = opts.minutes || 30;
+  const h = Math.floor(minutes / 60), m = minutes % 60;
+
+  // список проектов (активные + backlog, без paused), сгруппированы по сферам
+  let projOpts = '<option value="">— выбери проект —</option>';
+  state.spheres.forEach(function (s) {
+    const inSphere = state.projects.filter(function (p) {
+      return p.sphere === s.id && p.status !== 'paused';
+    });
+    if (!inSphere.length) return;
+    projOpts += '<optgroup label="' + escapeHtml(s.id + ' · ' + s.name) + '">';
+    inSphere.forEach(function (p) {
+      projOpts += '<option value="' + p.num + '"' +
+        (opts.projectNum === p.num ? ' selected' : '') + '>' +
+        escapeHtml(p.short) + '</option>';
+    });
+    projOpts += '</optgroup>';
+  });
+
+  let durHtml;
+  if (opts.fixedDuration) {
+    durHtml = '<div class="te-dur-display">Засечено таймером: <b>' +
+      (h > 0 ? h + ' ч ' : '') + m + ' мин</b></div>';
+  } else {
+    durHtml = '<div class="te-modal-row">' +
+      '<div class="te-modal-field"><label>Часы</label>' +
+        '<input type="number" id="te-hours" min="0" max="24" value="' + h + '"></div>' +
+      '<div class="te-modal-field"><label>Минуты</label>' +
+        '<input type="number" id="te-mins" min="0" max="59" value="' + m + '"></div>' +
+      '</div>';
+  }
+
+  const titleMap = { stop: 'Запись времени', manual: 'Ввод времени вручную', edit: 'Правка записи' };
+  const bodyHtml =
+    durHtml +
+    '<div class="te-modal-field"><label>Дата</label>' +
+      '<input type="date" id="te-date" value="' + escapeHtml(opts.date || todayISO()) + '"></div>' +
+    '<div class="te-modal-field"><label>Проект</label>' +
+      '<select id="te-project" onchange="teRefreshTasks()">' + projOpts + '</select></div>' +
+    '<div class="te-modal-field"><label>Задача (по желанию)</label>' +
+      '<select id="te-task"><option value="">— весь проект —</option></select></div>' +
+    '<div class="te-modal-field"><label>Описание (по желанию)</label>' +
+      '<textarea id="te-note" placeholder="Над чем работала">' +
+      escapeHtml(opts.note || '') + '</textarea></div>';
+
+  openCustomModal(titleMap[opts.mode] || 'Запись времени', bodyHtml, [
+    { label: 'Отмена', kind: 'ghost', action: function () {
+        closeModal();
+        if (opts.onCancel) opts.onCancel();
+      } },
+    { label: opts.mode === 'edit' ? 'Сохранить' : 'Записать', kind: 'primary',
+      action: function () { saveTimeEntry(opts); } }
+  ]);
+
+  // заполнить задачи выбранного проекта
+  teRefreshTasks(opts.taskTid);
+}
+
+// обновляет список задач при выборе проекта
+function teRefreshTasks(preselectTid) {
+  const projSel = document.getElementById('te-project');
+  const taskSel = document.getElementById('te-task');
+  if (!projSel || !taskSel) return;
+  const pnum = parseInt(projSel.value, 10);
+  let opts = '<option value="">— весь проект —</option>';
+  const p = state.projects.find(function (x) { return x.num === pnum; });
+  if (p) {
+    (p.tasks || []).forEach(function (t) {
+      normalizeTask(t);
+      opts += '<option value="' + t.tid + '"' +
+        (preselectTid === t.tid ? ' selected' : '') + '>' +
+        escapeHtml(t.name) + '</option>';
+    });
+  }
+  taskSel.innerHTML = opts;
+}
+
+function saveTimeEntry(opts) {
+  // длительность
+  let minutes;
+  if (opts.fixedDuration) {
+    minutes = opts.minutes;
+  } else {
+    const hEl = document.getElementById('te-hours');
+    const mEl = document.getElementById('te-mins');
+    const hh = Math.max(0, parseInt(hEl ? hEl.value : '0', 10) || 0);
+    const mm = Math.max(0, parseInt(mEl ? mEl.value : '0', 10) || 0);
+    minutes = hh * 60 + mm;
+  }
+  if (!minutes || minutes < 1) {
+    showErrorBar('Укажи длительность больше нуля.');
+    return;
+  }
+  const dateEl = document.getElementById('te-date');
+  const projEl = document.getElementById('te-project');
+  const taskEl = document.getElementById('te-task');
+  const noteEl = document.getElementById('te-note');
+
+  const date = dateEl ? dateEl.value : todayISO();
+  const projectNum = projEl && projEl.value ? parseInt(projEl.value, 10) : null;
+  if (!projectNum) {
+    showErrorBar('Выбери проект, к которому отнести время.');
+    return;
+  }
+  const taskTid = taskEl && taskEl.value ? taskEl.value : '';
+  let taskName = '';
+  if (taskTid) {
+    const found = findTaskByTid(taskTid);
+    if (found) taskName = found.task.name;
+  }
+  const note = noteEl ? noteEl.value.trim() : '';
+
+  if (opts.mode === 'edit' && opts.editId) {
+    const rec = state.log.find(function (r) { return r.id === opts.editId; });
+    if (rec) {
+      rec.date = date; rec.minutes = minutes;
+      rec.projectNum = projectNum; rec.taskTid = taskTid;
+      rec.taskName = taskName; rec.note = note;
+    }
+  } else {
+    state.log.push({
+      id: genId(),
+      date: date,
+      minutes: minutes,
+      projectNum: projectNum,
+      taskTid: taskTid,
+      taskName: taskName,
+      note: note,
+      createdAt: Date.now()
+    });
+  }
+
+  closeModal();
+  saveState(true);
+  if (opts.onSaved) opts.onSaved();   // для stop — сброс таймера
+  renderTimeLog();
+}
+
+// ===== ОБЗОР =====
+let editMode = false;
+
+function toggleEditMode() {
+  editMode = !editMode;
+  const btn = document.getElementById('ov-mode-btn');
+  const hint = document.getElementById('ov-hint');
+  btn.classList.toggle('on', editMode);
+  btn.textContent = editMode ? '✓ Готово' : '✎ Редактировать структуру';
+  hint.textContent = editMode
+    ? 'Переименовать, добавить, удалить, двигать стрелками ▲▼'
+    : '';
+  renderOverview();
+}
+
+function renderSphereFilter() {
+  const box = document.getElementById('sphere-filter');
+  let html = '<button class="sf-btn ' + (state.sphereFilter === 'all' ? 'active' : '') +
+             '" onclick="setSphereFilter(\'all\')">Все сферы</button>';
+  state.spheres.forEach(function (s) {
+    html += '<button class="sf-btn ' + (state.sphereFilter === s.id ? 'active' : '') +
+            '" onclick="setSphereFilter(\'' + s.id + '\')">' +
+            '<span class="sf-dot" style="background:' + s.color + '"></span>' +
+            escapeHtml(s.id + ' · ' + s.name) + '</button>';
+  });
+  box.innerHTML = html;
+}
+function setSphereFilter(id) {
+  state.sphereFilter = id;
+  saveState();
+  renderSphereFilter();
+  renderOverview();
+}
+
+function renderOverview() {
+  const body = document.getElementById('overview-body');
+  let html = '';
+  state.spheres.forEach(function (s, si) {
+    if (state.sphereFilter !== 'all' && state.sphereFilter !== s.id) return;
+    const projs = state.projects.filter(function (p) { return p.sphere === s.id; });
+
+    html += '<div class="sphere-block" data-sphere="' + s.id + '">';
+    html += '<div class="sphere-head">';
+    if (editMode) {
+      const isFirst = si === 0;
+      const isLast  = si === state.spheres.length - 1;
+      html += '<span class="move-arrows">' +
+        '<button class="move-btn" title="Выше" ' + (isFirst ? 'disabled' : '') +
+          ' onclick="moveSphere(\'' + s.id + '\',-1)">▲</button>' +
+        '<button class="move-btn" title="Ниже" ' + (isLast ? 'disabled' : '') +
+          ' onclick="moveSphere(\'' + s.id + '\',1)">▼</button>' +
+        '</span>';
+    }
+    html += '<div class="sphere-mark" style="background:' + s.color + '">' + s.id + '</div>' +
+      '<h2>' + escapeHtml(s.name) + '</h2>';
+    if (editMode) {
+      html += '<div class="sphere-edit-actions">' +
+        '<button class="edit-icon-btn" title="Переименовать сферу" ' +
+          'onclick="editSphere(\'' + s.id + '\')">✎</button>' +
+        '<button class="edit-icon-btn del" title="Удалить сферу" ' +
+          'onclick="deleteSphere(\'' + s.id + '\')">✕</button>' +
+        '</div>';
+    } else {
+      html += '<span class="s-count">' + projs.length + ' ' +
+        plural(projs.length, 'проект', 'проекта', 'проектов') + '</span>';
+    }
+    html += '</div>';
+
+    if (projs.length) {
+      html += '<div class="tiles">';
+      projs.forEach(function (p, pi) { html += renderTile(p, s, pi, projs.length); });
+      html += '</div>';
+    } else if (!editMode) {
+      html += '<div class="ov-hint" style="padding:6px 2px;">В сфере пока нет проектов.</div>';
+    }
+
+    if (editMode) {
+      html += '<div class="add-row">' +
+        '<input type="text" id="add-proj-' + s.id + '" placeholder="Название нового проекта" ' +
+        'onkeydown="if(event.key===\'Enter\')addProject(\'' + s.id + '\')">' +
+        '<button onclick="addProject(\'' + s.id + '\')">+ Проект</button>' +
+        '</div>';
+    }
+    html += '</div>';
+  });
+
+  if (!html) html = '<div class="stub">Нет сфер для показа.</div>';
+
+  if (editMode && state.sphereFilter === 'all') {
+    html += '<div class="add-sphere-row">' +
+      '<div class="ar-title">Добавить новую сферу</div>' +
+      '<div class="add-row">' +
+      '<input type="text" id="add-sphere-name" placeholder="Название сферы" ' +
+      'onkeydown="if(event.key===\'Enter\')addSphere()">' +
+      '<button onclick="addSphere()">+ Сфера</button>' +
+      '</div></div>';
+  }
+  body.innerHTML = html;
+}
+
+function renderTile(p, s, pi, pcount) {
+  const st = projectStats(p);
+  const dimmed = (p.status === 'paused') ? ' dimmed' : '';
+  let badge = '';
+  if (p.status === 'paused')  badge = '<span class="tile-badge bg-paused">на паузе</span>';
+  if (p.status === 'backlog') badge = '<span class="tile-badge bg-backlog">backlog</span>';
+  let stat;
+  if (p.status === 'paused') {
+    stat = 'свёрнут, задач нет';
+  } else {
+    stat = '<b>' + st.total + '</b> ' + plural(st.total, 'задача','задачи','задач');
+    if (st.subs > 0) stat += ' · <b>' + st.subs + '</b> ' + plural(st.subs,'подзадача','подзадачи','подзадач');
+  }
+  const editing = editMode ? ' editing' : '';
+  const clickAttr = editMode ? '' : ' onclick="openProject(' + p.num + ')"';
+
+  let h = '<div class="tile' + dimmed + editing + '" data-pnum="' + p.num + '"' + clickAttr + '>';
+  h += '<div class="tile-stripe" style="background:' + s.color + '"></div>';
+  h += '<div class="tile-body">';
+  h += '<div class="tile-name">';
+  h += escapeHtml(p.short) + (p.isKey ? '<span class="tile-key">ключ</span>' : '') + '</div>';
+  h += '<div class="tile-sub">сфера ' + s.id + ' · ' + escapeHtml(s.tag) + '</div>';
+  h += '<div class="tile-stat">' + stat + ' ' + badge + '</div>';
+  h += '</div>';
+  if (editMode) {
+    const isFirst = pi === 0;
+    const isLast  = pi === pcount - 1;
+    h += '<div class="tile-edit-bar">' +
+      '<button class="edit-icon-btn" title="Выше" ' + (isFirst ? 'disabled' : '') +
+        ' onclick="moveProject(' + p.num + ',-1)">▲</button>' +
+      '<button class="edit-icon-btn" title="Ниже" ' + (isLast ? 'disabled' : '') +
+        ' onclick="moveProject(' + p.num + ',1)">▼</button>' +
+      '<span style="flex:1"></span>' +
+      '<button class="edit-icon-btn" title="Редактировать проект" ' +
+        'onclick="editProject(' + p.num + ')">✎</button>' +
+      '<button class="edit-icon-btn del" title="Удалить проект" ' +
+        'onclick="deleteProject(' + p.num + ')">✕</button>' +
+      '</div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+// ----- редактирование сфер -----
+function editSphere(id) {
+  const s = sphereById(id);
+  if (!s) return;
+  openModal('Сфера: ' + escapeHtml(s.name), [
+    { key: 'name', label: 'Название сферы', value: s.name },
+    { key: 'tag',  label: 'Короткая подпись (для плиток)', value: s.tag },
+    { key: 'color', label: 'Цвет (HEX, напр. #1d6b51)', value: s.color }
+  ], function (vals) {
+    s.name = vals.name.trim() || s.name;
+    s.tag = vals.tag.trim() || s.tag;
+    if (/^#[0-9a-fA-F]{6}$/.test(vals.color.trim())) s.color = vals.color.trim();
+    saveState(true);
+    renderAll();
+  });
+}
+function addSphere() {
+  const inp = document.getElementById('add-sphere-name');
+  const name = inp.value.trim();
+  if (!name) { inp.focus(); return; }
+  // новый id — следующая свободная буква
+  const used = state.spheres.map(function (s) { return s.id; });
+  let id = '';
+  for (let c = 65; c <= 90; c++) {
+    if (used.indexOf(String.fromCharCode(c)) === -1) { id = String.fromCharCode(c); break; }
+  }
+  if (!id) id = 'S' + state.spheres.length;
+  state.spheres.push({ id: id, name: name, tag: name.toLowerCase().slice(0, 12), color: '#9a7b30' });
+  inp.value = '';
+  saveState(true);
+  renderAll();
+}
+function deleteSphere(id) {
+  const projs = state.projects.filter(function (p) { return p.sphere === id; });
+  let msg = 'Удалить сферу?';
+  if (projs.length) msg = 'В сфере ' + projs.length + ' ' +
+    plural(projs.length,'проект','проекта','проектов') + '. Удалить сферу вместе со всеми проектами?';
+  confirmModal(msg, function () {
+    state.spheres = state.spheres.filter(function (s) { return s.id !== id; });
+    state.projects = state.projects.filter(function (p) { return p.sphere !== id; });
+    if (state.sphereFilter === id) state.sphereFilter = 'all';
+    saveState(true);
+    renderAll();
+  });
+}
+
+// ----- редактирование проектов -----
+function nextProjectNum() {
+  let max = 0;
+  state.projects.forEach(function (p) { if (p.num > max) max = p.num; });
+  return max + 1;
+}
+function addProject(sphereId) {
+  const inp = document.getElementById('add-proj-' + sphereId);
+  const title = inp.value.trim();
+  if (!title) { inp.focus(); return; }
+  state.projects.push({
+    sphere: sphereId, num: nextProjectNum(),
+    title: title, short: title.slice(0, 22),
+    goal: '', isKey: false, status: 'active', tasks: []
+  });
+  inp.value = '';
+  saveState(true);
+  renderOverview();
+}
+function editProject(num) {
+  const p = state.projects.find(function (x) { return x.num === num; });
+  if (!p) return;
+  openModal('Проект: ' + escapeHtml(p.short), [
+    { key: 'title', label: 'Полное название', value: p.title },
+    { key: 'short', label: 'Короткое имя (для плитки)', value: p.short },
+    { key: 'goal',  label: 'Цель проекта', value: p.goal, area: true },
+    { key: 'status', label: 'Статус: active / backlog / paused', value: p.status },
+    { key: 'isKey', label: 'Проект-ключ? (да / нет)', value: p.isKey ? 'да' : 'нет' }
+  ], function (vals) {
+    p.title = vals.title.trim() || p.title;
+    p.short = vals.short.trim() || p.short;
+    p.goal = vals.goal.trim();
+    const st = vals.status.trim().toLowerCase();
+    if (['active','backlog','paused'].indexOf(st) !== -1) p.status = st;
+    p.isKey = /^(да|yes|y|1)$/i.test(vals.isKey.trim());
+    saveState(true);
+    renderOverview();
+  });
+}
+function deleteProject(num) {
+  const p = state.projects.find(function (x) { return x.num === num; });
+  if (!p) return;
+  confirmModal('Удалить проект «' + p.short + '» со всеми его задачами?', function () {
+    state.projects = state.projects.filter(function (x) { return x.num !== num; });
+    saveState(true);
+    renderOverview();
+  });
+}
+
+// ----- перемещение проектов стрелками -----
+// направление dir: -1 вверх, +1 вниз. Двигаем только внутри своей сферы.
+function moveProject(num, dir) {
+  const p = state.projects.find(function (x){ return x.num === num; });
+  if (!p) return;
+  // индексы проектов этой же сферы в общем массиве
+  const sameSphere = [];
+  state.projects.forEach(function (x, i) {
+    if (x.sphere === p.sphere) sameSphere.push(i);
+  });
+  const posInSphere = sameSphere.findIndex(function (i) {
+    return state.projects[i].num === num;
+  });
+  const swapWith = posInSphere + dir;
+  if (swapWith < 0 || swapWith >= sameSphere.length) return;
+  const idxA = sameSphere[posInSphere];
+  const idxB = sameSphere[swapWith];
+  const tmp = state.projects[idxA];
+  state.projects[idxA] = state.projects[idxB];
+  state.projects[idxB] = tmp;
+  saveState(true);
+  renderOverview();
+}
+
+// ----- перемещение сфер стрелками -----
+function moveSphere(id, dir) {
+  const arr = state.spheres;
+  const idx = arr.findIndex(function (s){ return s.id === id; });
+  if (idx < 0) return;
+  const swap = idx + dir;
+  if (swap < 0 || swap >= arr.length) return;
+  const tmp = arr[idx];
+  arr[idx] = arr[swap];
+  arr[swap] = tmp;
+  saveState(true);
+  renderAll();
+}
+
+// ----- модалка-редактор -----
+let modalCallback = null;
+function openModal(title, fields, onSave) {
+  const box = document.getElementById('modal-box');
+  let html = '<h3>' + title + '</h3>';
+  fields.forEach(function (f) {
+    html += '<label>' + escapeHtml(f.label) + '</label>';
+    if (f.area) {
+      html += '<textarea id="modal-f-' + f.key + '">' + escapeHtml(f.value || '') + '</textarea>';
+    } else {
+      html += '<input type="text" id="modal-f-' + f.key + '" value="' + escapeHtml(f.value || '') + '">';
+    }
+  });
+  html += '<div class="modal-actions">' +
+    '<button class="btn-cancel" onclick="closeModal()">Отмена</button>' +
+    '<button class="btn-save" onclick="saveModal()">Сохранить</button>' +
+    '</div>';
+  box.innerHTML = html;
+  box.dataset.fields = JSON.stringify(fields.map(function (f){ return f.key; }));
+  modalCallback = onSave;
+  document.getElementById('modal-bg').classList.add('open');
+}
+function saveModal() {
+  const box = document.getElementById('modal-box');
+  const keys = JSON.parse(box.dataset.fields || '[]');
+  const vals = {};
+  keys.forEach(function (k) {
+    const el = document.getElementById('modal-f-' + k);
+    vals[k] = el ? el.value : '';
+  });
+  const cb = modalCallback;   // сохраняем до закрытия — closeModal обнуляет modalCallback
+  closeModal();
+  if (cb) cb(vals);
+}
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('open');
+  modalCallback = null;
+}
+
+// собственное окно подтверждения (не зависит от настроек браузера)
+let confirmCallback = null;
+function confirmModal(message, onYes, opts) {
+  opts = opts || {};
+  const okLabel = opts.okLabel || 'Удалить';
+  const okColor = opts.okColor || '#a33636';
+  const title = opts.title || 'Подтверждение';
+  const box = document.getElementById('modal-box');
+  // поддержка переносов строк в сообщении
+  const msgHtml = escapeHtml(message).replace(/\n/g, '<br>');
+  box.innerHTML = '<h3>' + escapeHtml(title) + '</h3>' +
+    '<p style="font-size:13.5px;color:var(--text-dim);line-height:1.55;">' + msgHtml + '</p>' +
+    '<div class="modal-actions">' +
+    '<button class="btn-cancel" onclick="closeConfirm()">Отмена</button>' +
+    '<button class="btn-save" style="background:' + okColor + ';" onclick="acceptConfirm()">' +
+      escapeHtml(okLabel) + '</button>' +
+    '</div>';
+  confirmCallback = onYes;
+  document.getElementById('modal-bg').classList.add('open');
+}
+function acceptConfirm() {
+  const cb = confirmCallback;
+  closeConfirm();
+  if (cb) cb();
+}
+function closeConfirm() {
+  document.getElementById('modal-bg').classList.remove('open');
+  confirmCallback = null;
+}
+
+// модалка с произвольным HTML и набором кнопок
+// buttons: [{ label, kind:'primary'|'ghost', action: fn }]
+let customModalActions = {};
+function openCustomModal(title, bodyHtml, buttons) {
+  const box = document.getElementById('modal-box');
+  customModalActions = {};
+  let btnHtml = '';
+  (buttons || []).forEach(function (b, i) {
+    customModalActions['b' + i] = b.action;
+    const cls = b.kind === 'primary' ? 'btn-save' : 'btn-cancel';
+    btnHtml += '<button class="' + cls + '" onclick="runCustomModalAction(' + i + ')">' +
+      escapeHtml(b.label) + '</button>';
+  });
+  box.innerHTML = '<h3>' + escapeHtml(title) + '</h3>' +
+    bodyHtml +
+    '<div class="modal-actions">' + btnHtml + '</div>';
+  document.getElementById('modal-bg').classList.add('open');
+}
+function runCustomModalAction(i) {
+  const fn = customModalActions['b' + i];
+  if (fn) fn();
+}
+
+
+// ===== СТРАНИЦА ПРОЕКТА =====
+let currentProjectNum = null;   // открытый проект
+let projEditMode = false;       // режим правки внутри проекта
+let openSubsFor = {};           // какие задачи раскрыты {taskIdx:true}
+let openDateFor = {};           // у каких задач открыт выбор даты {taskIdx:true}
+
+const TASK_TYPES = [
+  { id: 'rep',  label: 'Повторяющаяся', short: 'повтор.',  cls: 'rep'  },
+  { id: 'once', label: 'Разовая',       short: 'разовая',  cls: 'once' },
+  { id: 'cond', label: 'Условная',      short: 'условная', cls: 'cond' },
+  { id: 'back', label: 'Backlog',       short: 'backlog',  cls: 'back' },
+  { id: '',     label: 'Тип не выбран', short: 'без типа', cls: 'none' }
+];
+function taskTypeInfo(id) {
+  return TASK_TYPES.find(function (t) { return t.id === (id || ''); }) || TASK_TYPES[4];
+}
+
+// Приоритеты задач
+const PRIORITIES = [
+  { id: 'crit', label: 'Критично',  short: 'критично', icon: '🔴', rank: 0 },
+  { id: 'imp',  label: 'Важно',     short: 'важно',    icon: '🟡', rank: 1 },
+  { id: 'norm', label: 'Обычное',   short: 'обычное',  icon: '⚪', rank: 2 }
+];
+function priorityInfo(id) {
+  return PRIORITIES.find(function (p) { return p.id === id; }) || PRIORITIES[2];
+}
+
+function currentProject() {
+  return state.projects.find(function (x) { return x.num === currentProjectNum; });
+}
+
+// ----- форматирование даты -----
+const WD_SHORT = ['вс','пн','вт','ср','чт','пт','сб'];
+const MON_SHORT = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+function todayISO() {
+  const d = new Date();
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+}
+function fmtDateHuman(iso) {
+  // 'YYYY-MM-DD' -> 'чт, 5 июн'
+  if (!iso) return '';
+  const parts = iso.split('-');
+  if (parts.length !== 3) return iso;
+  const d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+  if (isNaN(d.getTime())) return iso;
+  return WD_SHORT[d.getDay()] + ', ' + d.getDate() + ' ' + MON_SHORT[d.getMonth()];
+}
+function dateRelLabel(iso) {
+  // 'сегодня' / 'завтра' / 'просрочено' — для подсветки
+  if (!iso) return '';
+  const t = todayISO();
+  if (iso === t) return 'сегодня';
+  if (iso < t) return 'просрочено';
+  // завтра?
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  const tm = d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+  if (iso === tm) return 'завтра';
+  return '';
+}
+
+function openProject(num) {
+  const p = state.projects.find(function (x) { return x.num === num; });
+  if (!p) return;
+  currentProjectNum = num;
+  projEditMode = false;
+  openSubsFor = {};
+  openDateFor = {};
+  // по умолчанию раскрываем задачи с незавершёнными подзадачами
+  p.tasks.forEach(function (t, i) {
+    normalizeTask(t);
+    if (t.subs && t.subs.length && t.subs.some(function (s){ return !s.done; })) {
+      openSubsFor[i] = true;
+    }
+  });
+  renderProject();
+  document.getElementById('proj-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('proj-overlay').scrollTop = 0;
+}
+function closeProject() {
+  document.getElementById('proj-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  currentProjectNum = null;
+  projEditMode = false;
+  renderOverview();   // обновим статистику на плитках
+  renderWeek();       // изменения дат/приоритетов отразятся в Неделе
+  renderDay();        // и в Дне
+  renderCalendar();   // и в Календаре
+}
+function toggleProjEdit() {
+  projEditMode = !projEditMode;
+  const btn = document.getElementById('proj-edit-toggle');
+  btn.classList.toggle('on', projEditMode);
+  btn.textContent = projEditMode ? '✓ Готово' : '✎ Редактировать';
+  if (!projEditMode) openDateFor = {};
+  renderProject();
+}
+
+function renderProject() {
+  const p = currentProject();
+  const box = document.getElementById('proj-content');
+  if (!p) { box.innerHTML = '<div class="tasks-empty">Проект не найден.</div>'; return; }
+  const s = sphereById(p.sphere);
+  const color = s ? s.color : '#9a7b30';
+  const st = projectStats(p);
+
+  // ----- шапка проекта -----
+  let h = '<div class="proj-head">';
+  h += '<div class="proj-head-stripe" style="background:' + color + '"></div>';
+  h += '<div class="proj-head-body">';
+  h += '<div class="proj-head-top">';
+  if (s) h += '<span class="proj-sphere-tag" style="background:' + color + '">' +
+    escapeHtml(s.id + ' · ' + s.name) + '</span>';
+  if (p.isKey) h += '<span class="proj-key-tag">проект-ключ</span>';
+  if (p.status === 'paused')
+    h += '<span class="proj-status-tag bg-paused">на паузе</span>';
+  if (p.status === 'backlog')
+    h += '<span class="proj-status-tag bg-backlog">backlog</span>';
+  h += '</div>';
+  h += '<div class="proj-title">' + escapeHtml(p.title) + '</div>';
+  h += '<div class="proj-goal-label">Цель проекта</div>';
+  if (p.goal) {
+    h += '<div class="proj-goal">' + escapeHtml(p.goal) + '</div>';
+  } else {
+    h += '<div class="proj-goal empty">Цель пока не задана.</div>';
+  }
+  if (st.subs > 0) {
+    const pct = Math.round(st.subsDone / st.subs * 100);
+    h += '<div class="proj-progress">' +
+      '<span>Подзадачи: ' + st.subsDone + ' / ' + st.subs + '</span>' +
+      '<span class="proj-progress-bar"><span class="proj-progress-fill" style="width:' +
+        pct + '%;background:' + color + '"></span></span>' +
+      '<span>' + pct + '%</span></div>';
+  }
+  if (projEditMode) {
+    h += '<div class="proj-head-edit">' +
+      '<button onclick="editProjectFromPage()">✎ Цель, название, статус</button>' +
+      '</div>';
+  }
+  h += '</div></div>';
+
+  // ----- секция задач -----
+  h += '<div class="tasks-section-head">' +
+    '<h3>Задачи</h3>' +
+    '<span class="t-count">' + st.total + ' ' +
+      plural(st.total,'задача','задачи','задач') +
+      (st.typed < st.total ? ' · ' + (st.total - st.typed) + ' без типа' : '') +
+    '</span></div>';
+  h += '<div class="tasks-section-hint">' +
+    (projEditMode
+      ? 'Это склад задач. Задай задаче дату — она попадёт в план недели и дня. Повторяющиеся приходят в день сами. Тип, дату, порядок и подзадачи меняй здесь.'
+      : 'Это склад задач проекта. Отмечать выполнение и планировать время — в табах «Неделя» и «День». Нажми «Редактировать», чтобы менять задачи.') +
+    '</div>';
+
+  if (!p.tasks.length) {
+    h += '<div class="tasks-empty">В проекте пока нет задач.' +
+      (projEditMode ? '' : ' Нажми «Редактировать», чтобы добавить.') + '</div>';
+  } else {
+    TASK_TYPES.forEach(function (tt) {
+      const items = [];
+      p.tasks.forEach(function (t, idx) {
+        if ((t.type || '') === tt.id) items.push({ t: t, idx: idx });
+      });
+      if (!items.length) return;
+      h += '<div class="task-group">';
+      h += '<div class="task-group-label tg-' + tt.cls + '">' +
+        '<span class="tg-dot"></span>' + escapeHtml(tt.label) +
+        ' <span style="color:var(--text-faint);font-weight:400;">· ' + items.length + '</span></div>';
+      items.forEach(function (it, gi) {
+        h += renderTaskCard(p, it.t, it.idx, gi, items.length);
+      });
+      h += '</div>';
+    });
+  }
+
+  // ----- добавление задачи -----
+  if (projEditMode) {
+    let typeOpts = '';
+    TASK_TYPES.forEach(function (tt) {
+      typeOpts += '<option value="' + tt.id + '">' + escapeHtml(tt.label) + '</option>';
+    });
+    h += '<div class="task-add-box">' +
+      '<div class="tab-title">Новая задача</div>' +
+      '<div class="add-row">' +
+      '<input type="text" id="new-task-name" placeholder="Название задачи" ' +
+        'onkeydown="if(event.key===\'Enter\')addTask()">' +
+      '<select id="new-task-type">' + typeOpts + '</select>' +
+      '<button onclick="addTask()">+ Задача</button>' +
+      '</div></div>';
+  }
+
+  box.innerHTML = h;
+}
+
+function renderTaskCard(p, t, idx, gi, gcount) {
+  normalizeTask(t);
+  const subsTotal = t.subs.length;
+  const subsDone  = t.subs.filter(function (s){ return s.done; }).length;
+  const tt = taskTypeInfo(t.type);
+  const subsOpen = !!openSubsFor[idx];
+  const dateOpen = !!openDateFor[idx];
+
+  let h = '<div class="task-card" data-tidx="' + idx + '">';
+  h += '<div class="task-main">';
+  h += '<div class="task-text-block">';
+  h += '<div class="task-name">';
+  const pri = priorityInfo(t.priority);
+  if (t.priority && t.priority !== 'norm') {
+    h += '<span class="task-pri" title="' + escapeHtml(pri.label) + '">' + pri.icon + '</span> ';
+  }
+  h += escapeHtml(t.name) + '</div>';
+  if (t.hint) h += '<div class="task-hint">' + escapeHtml(t.hint) + '</div>';
+
+  // строка с датой и подзадачами
+  h += '<div class="task-meta-row">';
+  // плашка даты / ритма
+  if (t.type === 'rep') {
+    h += '<span class="task-date rhythm" title="Повторяется — приходит в план дня сама">' +
+      '↻ каждый день</span>';
+  } else if (t.date) {
+    const rel = dateRelLabel(t.date);
+    let label = fmtDateHuman(t.date);
+    if (t.time) label += ' · ' + t.time;
+    let cls = 'task-date';
+    let title = 'Запланировано';
+    if (rel === 'просрочено') { title = 'Дата уже прошла'; }
+    h += '<span class="' + cls + '" title="' + title + '">📅 ' + escapeHtml(label) +
+      (rel && rel !== 'просрочено' ? ' · ' + rel : '') +
+      (rel === 'просрочено' ? ' · просрочено' : '') + '</span>';
+  } else if (t.type === 'once') {
+    h += '<span class="task-date unplanned" title="Дата не задана — задача не в плане">' +
+      'без даты</span>';
+  }
+  // подзадачи
+  if (subsTotal > 0) {
+    h += '<button class="subs-toggle' + (subsOpen ? ' open' : '') + '" ' +
+      'onclick="toggleSubs(' + idx + ')">' +
+      '<span class="subs-arrow">▶</span> Подзадачи ' +
+      subsDone + '/' + subsTotal + '</button>';
+  } else if (projEditMode) {
+    h += '<button class="subs-toggle' + (subsOpen ? ' open' : '') + '" ' +
+      'onclick="toggleSubs(' + idx + ')">' +
+      '<span class="subs-arrow">▶</span> + добавить подзадачи</button>';
+  }
+  h += '</div>';
+  h += '</div>';   // task-text-block
+  h += '<span class="task-type-pill ttp-' + tt.cls + '">' + escapeHtml(tt.short) + '</span>';
+  h += '</div>';   // task-main
+
+  // ----- блок выбора даты (режим правки, кроме повторяющихся) -----
+  if (projEditMode && dateOpen && t.type !== 'rep') {
+    h += '<div class="task-date-edit">' +
+      '<label>Дата</label>' +
+      '<input type="date" value="' + escapeHtml(t.date || '') + '" ' +
+        'onchange="setTaskDate(' + idx + ',this.value)">' +
+      '<label>Время</label>' +
+      '<input type="time" value="' + escapeHtml(t.time || '') + '" ' +
+        'onchange="setTaskTime(' + idx + ',this.value)">';
+    if (t.date || t.time) {
+      h += '<button class="clear-date" onclick="clearTaskDate(' + idx + ')">Убрать дату</button>';
+    }
+    h += '</div>';
+  }
+  if (projEditMode && dateOpen && t.type === 'rep') {
+    h += '<div class="task-date-edit">' +
+      '<span class="rhythm-note">↻ Повторяющаяся задача приходит в план дня каждый день автоматически. Дату задавать не нужно.</span>' +
+      '</div>';
+  }
+
+  // ----- блок подзадач -----
+  if (subsOpen) {
+    h += '<div class="subs-wrap">';
+    if (subsTotal === 0) {
+      h += '<div style="font-size:11.5px;color:var(--text-faint);padding:2px 0 4px;">Подзадачи — чек-лист шагов внутри задачи. Своей даты у них нет.</div>';
+    }
+    t.subs.forEach(function (sub, si) {
+      h += '<div class="sub-row' + (sub.done ? ' s-done' : '') + '">';
+      h += '<div class="sub-check' + (sub.done ? ' checked' : '') + '" ' +
+        'onclick="toggleSub(' + idx + ',' + si + ')">' + (sub.done ? '✓' : '') + '</div>';
+      h += '<div class="sub-name">' + escapeHtml(sub.name) + '</div>';
+      if (projEditMode) {
+        h += '<div class="sub-actions">' +
+          '<button class="sub-mini-btn" title="Выше" ' + (si === 0 ? 'disabled' : '') +
+            ' onclick="moveSub(' + idx + ',' + si + ',-1)">▲</button>' +
+          '<button class="sub-mini-btn" title="Ниже" ' + (si === subsTotal - 1 ? 'disabled' : '') +
+            ' onclick="moveSub(' + idx + ',' + si + ',1)">▼</button>' +
+          '<button class="sub-mini-btn" title="Переименовать" ' +
+            'onclick="editSub(' + idx + ',' + si + ')">✎</button>' +
+          '<button class="sub-mini-btn del" title="Удалить" ' +
+            'onclick="deleteSub(' + idx + ',' + si + ')">✕</button>' +
+          '</div>';
+      }
+      h += '</div>';
+    });
+    h += '<div class="sub-add-row">' +
+      '<input type="text" id="new-sub-' + idx + '" placeholder="Новая подзадача" ' +
+        'onkeydown="if(event.key===\'Enter\')addSub(' + idx + ')">' +
+      '<button onclick="addSub(' + idx + ')">+</button>' +
+      '</div>';
+    h += '</div>';
+  }
+
+  // ----- панель правки задачи -----
+  if (projEditMode) {
+    let typeOpts = '';
+    TASK_TYPES.forEach(function (tt2) {
+      typeOpts += '<option value="' + tt2.id + '"' +
+        ((t.type || '') === tt2.id ? ' selected' : '') + '>' +
+        escapeHtml(tt2.label) + '</option>';
+    });
+    let priOpts = '';
+    PRIORITIES.forEach(function (pr) {
+      priOpts += '<option value="' + pr.id + '"' +
+        (t.priority === pr.id ? ' selected' : '') + '>' +
+        pr.icon + ' ' + escapeHtml(pr.label) + '</option>';
+    });
+    h += '<div class="task-edit-bar">' +
+      '<button class="edit-icon-btn" title="Выше" ' + (gi === 0 ? 'disabled' : '') +
+        ' onclick="moveTask(' + idx + ',-1)">▲</button>' +
+      '<button class="edit-icon-btn" title="Ниже" ' + (gi === gcount - 1 ? 'disabled' : '') +
+        ' onclick="moveTask(' + idx + ',1)">▼</button>' +
+      '<select title="Тип задачи" onchange="setTaskType(' + idx + ',this.value)">' +
+        typeOpts + '</select>' +
+      '<select title="Приоритет" onchange="setTaskPriority(' + idx + ',this.value)">' +
+        priOpts + '</select>' +
+      '<button class="edit-icon-btn' + (dateOpen ? ' on-date' : '') +
+        '" title="Дата и время" onclick="toggleDateEdit(' + idx + ')">📅</button>' +
+      '<span class="te-spacer"></span>' +
+      '<button class="edit-icon-btn" title="Редактировать задачу" ' +
+        'onclick="editTask(' + idx + ')">✎</button>' +
+      '<button class="edit-icon-btn del" title="Удалить задачу" ' +
+        'onclick="deleteTask(' + idx + ')">✕</button>' +
+      '</div>';
+  }
+
+  h += '</div>';   // task-card
+  return h;
+}
+
+// ----- цель / шапка проекта -----
+function editProjectFromPage() {
+  const p = currentProject();
+  if (!p) return;
+  openModal('Проект: ' + escapeHtml(p.short), [
+    { key: 'title', label: 'Полное название', value: p.title },
+    { key: 'short', label: 'Короткое имя (для плитки)', value: p.short },
+    { key: 'goal',  label: 'Цель проекта', value: p.goal, area: true },
+    { key: 'status', label: 'Статус: active / backlog / paused', value: p.status },
+    { key: 'isKey', label: 'Проект-ключ? (да / нет)', value: p.isKey ? 'да' : 'нет' }
+  ], function (vals) {
+    p.title = vals.title.trim() || p.title;
+    p.short = vals.short.trim() || p.short;
+    p.goal = vals.goal.trim();
+    const stt = vals.status.trim().toLowerCase();
+    if (['active','backlog','paused'].indexOf(stt) !== -1) p.status = stt;
+    p.isKey = /^(да|yes|y|1)$/i.test(vals.isKey.trim());
+    saveState(true);
+    renderProject();
+  });
+}
+
+// ----- галочки подзадач -----
+function toggleSub(tIdx, sIdx) {
+  const p = currentProject();
+  if (!p || !p.tasks[tIdx] || !p.tasks[tIdx].subs[sIdx]) return;
+  const sub = p.tasks[tIdx].subs[sIdx];
+  sub.done = !sub.done;
+  saveState(true);
+  renderProject();
+}
+
+// ----- раскрытие подзадач / выбора даты -----
+function toggleSubs(idx) {
+  openSubsFor[idx] = !openSubsFor[idx];
+  renderProject();
+}
+function toggleDateEdit(idx) {
+  openDateFor[idx] = !openDateFor[idx];
+  renderProject();
+}
+
+// ----- тип задачи -----
+function setTaskType(idx, type) {
+  const p = currentProject();
+  if (!p || !p.tasks[idx]) return;
+  const t = p.tasks[idx];
+  t.type = type || '';
+  if (t.type === 'rep') {
+    // повторяющаяся — конкретная дата не нужна, ставим ритм
+    t.rhythm = 'daily';
+    t.date = '';
+    t.time = '';
+  } else {
+    t.rhythm = '';
+  }
+  saveState(true);
+  renderProject();
+}
+
+// ----- приоритет задачи -----
+function setTaskPriority(idx, val) {
+  const p = currentProject();
+  if (!p || !p.tasks[idx]) return;
+  p.tasks[idx].priority = (['crit','imp','norm'].indexOf(val) !== -1) ? val : 'norm';
+  saveState(true);
+  renderProject();
+}
+
+// ----- дата и время задачи -----
+function setTaskDate(idx, val) {
+  const p = currentProject();
+  if (!p || !p.tasks[idx]) return;
+  p.tasks[idx].date = val || '';
+  saveState(true);
+  renderProject();
+}
+function setTaskTime(idx, val) {
+  const p = currentProject();
+  if (!p || !p.tasks[idx]) return;
+  p.tasks[idx].time = val || '';
+  saveState(true);
+  renderProject();
+}
+function clearTaskDate(idx) {
+  const p = currentProject();
+  if (!p || !p.tasks[idx]) return;
+  p.tasks[idx].date = '';
+  p.tasks[idx].time = '';
+  saveState(true);
+  renderProject();
+}
+
+// ----- добавление / правка / удаление задач -----
+function addTask() {
+  const p = currentProject();
+  if (!p) return;
+  const inp = document.getElementById('new-task-name');
+  const sel = document.getElementById('new-task-type');
+  const name = inp.value.trim();
+  if (!name) { inp.focus(); return; }
+  const type = sel ? sel.value : '';
+  p.tasks.push({
+    tid: genId(),
+    name: name, type: type, hint: '',
+    date: '', time: '',
+    rhythm: type === 'rep' ? 'daily' : '',
+    priority: 'norm',
+    subs: []
+  });
+  inp.value = '';
+  if (sel) sel.value = '';
+  saveState(true);
+  renderProject();
+}
+function editTask(idx) {
+  const p = currentProject();
+  if (!p || !p.tasks[idx]) return;
+  const t = p.tasks[idx];
+  openModal('Задача', [
+    { key: 'name', label: 'Название задачи', value: t.name, area: true },
+    { key: 'hint', label: 'Примечание / триггер (необязательно)', value: t.hint || '' }
+  ], function (vals) {
+    t.name = vals.name.trim() || t.name;
+    t.hint = vals.hint.trim();
+    saveState(true);
+    renderProject();
+  });
+}
+function deleteTask(idx) {
+  const p = currentProject();
+  if (!p || !p.tasks[idx]) return;
+  const t = p.tasks[idx];
+  confirmModal('Удалить задачу «' + t.name + '»' +
+    (t.subs && t.subs.length ? ' со всеми подзадачами?' : '?'), function () {
+    p.tasks.splice(idx, 1);
+    openSubsFor = remapIdxMap(openSubsFor, idx);
+    openDateFor = remapIdxMap(openDateFor, idx);
+    saveState(true);
+    renderProject();
+  });
+}
+// сдвиг карт раскрытия при удалении задачи idx
+function remapIdxMap(map, removedIdx) {
+  const out = {};
+  Object.keys(map).forEach(function (k) {
+    const ki = parseInt(k, 10);
+    if (ki < removedIdx) out[ki] = map[k];
+    else if (ki > removedIdx) out[ki - 1] = map[k];
+  });
+  return out;
+}
+
+// ----- перемещение задач (внутри своей типовой группы) -----
+function moveTask(idx, dir) {
+  const p = currentProject();
+  if (!p || !p.tasks[idx]) return;
+  const type = p.tasks[idx].type || '';
+  const sameType = [];
+  p.tasks.forEach(function (t, i) {
+    if ((t.type || '') === type) sameType.push(i);
+  });
+  const pos = sameType.indexOf(idx);
+  const swapPos = pos + dir;
+  if (swapPos < 0 || swapPos >= sameType.length) return;
+  const idxA = sameType[pos];
+  const idxB = sameType[swapPos];
+  const tmp = p.tasks[idxA];
+  p.tasks[idxA] = p.tasks[idxB];
+  p.tasks[idxB] = tmp;
+  swapIdxMaps(idxA, idxB);
+  saveState(true);
+  renderProject();
+}
+function swapIdxMaps(a, b) {
+  [openSubsFor, openDateFor].forEach(function (map) {
+    const va = map[a], vb = map[b];
+    if (vb) map[a] = true; else delete map[a];
+    if (va) map[b] = true; else delete map[b];
+  });
+}
+
+// ----- подзадачи: добавление / правка / удаление / перемещение -----
+function addSub(tIdx) {
+  const p = currentProject();
+  if (!p || !p.tasks[tIdx]) return;
+  const inp = document.getElementById('new-sub-' + tIdx);
+  if (!inp) return;
+  const name = inp.value.trim();
+  if (!name) { inp.focus(); return; }
+  if (!p.tasks[tIdx].subs) p.tasks[tIdx].subs = [];
+  p.tasks[tIdx].subs.push({ name: name, done: false });
+  openSubsFor[tIdx] = true;
+  saveState(true);
+  renderProject();
+}
+function editSub(tIdx, sIdx) {
+  const p = currentProject();
+  if (!p || !p.tasks[tIdx] || !p.tasks[tIdx].subs[sIdx]) return;
+  const sub = p.tasks[tIdx].subs[sIdx];
+  openModal('Подзадача', [
+    { key: 'name', label: 'Название подзадачи', value: sub.name, area: true }
+  ], function (vals) {
+    sub.name = vals.name.trim() || sub.name;
+    saveState(true);
+    renderProject();
+  });
+}
+function deleteSub(tIdx, sIdx) {
+  const p = currentProject();
+  if (!p || !p.tasks[tIdx] || !p.tasks[tIdx].subs[sIdx]) return;
+  const sub = p.tasks[tIdx].subs[sIdx];
+  confirmModal('Удалить подзадачу «' + sub.name + '»?', function () {
+    p.tasks[tIdx].subs.splice(sIdx, 1);
+    saveState(true);
+    renderProject();
+  });
+}
+function moveSub(tIdx, sIdx, dir) {
+  const p = currentProject();
+  if (!p || !p.tasks[tIdx] || !p.tasks[tIdx].subs) return;
+  const subs = p.tasks[tIdx].subs;
+  const swap = sIdx + dir;
+  if (swap < 0 || swap >= subs.length) return;
+  const tmp = subs[sIdx];
+  subs[sIdx] = subs[swap];
+  subs[swap] = tmp;
+  saveState(true);
+  renderProject();
+}
+
+// ===== ЭКСПОРТ / ИМПОРТ / СБРОС =====
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'moya-sistema-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json';
+  input.onchange = function () {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function () {
+      try {
+        const parsed = JSON.parse(reader.result);
+        if (!parsed.projects || !parsed.spheres) throw new Error('Не тот формат');
+        state = parsed;
+        if (!state.log) state.log = [];
+        if (!state.timer) state.timer = { running: false, startedAt: null, accumMs: 0 };
+        saveState(true);
+        renderAll();
+        alert('Данные загружены.');
+      } catch (e) {
+        alert('Не удалось прочитать файл: ' + e.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+function resetData() {
+  if (!confirm('Сбросить все данные к исходному состоянию? Это удалит все твои изменения.')) return;
+  state = defaultState();
+  saveState(true);
+  renderAll();
+}
+
+
+
+
+// ===== ТАБ «ВРЕМЯ» (лог учёта) =====
+let timeMode = 'month';   // 'week' | 'month'
+let timeOffset = 0;       // смещение периода
+
+function timeSetMode(mode) {
+  timeMode = mode;
+  timeOffset = 0;
+  renderTimeLog();
+}
+function timeShift(dir) { timeOffset += dir; renderTimeLog(); }
+function timeToday() { timeOffset = 0; renderTimeLog(); }
+
+// границы текущего периода: { from, to } в ISO (включительно)
+function timePeriodRange() {
+  if (timeMode === 'week') {
+    const dates = weekDates(timeOffset);   // переиспользуем расчёт недели
+    return { from: dates[0], to: dates[6] };
+  }
+  // месяц
+  const ms = calMonthStart(timeOffset);
+  const y = ms.getFullYear(), m = ms.getMonth();
+  const last = new Date(y, m + 1, 0).getDate();
+  return {
+    from: y + '-' + String(m + 1).padStart(2, '0') + '-01',
+    to:   y + '-' + String(m + 1).padStart(2, '0') + '-' + String(last).padStart(2, '0')
+  };
+}
+
+// форматирование длительности из минут
+function fmtDuration(min) {
+  const h = Math.floor(min / 60), m = min % 60;
+  if (h > 0 && m > 0) return h + ' ч ' + m + ' мин';
+  if (h > 0) return h + ' ч';
+  return m + ' мин';
+}
+
+function renderTimeLog() {
+  // переключатель режима
+  const wb = document.getElementById('tm-week');
+  const mb = document.getElementById('tm-month');
+  if (wb) wb.classList.toggle('on', timeMode === 'week');
+  if (mb) mb.classList.toggle('on', timeMode === 'month');
+
+  const range = timePeriodRange();
+
+  // подпись периода
+  const rangeEl = document.getElementById('time-range');
+  const subEl = document.getElementById('time-sub');
+  const MON_FULL = ['января','февраля','марта','апреля','мая','июня','июля',
+                     'августа','сентября','октября','ноября','декабря'];
+  const MON_NOM = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль',
+                    'Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  let periodSub;
+  if (timeMode === 'week') {
+    const fp = range.from.split('-'), tp = range.to.split('-');
+    const fd = new Date(+fp[0], +fp[1]-1, +fp[2]);
+    const td = new Date(+tp[0], +tp[1]-1, +tp[2]);
+    if (fd.getMonth() === td.getMonth()) {
+      rangeEl.textContent = fd.getDate() + '–' + td.getDate() + ' ' + MON_FULL[fd.getMonth()];
+    } else {
+      rangeEl.textContent = fd.getDate() + ' ' + MON_SHORT[fd.getMonth()] + ' – ' +
+        td.getDate() + ' ' + MON_SHORT[td.getMonth()];
+    }
+    periodSub = timeOffset === 0 ? 'эта неделя'
+      : timeOffset === -1 ? 'прошлая неделя'
+      : timeOffset === 1 ? 'следующая неделя'
+      : timeOffset < 0 ? Math.abs(timeOffset) + ' нед. назад'
+      : 'через ' + timeOffset + ' нед.';
+  } else {
+    const ms = calMonthStart(timeOffset);
+    rangeEl.textContent = MON_NOM[ms.getMonth()] + ' ' + ms.getFullYear();
+    periodSub = timeOffset === 0 ? 'текущий месяц'
+      : timeOffset === -1 ? 'прошлый месяц'
+      : timeOffset === 1 ? 'следующий месяц'
+      : timeOffset < 0 ? Math.abs(timeOffset) + ' мес. назад'
+      : 'через ' + timeOffset + ' мес.';
+  }
+  document.getElementById('time-today-btn').classList.toggle('hidden', timeOffset === 0);
+
+  // записи периода
+  const entries = state.log.filter(function (r) {
+    return r.date >= range.from && r.date <= range.to;
+  });
+  entries.sort(function (a, b) {
+    if (a.date !== b.date) return a.date > b.date ? -1 : 1;   // свежие сверху
+    return (b.createdAt || 0) - (a.createdAt || 0);
+  });
+
+  // общий итог периода
+  let totalMin = 0;
+  entries.forEach(function (r) { totalMin += r.minutes; });
+
+  // подпись периода: «текущий месяц · всего 2 ч 15 мин»
+  if (entries.length) {
+    subEl.innerHTML = escapeHtml(periodSub) +
+      ' · <span class="tn-total">всего ' + fmtDuration(totalMin) + '</span>';
+  } else {
+    subEl.textContent = periodSub;
+  }
+
+  const body = document.getElementById('time-body');
+
+  if (!entries.length) {
+    body.innerHTML = '<div class="time-empty"><div class="big">⏱️</div>' +
+      'За этот период записей нет.<br>' +
+      'Останови таймер или нажми «+ Ввести время вручную», чтобы добавить запись.</div>';
+    return;
+  }
+
+  // ----- агрегация по сферам и проектам -----
+  const bySphere = {};   // sphereId -> { min, projects: {projNum: min} }
+  entries.forEach(function (r) {
+    const p = state.projects.find(function (x) { return x.num === r.projectNum; });
+    const sid = p ? p.sphere : '?';
+    if (!bySphere[sid]) bySphere[sid] = { min: 0, projects: {} };
+    bySphere[sid].min += r.minutes;
+    const pk = r.projectNum || 0;
+    bySphere[sid].projects[pk] = (bySphere[sid].projects[pk] || 0) + r.minutes;
+  });
+
+  let h = '';
+
+  // ----- сводка по сферам -----
+  h += '<div class="time-section-title">По сферам и проектам</div>';
+  // сферы по убыванию времени
+  const sphereIds = Object.keys(bySphere).sort(function (a, b) {
+    return bySphere[b].min - bySphere[a].min;
+  });
+  sphereIds.forEach(function (sid) {
+    const s = sphereById(sid);
+    const color = s ? s.color : '#9a7b30';
+    const data = bySphere[sid];
+    const pct = totalMin ? Math.round(data.min / totalMin * 100) : 0;
+    h += '<div class="time-bar-row">';
+    h += '<div class="time-bar-head">' +
+      '<span class="tbh-name">' + escapeHtml(s ? (s.id + ' · ' + s.name) : 'Без сферы') + '</span>' +
+      '<span class="tbh-val">' + fmtDuration(data.min) + '</span>' +
+      '<span class="tbh-pct">' + pct + '%</span></div>';
+    h += '<div class="time-bar-track"><div class="time-bar-fill" style="width:' +
+      pct + '%;background:' + color + '"></div></div>';
+    // проекты внутри сферы
+    const projNums = Object.keys(data.projects).sort(function (a, b) {
+      return data.projects[b] - data.projects[a];
+    });
+    if (projNums.length) {
+      h += '<div class="time-proj-sub">';
+      projNums.forEach(function (pn) {
+        const p = state.projects.find(function (x) { return x.num === parseInt(pn,10); });
+        h += '<div class="tps-row">' +
+          '<span class="tps-name">' + escapeHtml(p ? p.short : 'Проект удалён') + '</span>' +
+          '<span class="tps-val">' + fmtDuration(data.projects[pn]) + '</span></div>';
+      });
+      h += '</div>';
+    }
+    h += '</div>';
+  });
+
+  // ----- список записей по дням -----
+  h += '<div class="time-section-title">Записи</div>';
+  // группировка по дате
+  const byDate = {};
+  entries.forEach(function (r) {
+    if (!byDate[r.date]) byDate[r.date] = [];
+    byDate[r.date].push(r);
+  });
+  const dateKeys = Object.keys(byDate).sort(function (a, b) {
+    return a > b ? -1 : 1;   // свежие сверху
+  });
+  const WD_SH = ['вс','пн','вт','ср','чт','пт','сб'];
+  dateKeys.forEach(function (dk) {
+    const dp = dk.split('-');
+    const dObj = new Date(+dp[0], +dp[1]-1, +dp[2]);
+    let daySum = 0;
+    byDate[dk].forEach(function (r) { daySum += r.minutes; });
+    h += '<div class="time-day-group">';
+    h += '<div class="time-day-label">' +
+      '<span>' + capitalize(WD_SH[dObj.getDay()]) + ', ' +
+        dObj.getDate() + ' ' + MON_FULL[dObj.getMonth()] + '</span>' +
+      '<span class="tdl-sum">' + fmtDuration(daySum) + '</span></div>';
+    byDate[dk].forEach(function (r) {
+      h += renderTimeEntry(r);
+    });
+    h += '</div>';
+  });
+
+  body.innerHTML = h;
+}
+
+function renderTimeEntry(r) {
+  const p = state.projects.find(function (x) { return x.num === r.projectNum; });
+  const s = p ? sphereById(p.sphere) : null;
+  const color = s ? s.color : '#9a7b30';
+
+  let h = '<div class="time-entry">';
+  h += '<span class="time-entry-dur">' + fmtDuration(r.minutes) + '</span>';
+  h += '<div class="time-entry-body">';
+  h += '<div class="time-entry-top">';
+  h += '<span class="time-entry-proj" style="background:' + color + '">' +
+    escapeHtml(p ? p.short : 'Проект удалён') + '</span>';
+  if (r.taskName) h += '<span class="time-entry-task">' + escapeHtml(r.taskName) + '</span>';
+  h += '</div>';
+  if (r.note) h += '<div class="time-entry-note">' + escapeHtml(r.note) + '</div>';
+  h += '</div>';
+  h += '<div class="time-entry-actions">' +
+    '<button class="time-mini-btn" title="Редактировать" ' +
+      'onclick="openTimeEntryEdit(\'' + r.id + '\')">✎</button>' +
+    '<button class="time-mini-btn del" title="Удалить" ' +
+      'onclick="deleteTimeEntry(\'' + r.id + '\')">✕</button>' +
+    '</div>';
+  h += '</div>';
+  return h;
+}
+
+function deleteTimeEntry(id) {
+  const rec = state.log.find(function (r) { return r.id === id; });
+  if (!rec) return;
+  confirmModal('Удалить запись на ' + fmtDuration(rec.minutes) + '?', function () {
+    const i = state.log.findIndex(function (r) { return r.id === id; });
+    if (i !== -1) state.log.splice(i, 1);
+    saveState(true);
+    renderTimeLog();
+  });
+}
+
+
+// ===== ТАБ «КАЛЕНДАРЬ» =====
+let calOffset = 0;        // 0 = текущий месяц, -1 прошлый, +1 следующий
+let calSelectedDay = '';  // выбранный день (ISO) — раскрыт список под сеткой
+
+function calShift(dir) { calOffset += dir; calSelectedDay = ''; renderCalendar(); }
+function calToday() { calOffset = 0; calSelectedDay = ''; renderCalendar(); }
+
+// первый день показываемого месяца как Date
+function calMonthStart(offset) {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(1);
+  d.setMonth(d.getMonth() + offset);
+  return d;
+}
+
+// собрать карту: { 'YYYY-MM-DD': [ {task, project, done} ] }
+// только неповторяющиеся задачи с датой + выполненные дела из лога
+function collectMonthItems(year, month) {
+  const map = {};
+  function push(dateISO, entry) {
+    if (!map[dateISO]) map[dateISO] = [];
+    map[dateISO].push(entry);
+  }
+  const seen = {};   // dateISO::tid
+
+  // задачи из проектов (неповторяющиеся, с датой)
+  state.projects.forEach(function (p) {
+    if (p.status === 'paused') return;
+    (p.tasks || []).forEach(function (t) {
+      normalizeTask(t);
+      if (t.type === 'rep') return;       // повторяющиеся в календаре не показываем
+      if (!t.date) return;
+      const parts = t.date.split('-');
+      if (parts.length !== 3) return;
+      if (+parts[0] !== year || +parts[1] !== month + 1) return;
+      const rec = findDayLog(t.date, t.tid);
+      push(t.date, { task: t, project: p, done: !!rec });
+      seen[t.date + '::' + t.tid] = true;
+    });
+  });
+
+  // выполненные дела из лога, которых уже нет среди задач (разовые удалённые)
+  state.dayLog.forEach(function (r) {
+    if (seen[r.date + '::' + r.tid]) return;
+    if (r.wasRep) return;               // повторяющиеся не показываем
+    const parts = r.date.split('-');
+    if (parts.length !== 3) return;
+    if (+parts[0] !== year || +parts[1] !== month + 1) return;
+    const p = state.projects.find(function (x) { return x.num === r.projectNum; });
+    push(r.date, { task: r.snapshot, project: p || null, done: true });
+  });
+
+  return map;
+}
+
+function renderCalendar() {
+  const monthStart = calMonthStart(calOffset);
+  const year = monthStart.getFullYear();
+  const month = monthStart.getMonth();   // 0-11
+  const todayI = todayISO();
+
+  const MON_FULL = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль',
+                     'Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  document.getElementById('cal-month').textContent = MON_FULL[month] + ' ' + year;
+  let sub = '';
+  if (calOffset === 0) sub = 'текущий месяц';
+  else if (calOffset === -1) sub = 'прошлый месяц';
+  else if (calOffset === 1) sub = 'следующий месяц';
+  else if (calOffset < 0) sub = Math.abs(calOffset) + ' мес. назад';
+  else sub = 'через ' + calOffset + ' мес.';
+  document.getElementById('cal-sub').textContent = sub;
+  document.getElementById('cal-today-btn').classList.toggle('hidden', calOffset === 0);
+
+  // данные месяца
+  const map = collectMonthItems(year, month);
+
+  // сводка
+  let totalTasks = 0, totalCrit = 0, daysWith = 0;
+  Object.keys(map).forEach(function (k) {
+    daysWith++;
+    map[k].forEach(function (e) {
+      totalTasks++;
+      if (!e.done && e.task.priority === 'crit') totalCrit++;
+    });
+  });
+  const summary = document.getElementById('cal-summary');
+  if (totalTasks) {
+    let s = '<span><b>' + totalTasks + '</b> ' +
+      plural(totalTasks,'задача','задачи','задач') + ' в месяце</span>';
+    s += '<span>в <b>' + daysWith + '</b> ' +
+      plural(daysWith,'день','дня','дней') + '</span>';
+    if (totalCrit) {
+      s += '<span style="color:#a33636;">🔴 <b>' + totalCrit + '</b> ' +
+        plural(totalCrit,'критичная','критичных','критичных') + '</span>';
+    }
+    summary.innerHTML = s;
+  } else {
+    summary.innerHTML = '<span>В этом месяце задач с датой нет.</span>';
+  }
+
+  // сетка
+  // первый день месяца, день недели (пн=0..вс=6)
+  const firstDow = (monthStart.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  // сколько дней предыдущего месяца показать в первой строке
+  const prevMonthDays = new Date(year, month, 0).getDate();
+
+  const WD = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  let g = '<div class="cal-grid"><div class="cal-weekdays">';
+  WD.forEach(function (w, i) {
+    g += '<div' + (i >= 5 ? ' class="cw-end"' : '') + '>' + w + '</div>';
+  });
+  g += '</div><div class="cal-cells">';
+
+  // всего ячеек — кратно 7, чтобы сетка была ровной
+  const totalCells = Math.ceil((firstDow + daysInMonth) / 7) * 7;
+  for (let i = 0; i < totalCells; i++) {
+    const dayNum = i - firstDow + 1;
+    if (dayNum < 1 || dayNum > daysInMonth) {
+      // ячейка соседнего месяца — пустая, неактивная
+      g += '<div class="cal-cell cc-blank"></div>';
+      continue;
+    }
+    const cellISO = year + '-' +
+      String(month + 1).padStart(2, '0') + '-' +
+      String(dayNum).padStart(2, '0');
+    const items = map[cellISO] || [];
+    let cls = 'cal-cell';
+    if (cellISO === todayI) cls += ' cc-today';
+    if (cellISO === calSelectedDay) cls += ' cc-selected';
+
+    g += '<div class="' + cls + '" onclick="calSelectDay(\'' + cellISO + '\')">';
+    g += '<div class="cal-daynum">' + dayNum + '</div>';
+
+    if (items.length) {
+      // точки: считаем по приоритету (невыполненные) + выполненные
+      let nCrit = 0, nImp = 0, nNorm = 0, nDone = 0, hasCrit = false;
+      items.forEach(function (e) {
+        if (e.done) { nDone++; return; }
+        const pr = e.task.priority || 'norm';
+        if (pr === 'crit') { nCrit++; hasCrit = true; }
+        else if (pr === 'imp') nImp++;
+        else nNorm++;
+      });
+      g += '<div class="cal-dots">';
+      // показываем максимум ~6 точек, в порядке важности
+      let shown = 0;
+      function dots(n, c) {
+        for (let k = 0; k < n && shown < 6; k++) {
+          g += '<span class="cal-dot ' + c + '"></span>';
+          shown++;
+        }
+      }
+      dots(nCrit, 'cd-crit');
+      dots(nImp, 'cd-imp');
+      dots(nNorm, 'cd-norm');
+      dots(nDone, 'cd-done');
+      g += '</div>';
+      g += '<div class="cal-count' + (hasCrit ? ' has-crit' : '') + '">' +
+        items.length + ' ' + plural(items.length,'дело','дела','дел') + '</div>';
+    }
+    g += '</div>';
+  }
+  g += '</div></div>';
+  document.getElementById('cal-grid-wrap').innerHTML = g;
+
+  // подсказка
+  if (totalTasks) {
+    document.getElementById('cal-grid-wrap').innerHTML +=
+      '<div class="cal-hint">Нажми на день, чтобы увидеть список дел.</div>';
+  }
+
+  // раскрытый день
+  renderCalDayPanel();
+}
+
+function calSelectDay(dateISO) {
+  // повторный клик по тому же дню — свернуть
+  calSelectedDay = (calSelectedDay === dateISO) ? '' : dateISO;
+  renderCalendar();
+}
+
+function renderCalDayPanel() {
+  const wrap = document.getElementById('cal-day-panel-wrap');
+  if (!calSelectedDay) { wrap.innerHTML = ''; return; }
+
+  // дела выбранного дня (неповторяющиеся + выполненные из лога)
+  const parts = calSelectedDay.split('-');
+  const map = collectMonthItems(+parts[0], +parts[1] - 1);
+  const items = (map[calSelectedDay] || []).slice();
+
+  // сортировка: невыполненные сверху по приоритету, выполненные вниз
+  items.sort(function (a, b) {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    const ra = priorityInfo(a.task.priority).rank;
+    const rb = priorityInfo(b.task.priority).rank;
+    if (ra !== rb) return ra - rb;
+    return (a.task.time || '99:99') < (b.task.time || '99:99') ? -1 : 1;
+  });
+
+  const dObj = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+  const WD_FULL = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+  const MON_FULL = ['января','февраля','марта','апреля','мая','июня','июля',
+                     'августа','сентября','октября','ноября','декабря'];
+  const rel = dateRelLabel(calSelectedDay);
+
+  let h = '<div class="cal-day-panel">';
+  h += '<div class="cal-day-panel-head">';
+  h += '<h3>' + capitalize(WD_FULL[dObj.getDay()]) + ', ' +
+    dObj.getDate() + ' ' + MON_FULL[dObj.getMonth()] + '</h3>';
+  if (rel) h += '<span class="cdp-count">' + rel + '</span>';
+  h += '<span class="cdp-count">· ' + items.length + ' ' +
+    plural(items.length,'дело','дела','дел') + '</span>';
+  h += '</div>';
+  h += '<div class="cal-day-panel-body">';
+
+  if (!items.length) {
+    h += '<div class="cal-day-empty">На этот день задач с датой нет.</div>';
+  } else {
+    items.forEach(function (e) {
+      const t = e.task;
+      const p = e.project;
+      const s = p ? sphereById(p.sphere) : null;
+      const color = s ? s.color : '#9a7b30';
+      const pri = priorityInfo(t.priority);
+      h += '<div class="cal-day-item' + (e.done ? ' cdi-done' : '') + '">';
+      h += '<span class="cal-day-item-icon">' + (e.done ? '✓' : pri.icon) + '</span>';
+      h += '<div class="cal-day-item-body">';
+      h += '<div class="cal-day-item-name">' + escapeHtml(t.name) + '</div>';
+      h += '<div class="cal-day-item-meta">';
+      if (p) h += '<span class="cal-day-item-proj" style="background:' + color + '">' +
+        escapeHtml(p.short) + '</span>';
+      if (t.time) h += '<span class="cal-day-item-time">' + escapeHtml(t.time) + '</span>';
+      h += '</div>';
+      h += '</div>';
+      if (p) h += '<button class="cal-day-goto" onclick="openProject(' + p.num +
+        ')">↗ Проект</button>';
+      h += '</div>';
+    });
+  }
+  h += '</div></div>';
+  wrap.innerHTML = h;
+}
+
+
+// ===== ТАБ «ДЕНЬ» =====
+let dayOffset = 0;   // 0 = сегодня, -1 вчера, +1 завтра
+
+function dayShift(dir) { dayOffset += dir; renderDay(); }
+function dayToday() { dayOffset = 0; renderDay(); }
+
+// ISO-дата выбранного дня
+function dayISO() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + dayOffset);
+  return dateToISO(d);
+}
+
+// ключ записи лога: дата + tid задачи
+function dayLogKey(dateISO, tid) { return dateISO + '::' + tid; }
+function findDayLog(dateISO, tid) {
+  return state.dayLog.find(function (r) {
+    return r.date === dateISO && r.tid === tid;
+  });
+}
+
+// собрать дела выбранного дня
+// возвращает массив { task, project, fromLog, logRec }
+function collectDayItems(dateISO) {
+  const items = [];
+  const seen = {};   // tid -> true (чтобы не задвоить)
+
+  // 1) задачи из проектов: повторяющиеся + неповторяющиеся с датой = этот день
+  state.projects.forEach(function (p) {
+    if (p.status === 'paused') return;
+    (p.tasks || []).forEach(function (t) {
+      normalizeTask(t);
+      let inDay = false;
+      if (t.type === 'rep') inDay = true;
+      else if (t.date && t.date === dateISO) inDay = true;
+      if (!inDay) return;
+      const rec = findDayLog(dateISO, t.tid);
+      items.push({ task: t, project: p, fromLog: false, logRec: rec || null });
+      seen[t.tid] = true;
+    });
+  });
+
+  // 2) выполненные дела из лога, которых уже нет среди задач
+  //    (разовые задачи после выполнения удаляются из проектов — берём их из лога)
+  state.dayLog.forEach(function (r) {
+    if (r.date !== dateISO) return;
+    if (seen[r.tid]) return;
+    const p = state.projects.find(function (x) { return x.num === r.projectNum; });
+    items.push({ task: r.snapshot, project: p || null, fromLog: true, logRec: r });
+    seen[r.tid] = true;
+  });
+
+  return items;
+}
+
+// ----- ручной порядок задач в дне -----
+// dayPlan[dateISO].order — массив tid в порядке, заданном пользователем
+function dayOrderList(dateISO) {
+  const dp = state.dayPlan[dateISO];
+  return (dp && Array.isArray(dp.order)) ? dp.order : [];
+}
+function setDayOrderList(dateISO, order) {
+  if (!state.dayPlan[dateISO]) state.dayPlan[dateISO] = {};
+  state.dayPlan[dateISO].order = order;
+}
+// ранг задачи в ручном порядке; нет в списке — в конец
+function dayOrderRank(dateISO, tid) {
+  const i = dayOrderList(dateISO).indexOf(tid);
+  return i === -1 ? 100000 : i;
+}
+
+// сортировка группы дня: ручной порядок -> время -> имя
+function sortDayGroup(group, dateISO) {
+  group.sort(function (a, b) {
+    const ra = dayOrderRank(dateISO, a.task.tid);
+    const rb = dayOrderRank(dateISO, b.task.tid);
+    if (ra !== rb) return ra - rb;
+    const ta = a.task.time || '99:99', tb = b.task.time || '99:99';
+    if (ta !== tb) return ta < tb ? -1 : 1;
+    return a.task.name < b.task.name ? -1 : 1;
+  });
+}
+
+// перемещение задачи стрелками внутри её приоритетной группы
+function moveDayTask(dateISO, tid, dir) {
+  // собрать актуальный список дел дня
+  const items = collectDayItems(dateISO);
+  const open = items.filter(function (it) { return !it.logRec; });
+  const me = open.find(function (it) { return it.task.tid === tid; });
+  if (!me) return;
+  const myPri = me.task.priority || 'norm';
+  // задачи той же приоритетной группы, в текущем порядке
+  const groupItems = open.filter(function (it) {
+    return (it.task.priority || 'norm') === myPri;
+  });
+  sortDayGroup(groupItems, dateISO);
+
+  const pos = groupItems.findIndex(function (it) { return it.task.tid === tid; });
+  const swap = pos + dir;
+  if (pos === -1 || swap < 0 || swap >= groupItems.length) return;
+
+  // строим новый order: берём текущий ручной порядок дня,
+  // обеспечиваем что все задачи группы там есть, затем меняем местами
+  let order = dayOrderList(dateISO).slice();
+  // дописываем недостающие задачи группы в конец (в текущем порядке)
+  groupItems.forEach(function (it) {
+    if (order.indexOf(it.task.tid) === -1) order.push(it.task.tid);
+  });
+  // индексы двух меняемых задач в order
+  const tidA = groupItems[pos].task.tid;
+  const tidB = groupItems[swap].task.tid;
+  const iA = order.indexOf(tidA);
+  const iB = order.indexOf(tidB);
+  if (iA === -1 || iB === -1) return;
+  const tmp = order[iA]; order[iA] = order[iB]; order[iB] = tmp;
+
+  setDayOrderList(dateISO, order);
+  saveState(true);
+  renderDay();
+}
+
+
+function renderDay() {
+  const dISO = dayISO();
+  const todayI = todayISO();
+
+  // ---- подпись даты ----
+  const parts = dISO.split('-');
+  const dObj = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+  const WD_FULL = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+  const MON_FULL = ['января','февраля','марта','апреля','мая','июня','июля',
+                     'августа','сентября','октября','ноября','декабря'];
+  document.getElementById('day-date').textContent =
+    capitalize(WD_FULL[dObj.getDay()]) + ', ' + dObj.getDate() + ' ' + MON_FULL[dObj.getMonth()];
+  const subEl = document.getElementById('day-sub');
+  let sub = '', isToday = false;
+  if (dayOffset === 0) { sub = 'сегодня'; isToday = true; }
+  else if (dayOffset === -1) sub = 'вчера';
+  else if (dayOffset === 1) sub = 'завтра';
+  else if (dayOffset < 0) sub = Math.abs(dayOffset) + ' дн. назад';
+  else sub = 'через ' + dayOffset + ' дн.';
+  subEl.textContent = sub;
+  subEl.classList.toggle('is-today', isToday);
+  document.getElementById('day-today-btn').classList.toggle('hidden', dayOffset === 0);
+
+  // ---- собираем дела ----
+  const items = collectDayItems(dISO);
+
+  // выполнено / осталось
+  const doneItems = items.filter(function (it) { return !!it.logRec; });
+  const openItems = items.filter(function (it) { return !it.logRec; });
+
+  // ---- сводка ----
+  const summary = document.getElementById('day-summary');
+  if (items.length) {
+    let s = '<span><b>' + openItems.length + '</b> ' +
+      plural(openItems.length,'дело осталось','дела осталось','дел осталось') + '</span>';
+    if (doneItems.length) {
+      s += '<span class="ds-done">✓ <b>' + doneItems.length + '</b> ' +
+        plural(doneItems.length,'выполнено','выполнено','выполнено') + '</span>';
+    }
+    const critOpen = openItems.filter(function (it) {
+      return it.task.priority === 'crit';
+    }).length;
+    if (critOpen) {
+      s += '<span style="color:#a33636;">🔴 <b>' + critOpen + '</b> ' +
+        plural(critOpen,'критичное','критичных','критичных') + '</span>';
+    }
+    summary.innerHTML = s;
+  } else {
+    summary.innerHTML = '';
+  }
+
+  // ---- тело ----
+  const body = document.getElementById('day-body');
+  if (!items.length) {
+    body.innerHTML = '<div class="day-empty"><div class="big">' +
+      (dayOffset < 0 ? '🌙' : '☀️') + '</div>' +
+      'На этот день дел нет.<br>' +
+      'Поставь задаче дату на странице проекта — она появится здесь.</div>';
+    return;
+  }
+
+  let h = '';
+
+  // всё выполнено — поощряем
+  if (openItems.length === 0 && doneItems.length > 0) {
+    h += '<div class="day-alldone"><div class="big">🌿</div>' +
+      'Все дела на ' + (dayOffset === 0 ? 'сегодня' : 'этот день') +
+      ' закрыты. Хорошая работа.</div>';
+  }
+
+  // группы по приоритету (среди невыполненных)
+  const groups = [
+    { id: 'crit', label: '🔴 Критично — сначала это', cls: 'dg-crit' },
+    { id: 'imp',  label: '🟡 Важно',                  cls: 'dg-imp'  },
+    { id: 'norm', label: '⚪ Обычное',                 cls: 'dg-norm' }
+  ];
+  groups.forEach(function (g) {
+    const inGroup = openItems.filter(function (it) {
+      return (it.task.priority || 'norm') === g.id;
+    });
+    if (!inGroup.length) return;
+    // порядок: сначала ручной (dayPlan), внутри одного ранга — по времени, затем имя
+    sortDayGroup(inGroup, dISO);
+    h += '<div class="day-group">';
+    h += '<div class="day-group-label ' + g.cls + '">' + g.label +
+      ' <span style="color:var(--text-faint);font-weight:400;">· ' + inGroup.length + '</span></div>';
+    inGroup.forEach(function (it, gi) {
+      h += renderDayTask(it, dISO, gi, inGroup.length);
+    });
+    h += '</div>';
+  });
+
+  // выполненные — отдельной группой внизу
+  if (doneItems.length) {
+    doneItems.sort(function (a, b) {
+      return (b.logRec.doneAt || 0) - (a.logRec.doneAt || 0);
+    });
+    h += '<div class="day-group">';
+    h += '<div class="day-group-label dg-done">✓ Выполнено' +
+      ' <span style="color:var(--text-faint);font-weight:400;">· ' + doneItems.length + '</span></div>';
+    doneItems.forEach(function (it) { h += renderDayTask(it, dISO, -1, 0); });
+    h += '</div>';
+  }
+
+  body.innerHTML = h;
+}
+
+function renderDayTask(it, dISO, gi, gcount) {
+  const t = it.task;
+  const p = it.project;
+  const done = !!it.logRec;
+  const isRep = t.type === 'rep';
+  const s = p ? sphereById(p.sphere) : null;
+  const color = s ? s.color : '#9a7b30';
+
+  let h = '<div class="day-task' + (done ? ' dt-done' : '') + '">';
+  h += '<div class="day-task-main">';
+  // галочка
+  h += '<div class="day-check' + (done ? ' checked' : '') + '" ' +
+    'onclick="toggleDayTask(\'' + dISO + '\',\'' + t.tid + '\')" ' +
+    'title="' + (done ? 'Снять отметку' : 'Отметить выполненным') + '">' +
+    (done ? '✓' : '') + '</div>';
+  h += '<div class="day-task-body">';
+  h += '<div class="day-task-top">';
+  h += '<span class="day-task-name">' + escapeHtml(t.name) + '</span>';
+  if (t.time) h += '<span class="day-task-time">' + escapeHtml(t.time) + '</span>';
+  h += '</div>';
+  // метки: проект + тип
+  h += '<div class="day-task-meta">';
+  if (p) {
+    h += '<span class="day-proj-tag" style="background:' + color + '">' +
+      escapeHtml(p.short) + '</span>';
+  }
+  if (isRep) h += '<span class="day-rep-tag">↻ каждый день</span>';
+  h += '</div>';
+  if (t.hint) h += '<div class="day-task-hint">' + escapeHtml(t.hint) + '</div>';
+  // подзадачи — прогресс (только если есть и задача жива в проекте)
+  if (!it.fromLog && t.subs && t.subs.length) {
+    const sd = t.subs.filter(function (x){ return x.done; }).length;
+    const pct = Math.round(sd / t.subs.length * 100);
+    h += '<div class="day-subs-line">Подзадачи: ' + sd + '/' + t.subs.length +
+      '<span class="dsl-bar"><span class="dsl-fill" style="width:' + pct + '%"></span></span></div>';
+  }
+  h += '</div>';   // day-task-body
+  h += '</div>';   // day-task-main
+
+  // строка действий
+  h += '<div class="day-task-actions">';
+  if (done) {
+    h += '<span style="font-size:11px;color:#1d6b51;">✓ Выполнено' +
+      (it.logRec.doneAt ? ' · ' + fmtTimeShort(it.logRec.doneAt) : '') + '</span>';
+    h += '<span class="da-spacer"></span>';
+    h += '<button class="day-act-btn" onclick="toggleDayTask(\'' + dISO + '\',\'' +
+      t.tid + '\')">↩ Вернуть в дела</button>';
+  } else {
+    // стрелки перемещения внутри приоритетной группы
+    if (gi >= 0 && gcount > 1) {
+      h += '<button class="day-act-btn arrow" title="Выше" ' + (gi === 0 ? 'disabled' : '') +
+        ' onclick="moveDayTask(\'' + dISO + '\',\'' + t.tid + '\',-1)">▲</button>';
+      h += '<button class="day-act-btn arrow" title="Ниже" ' + (gi === gcount - 1 ? 'disabled' : '') +
+        ' onclick="moveDayTask(\'' + dISO + '\',\'' + t.tid + '\',1)">▼</button>';
+    }
+    if (p) {
+      h += '<button class="day-act-btn" onclick="openProject(' + p.num +
+        ')"><span class="ab-ico">↗</span>К проекту</button>';
+    }
+    h += '<span class="da-spacer"></span>';
+    // перенос — только для неповторяющихся
+    if (!isRep) {
+      h += '<button class="day-act-btn move" onclick="openMoveDialog(\'' +
+        t.tid + '\')"><span class="ab-ico">📅</span>Перенести</button>';
+    }
+  }
+  h += '</div>';
+
+  h += '</div>';   // day-task
+  return h;
+}
+
+// короткое время из timestamp
+function fmtTimeShort(ts) {
+  const d = new Date(ts);
+  return String(d.getHours()).padStart(2,'0') + ':' +
+         String(d.getMinutes()).padStart(2,'0');
+}
+function capitalize(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
+// найти задачу по tid во всех проектах
+function findTaskByTid(tid) {
+  for (let i = 0; i < state.projects.length; i++) {
+    const p = state.projects[i];
+    const idx = (p.tasks || []).findIndex(function (t) { return t.tid === tid; });
+    if (idx !== -1) return { project: p, task: p.tasks[idx], idx: idx };
+  }
+  return null;
+}
+
+// ----- отметка выполнения -----
+function toggleDayTask(dISO, tid) {
+  const existing = findDayLog(dISO, tid);
+  if (existing) {
+    // снять отметку
+    uncompleteDayTask(dISO, tid);
+    return;
+  }
+  // отметить — с подтверждением
+  const found = findTaskByTid(tid);
+  if (!found) return;
+  const t = found.task;
+  const isRep = t.type === 'rep';
+  let msg;
+  if (isRep) {
+    msg = 'Отметить «' + t.name + '» выполненной за этот день?\n\n' +
+      'Задача повторяющаяся — завтра появится снова.';
+  } else {
+    msg = 'Отметить «' + t.name + '» выполненной?\n\n' +
+      'Дело уйдёт из списка проекта. ' +
+      'Если передумаешь — нажми «Вернуть в дела», задача восстановится.';
+  }
+  confirmModal(msg, function () {
+    completeDayTask(dISO, tid);
+  }, { title: 'Выполнено?', okLabel: 'Да, выполнено', okColor: '#1d6b51' });
+}
+
+function completeDayTask(dISO, tid) {
+  const found = findTaskByTid(tid);
+  if (!found) return;
+  const t = found.task;
+  const p = found.project;
+  const isRep = t.type === 'rep';
+
+  // запись в лог со снимком задачи (снимок нужен, чтобы показать дело
+  // и чтобы восстановить разовую задачу при отмене)
+  state.dayLog.push({
+    date: dISO,
+    tid: tid,
+    projectNum: p.num,
+    doneAt: Date.now(),
+    wasRep: isRep,
+    snapshot: JSON.parse(JSON.stringify(t))
+  });
+
+  // разовая (любая неповторяющаяся) — уходит из проекта
+  if (!isRep) {
+    p.tasks.splice(found.idx, 1);
+  }
+
+  saveState(true);
+  renderDay();
+  renderCalendar();
+}
+
+function uncompleteDayTask(dISO, tid) {
+  const idx = state.dayLog.findIndex(function (r) {
+    return r.date === dISO && r.tid === tid;
+  });
+  if (idx === -1) return;
+  const rec = state.dayLog[idx];
+
+  // если это была разовая задача — восстановить её в проект
+  if (!rec.wasRep) {
+    const stillThere = findTaskByTid(tid);
+    if (!stillThere) {
+      const p = state.projects.find(function (x) { return x.num === rec.projectNum; });
+      if (p) {
+        if (!Array.isArray(p.tasks)) p.tasks = [];
+        p.tasks.push(JSON.parse(JSON.stringify(rec.snapshot)));
+      }
+    }
+  }
+  state.dayLog.splice(idx, 1);
+  saveState(true);
+  renderDay();
+  renderCalendar();
+}
+
+// ----- перенос задачи -----
+function openMoveDialog(tid) {
+  const found = findTaskByTid(tid);
+  if (!found) return;
+  const t = found.task;
+
+  // быстрые кнопки: завтра / +неделя относительно текущей даты задачи (или сегодня)
+  const base = t.date || todayISO();
+  const baseParts = base.split('-');
+  const baseD = new Date(+baseParts[0], +baseParts[1] - 1, +baseParts[2]);
+  function plusDays(n) {
+    const d = new Date(baseD);
+    d.setDate(d.getDate() + n);
+    return dateToISO(d);
+  }
+  const tomorrow = (function () {
+    const d = new Date(); d.setDate(d.getDate() + 1);
+    return dateToISO(d);
+  })();
+
+  const bodyHtml =
+    '<div style="font-size:12.5px;color:var(--text-dim);margin-bottom:10px;">' +
+    'Перенос «' + escapeHtml(t.name) + '» — выбери новую дату. Без вины: планируем, а не корим себя.</div>' +
+    '<div class="move-quick">' +
+      '<button onclick="moveDialogSet(\'' + tomorrow + '\')">Завтра</button>' +
+      '<button onclick="moveDialogSet(\'' + plusDays(1) + '\')">+1 день</button>' +
+      '<button onclick="moveDialogSet(\'' + plusDays(7) + '\')">+1 неделя</button>' +
+    '</div>' +
+    '<div class="move-modal-row">' +
+      '<div><label>Дата</label>' +
+        '<input type="date" id="move-date" value="' + escapeHtml(t.date || todayISO()) + '"></div>' +
+      '<div><label>Время (по желанию)</label>' +
+        '<input type="time" id="move-time" value="' + escapeHtml(t.time || '') + '"></div>' +
+    '</div>';
+
+  openCustomModal('Перенести задачу', bodyHtml, [
+    { label: 'Отмена', kind: 'ghost', action: closeModal },
+    { label: 'Перенести', kind: 'primary', action: function () {
+        const dEl = document.getElementById('move-date');
+        const tEl = document.getElementById('move-time');
+        applyMove(tid, dEl ? dEl.value : '', tEl ? tEl.value : '');
+      } }
+  ]);
+}
+
+// быстрая кнопка в диалоге переноса — проставляет дату в поле
+function moveDialogSet(dateISO) {
+  const dEl = document.getElementById('move-date');
+  if (dEl) dEl.value = dateISO;
+}
+
+function applyMove(tid, newDate, newTime) {
+  if (!newDate) { return; }   // дата обязательна
+  const found = findTaskByTid(tid);
+  if (!found) { closeModal(); return; }
+  found.task.date = newDate;
+  found.task.time = newTime || '';
+  closeModal();
+  saveState(true);
+  renderDay();
+  renderWeek();
+  renderCalendar();
+}
+
+
+// ===== ТАБ «НЕДЕЛЯ» =====
+let weekOffset = 0;   // 0 = текущая неделя, -1 прошлая, +1 следующая
+let weekOrderMode = false;   // режим перестановки плиток
+
+// понедельник недели с учётом смещения; возвращает Date (локальная полночь)
+function weekMonday(offset) {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  // getDay(): 0=вс..6=сб; хотим понедельник
+  const dow = (d.getDay() + 6) % 7;   // 0=пн..6=вс
+  d.setDate(d.getDate() - dow + offset * 7);
+  return d;
+}
+function dateToISO(d) {
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+}
+// массив 7 ISO-дат недели
+function weekDates(offset) {
+  const mon = weekMonday(offset);
+  const out = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(mon);
+    d.setDate(mon.getDate() + i);
+    out.push(dateToISO(d));
+  }
+  return out;
+}
+
+function weekShift(dir) {
+  weekOffset += dir;
+  renderWeek();
+}
+function weekToday() {
+  weekOffset = 0;
+  renderWeek();
+}
+
+// сколько важных задач показывать в плитке до сворачивания
+const WEEK_TILE_LIMIT = 6;
+
+function renderWeek() {
+  const dates = weekDates(weekOffset);
+  const firstISO = dates[0], lastISO = dates[6];
+  const todayI = todayISO();
+
+  // ---- подпись диапазона ----
+  const mon = weekMonday(weekOffset);
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  const MON_FULL = ['января','февраля','марта','апреля','мая','июня','июля',
+                     'августа','сентября','октября','ноября','декабря'];
+  let range;
+  if (mon.getMonth() === sun.getMonth()) {
+    range = mon.getDate() + '–' + sun.getDate() + ' ' + MON_FULL[mon.getMonth()];
+  } else {
+    range = mon.getDate() + ' ' + MON_SHORT[mon.getMonth()] + ' – ' +
+            sun.getDate() + ' ' + MON_SHORT[sun.getMonth()];
+  }
+  document.getElementById('week-range').textContent = range;
+  let sub = '';
+  if (weekOffset === 0) sub = 'текущая неделя';
+  else if (weekOffset === -1) sub = 'прошлая неделя';
+  else if (weekOffset === 1) sub = 'следующая неделя';
+  else if (weekOffset < 0) sub = Math.abs(weekOffset) + ' нед. назад';
+  else sub = 'через ' + weekOffset + ' нед.';
+  document.getElementById('week-sub').textContent = sub;
+  document.getElementById('week-today-btn').classList.toggle('hidden', weekOffset === 0);
+
+  // ---- кнопка режима порядка ----
+  const orderBtn = document.getElementById('week-order-btn');
+  const orderHint = document.getElementById('week-order-hint');
+  if (orderBtn) {
+    orderBtn.classList.toggle('on', weekOrderMode);
+    orderBtn.textContent = weekOrderMode ? '✓ Готово' : '↕ Порядок плиток';
+    orderHint.textContent = weekOrderMode
+      ? 'Двигай плитки стрелками ▲▼ — порядок свой, «Обзор» не меняется'
+      : '';
+  }
+
+  // ---- собираем задачи недели по проектам ----
+  // для каждого проекта: dated[] (задачи с датой в этой неделе), rep[] (повторяющиеся)
+  let totalDated = 0, totalCrit = 0, totalRep = 0;
+  const blocks = [];
+
+  state.projects.forEach(function (p) {
+    if (p.status === 'paused') return;   // спящие проекты не показываем
+    const dated = [];
+    const rep = [];
+    (p.tasks || []).forEach(function (t) {
+      normalizeTask(t);
+      if (t.type === 'rep') {
+        rep.push(t);
+      } else if (t.date && t.date >= firstISO && t.date <= lastISO) {
+        dated.push(t);
+      }
+    });
+    if (!dated.length && !rep.length) return;   // пустые проекты пропускаем
+    totalDated += dated.length;
+    totalRep += rep.length;
+    dated.forEach(function (t) { if (t.priority === 'crit') totalCrit++; });
+    blocks.push({ p: p, dated: dated, rep: rep });
+  });
+
+  // ---- порядок плиток по weekOrder ----
+  blocks.sort(function (a, b) {
+    return weekOrderRank(a.p.num) - weekOrderRank(b.p.num);
+  });
+
+  // ---- сводка ----
+  const summary = document.getElementById('week-summary');
+  if (blocks.length) {
+    let s = '<span><b>' + totalDated + '</b> ' +
+      plural(totalDated,'задача','задачи','задач') + ' с датой</span>';
+    if (totalCrit > 0) {
+      s += '<span class="ws-crit">🔴 <b>' + totalCrit + '</b> ' +
+        plural(totalCrit,'критичная','критичных','критичных') + '</span>';
+    }
+    s += '<span>в <b>' + blocks.length + '</b> ' +
+      plural(blocks.length,'проекте','проектах','проектах') + '</span>';
+    summary.innerHTML = s;
+  } else {
+    summary.innerHTML = '';
+  }
+
+  // ---- тело ----
+  const body = document.getElementById('week-body');
+  if (!blocks.length) {
+    body.innerHTML = '<div class="week-empty"><div class="big">🗓️</div>' +
+      'На эту неделю задач с датой нет.<br>' +
+      'Открой проект и задай задаче дату — она появится здесь.</div>';
+    return;
+  }
+
+  let h = '<div class="week-tiles">';
+  blocks.forEach(function (b, bi) {
+    h += renderWeekTile(b, dates, todayI, bi, blocks.length);
+  });
+  h += '</div>';
+  body.innerHTML = h;
+}
+
+// ранг проекта в своём порядке плиток; неизвестные — в конец, по номеру
+function weekOrderRank(num) {
+  const i = state.weekOrder.indexOf(num);
+  if (i !== -1) return i;
+  return 10000 + num;   // не попавшие в weekOrder — после, стабильно по num
+}
+
+function renderWeekTile(b, dates, todayI, bi, bcount) {
+  const p = b.p;
+  const s = sphereById(p.sphere);
+  const color = s ? s.color : '#9a7b30';
+
+  // сортировка задач с датой: по дате, потом по приоритету, потом по времени
+  const dated = b.dated.slice().sort(function (a, c) {
+    if (a.date !== c.date) return a.date < c.date ? -1 : 1;
+    const pa = priorityInfo(a.priority).rank, pc = priorityInfo(c.priority).rank;
+    if (pa !== pc) return pa - pc;
+    return (a.time || '99:99') < (c.time || '99:99') ? -1 : 1;
+  });
+
+  // отбор важных: 🔴+🟡; если их больше лимита — только 🔴
+  const critImp = dated.filter(function (t) {
+    return t.priority === 'crit' || t.priority === 'imp';
+  });
+  let shown;
+  if (critImp.length > WEEK_TILE_LIMIT) {
+    shown = dated.filter(function (t) { return t.priority === 'crit'; });
+  } else {
+    shown = critImp;
+  }
+  const hiddenCount = dated.length - shown.length;
+
+  let h = '<div class="week-tile' + (weekOrderMode ? ' ordering' : '') + '"' +
+    (weekOrderMode ? '' : ' onclick="openProject(' + p.num + ')"') + '>';
+  h += '<div class="week-tile-stripe" style="background:' + color + '"></div>';
+  h += '<div class="week-tile-head">';
+  if (s) h += '<div class="wt-mark" style="background:' + color + '">' + s.id + '</div>';
+  h += '<div class="week-tile-titles">';
+  h += '<div class="week-tile-name">' + escapeHtml(p.short) + '</div>';
+  h += '<div class="week-tile-sub">' + (s ? escapeHtml(s.name) : '') + '</div>';
+  h += '</div>';
+  if (p.isKey) h += '<span class="week-tile-keytag">ключ</span>';
+  h += '</div>';
+
+  // список важных задач
+  if (shown.length) {
+    h += '<div class="week-task-list">';
+    shown.forEach(function (t) {
+      const pri = priorityInfo(t.priority);
+      h += '<div class="week-task">';
+      h += '<span class="week-task-icon">' + pri.icon + '</span>';
+      h += '<div class="week-task-body">';
+      h += '<div class="week-task-name">' + escapeHtml(t.name) + '</div>';
+      // день недели + время
+      const di = dates.indexOf(t.date);
+      let dayName = (di >= 0) ? ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][di] : fmtDateHuman(t.date);
+      let cls = 'wtw-day';
+      if (t.date === todayI) cls += ' wtw-today';
+      else if (t.date < todayI) cls += ' wtw-over';
+      let when = '<span class="' + cls + '">' + dayName +
+        (t.date === todayI ? ' · сегодня' : '') +
+        (t.date < todayI ? ' · просрочено' : '') + '</span>';
+      if (t.time) when += ' · ' + t.time;
+      h += '<div class="week-task-when">' + when + '</div>';
+      h += '</div></div>';
+    });
+    h += '</div>';
+  }
+
+  // свёрнутые задачи
+  if (hiddenCount > 0) {
+    let note;
+    if (shown.length === 0) {
+      note = 'обычных задач на неделю: ' + hiddenCount;
+    } else {
+      note = 'ещё ' + hiddenCount + ' ' +
+        plural(hiddenCount,'задача','задачи','задач') + ' на неделю';
+    }
+    h += '<div class="week-tile-more">+ ' + note + ' — открой проект</div>';
+  }
+
+  // повторяющиеся — компактной строкой
+  if (b.rep.length) {
+    const names = b.rep.map(function (t) { return escapeHtml(t.name); });
+    h += '<div class="week-rep-line">↻ <b>Каждый день:</b> ' + names.join(' · ') + '</div>';
+  }
+
+  // панель перестановки плитки (режим порядка)
+  if (weekOrderMode) {
+    h += '<div class="week-tile-order">' +
+      '<button class="move-btn" title="Выше" ' + (bi === 0 ? 'disabled' : '') +
+        ' onclick="moveWeekTile(' + p.num + ',-1)">▲</button>' +
+      '<button class="move-btn" title="Ниже" ' + (bi === bcount - 1 ? 'disabled' : '') +
+        ' onclick="moveWeekTile(' + p.num + ',1)">▼</button>' +
+      '<span class="wto-label">позиция ' + (bi + 1) + ' из ' + bcount + '</span>' +
+      '</div>';
+  }
+
+  h += '</div>';
+  return h;
+}
+
+// ----- режим порядка плиток -----
+function toggleWeekOrder() {
+  weekOrderMode = !weekOrderMode;
+  renderWeek();
+}
+
+// синхронизирует weekOrder с текущим набором проектов:
+// все непаузные проекты должны быть в списке, в стабильном порядке
+function syncWeekOrder() {
+  const present = state.projects.map(function (p) { return p.num; });
+  // оставляем только существующие, сохраняя порядок
+  state.weekOrder = state.weekOrder.filter(function (n) {
+    return present.indexOf(n) !== -1;
+  });
+  // дописываем новые проекты в конец, в порядке state.projects
+  present.forEach(function (n) {
+    if (state.weekOrder.indexOf(n) === -1) state.weekOrder.push(n);
+  });
+}
+
+// двигает проект в weekOrder среди ВИДИМЫХ сейчас плиток
+function moveWeekTile(num, dir) {
+  syncWeekOrder();
+  // какие проекты сейчас на экране (в текущем порядке)
+  const dates = weekDates(weekOffset);
+  const firstISO = dates[0], lastISO = dates[6];
+  const visible = [];
+  state.projects.forEach(function (p) {
+    if (p.status === 'paused') return;
+    const has = (p.tasks || []).some(function (t) {
+      return t.type === 'rep' ||
+        (t.date && t.date >= firstISO && t.date <= lastISO);
+    });
+    if (has) visible.push(p.num);
+  });
+  visible.sort(function (a, b) { return weekOrderRank(a) - weekOrderRank(b); });
+
+  const pos = visible.indexOf(num);
+  if (pos === -1) return;
+  const swapPos = pos + dir;
+  if (swapPos < 0 || swapPos >= visible.length) return;
+  const other = visible[swapPos];
+
+  // меняем местами num и other в общем массиве weekOrder
+  const iA = state.weekOrder.indexOf(num);
+  const iB = state.weekOrder.indexOf(other);
+  if (iA === -1 || iB === -1) return;
+  const tmp = state.weekOrder[iA];
+  state.weekOrder[iA] = state.weekOrder[iB];
+  state.weekOrder[iB] = tmp;
+
+  saveState(true);
+  renderWeek();
+}
+
+
+// ===== ОБЩИЙ РЕНДЕР =====
+function renderAll() {
+  renderHeader();
+  renderTimer();
+  renderSphereFilter();
+  renderOverview();
+  renderWeek();
+  renderDay();
+  renderCalendar();
+  renderTimeLog();
+}
+
+// ===== СТАРТ =====
+function init() {
+  var step = 'старт';
+  try {
+    step = 'loadState';
+    loadState();
+    step = 'дата';
+    const today = new Date();
+    const months = ['января','февраля','марта','апреля','мая','июня','июля',
+                     'августа','сентября','октября','ноября','декабря'];
+    const days = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+    const tl = document.getElementById('today-label');
+    if (tl) tl.textContent =
+      days[today.getDay()] + ', ' + today.getDate() + ' ' + months[today.getMonth()] +
+      ' ' + today.getFullYear();
+    step = 'renderHeader';       renderHeader();
+    step = 'renderTimer';        renderTimer();
+    step = 'renderSphereFilter'; renderSphereFilter();
+    step = 'renderOverview';     renderOverview();
+    step = 'renderWeek';         renderWeek();
+    step = 'renderDay';          renderDay();
+    step = 'renderCalendar';     renderCalendar();
+    step = 'renderTimeLog';      renderTimeLog();
+    step = 'showTab';            showTab(state.lastTab || 'week');
+    step = 'ticker';             if (state.timer.running) startTicker();
+    step = 'saveStatus';         setSaveStatus('Сохранено', false);
+  } catch (e) {
+    showErrorBar('Не удалось загрузить дашборд. Попробуйте обновить страницу.');
+    console.error('Ошибка инициализации на шаге «' + step + '»:', e);
+  }
+}
+document.addEventListener('DOMContentLoaded', init);
+
+</script>
+</body>
+</html>
