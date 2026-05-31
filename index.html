@@ -602,6 +602,12 @@
   .time-modeswitch button + button { border-left: 1px solid var(--line); }
   .time-modeswitch button.on { background: var(--gold); color: #fff; }
 
+  .log-switchbar {
+    display: flex; align-items: center; gap: 12px;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .log-switchbar .time-modeswitch { margin-bottom: 0; }
+
   .time-nav {
     display: flex; align-items: center; gap: 10px;
     background: var(--surface); border: 1px solid var(--line);
@@ -628,7 +634,7 @@
     transition: all 0.12s; flex-shrink: 0;
   }
   .time-today-btn:hover { border-color: var(--gold); color: var(--text); }
-  .time-today-btn.hidden { visibility: hidden; }
+  .time-today-btn.hidden { display: none; }
 
   .time-section-title {
     font-size: 13px; font-weight: 600; margin: 18px 0 10px;
@@ -709,6 +715,34 @@
   }
   .time-empty .big { font-size: 32px; margin-bottom: 12px; }
 
+  /* строки журнала выполненного (вид «Выполнено») */
+  .done-entry {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; margin-bottom: 7px;
+    display: flex; align-items: flex-start; gap: 11px;
+    padding: 11px 13px;
+  }
+  .done-check {
+    flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
+    background: #1d6b51; color: #fff; font-size: 11px;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+  .done-entry-body { flex: 1; min-width: 0; }
+  .done-entry-task { font-size: 13.5px; color: var(--text); font-weight: 500; }
+  .done-entry-meta {
+    display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-top: 4px;
+  }
+  .done-entry-proj {
+    font-size: 11px; color: #fff; padding: 2px 8px; border-radius: 9px;
+    font-weight: 500; white-space: nowrap;
+  }
+  .done-entry-time {
+    font-size: 11.5px; color: var(--text-faint); white-space: nowrap;
+    flex-shrink: 0; font-variant-numeric: tabular-nums;
+  }
+  .dlabel-count { color: var(--text-faint); font-weight: 500; }
+
   /* поля окна записи времени */
   .te-modal-field { margin: 11px 0; }
   .te-modal-field label {
@@ -757,7 +791,7 @@
     transition: all 0.12s; flex-shrink: 0;
   }
   .cal-today-btn:hover { border-color: var(--gold); color: var(--text); }
-  .cal-today-btn.hidden { visibility: hidden; }
+  .cal-today-btn.hidden { display: none; }
 
   .cal-summary {
     font-size: 12px; color: var(--text-dim); margin-bottom: 14px;
@@ -898,7 +932,7 @@
     transition: all 0.12s; flex-shrink: 0;
   }
   .day-today-btn:hover { border-color: var(--gold); color: var(--text); }
-  .day-today-btn.hidden { visibility: hidden; }
+  .day-today-btn.hidden { display: none; }
 
   .day-summary {
     font-size: 12px; color: var(--text-dim);
@@ -965,7 +999,13 @@
   }
   .day-subs-line {
     font-size: 11px; color: var(--text-dim); margin-top: 4px;
+    cursor: pointer; user-select: none; display: inline-flex; align-items: center;
   }
+  .day-subs-line:hover { color: var(--text); }
+  .day-subs-line .dsl-arrow {
+    font-size: 8px; margin-right: 4px; transition: transform 0.15s; display: inline-block;
+  }
+  .day-subs-line.open .dsl-arrow { transform: rotate(90deg); }
   .day-subs-line .dsl-bar {
     display: inline-block; width: 46px; height: 5px; border-radius: 3px;
     background: var(--line-soft); vertical-align: middle; margin: 0 5px;
@@ -973,6 +1013,10 @@
   }
   .day-subs-line .dsl-fill {
     display: block; height: 100%; background: #1d6b51; border-radius: 3px;
+  }
+  .day-subs-wrap {
+    margin: 5px 0 2px; padding-left: 2px;
+    display: flex; flex-direction: column; gap: 4px;
   }
 
   /* действия дела */
@@ -1059,7 +1103,7 @@
     transition: all 0.12s; flex-shrink: 0;
   }
   .week-today-btn:hover { border-color: var(--gold); color: var(--text); }
-  .week-today-btn.hidden { visibility: hidden; }
+  .week-today-btn.hidden { display: none; }
 
   .week-summary {
     font-size: 12px; color: var(--text-dim);
@@ -1272,9 +1316,15 @@
 
   <!-- ВРЕМЯ -->
   <div class="tab-page" id="page-time">
-    <div class="time-modeswitch">
-      <button id="tm-week" onclick="timeSetMode('week')">Неделя</button>
-      <button id="tm-month" onclick="timeSetMode('month')">Месяц</button>
+    <div class="log-switchbar">
+      <div class="time-modeswitch log-viewswitch">
+        <button id="lv-time" onclick="logSetView('time')">Время</button>
+        <button id="lv-done" onclick="logSetView('done')">Выполнено</button>
+      </div>
+      <div class="time-modeswitch">
+        <button id="tm-week" onclick="timeSetMode('week')">Неделя</button>
+        <button id="tm-month" onclick="timeSetMode('month')">Месяц</button>
+      </div>
     </div>
     <div class="time-nav">
       <button class="time-nav-btn" onclick="timeShift(-1)" title="Назад">‹</button>
@@ -1346,10 +1396,8 @@ const STARTER_SPHERES = [
   { id: 'A', name: 'Тело и здоровье',   tag: 'здоровье',  color: '#1d6b51' },
   { id: 'B', name: 'Дом и быт',         tag: 'хозяйство', color: '#9a7b30' },
   { id: 'C', name: 'Доход и работа',    tag: 'доход',     color: '#45528f' },
-  { id: 'D', name: 'Творчество',        tag: 'творчество',color: '#9a3a5a' },
   { id: 'E', name: 'Отношения и связи', tag: 'связи',     color: '#2f5a82' },
-  { id: 'F', name: 'Системы и порядок', tag: 'порядок',   color: '#56544e' },
-  { id: 'G', name: 'Движение по Мосту', tag: 'Мост',      color: '#1d6b51' }
+  { id: 'F', name: 'Разное',            tag: 'разное',    color: '#56544e' }
 ];
 
 // Тип задачи: 'rep' повторяющаяся, 'once' разовая, 'back' backlog, 'cond' условная, '' не выбран
@@ -1432,7 +1480,6 @@ const STARTER_PROJECTS = [
         'Купить недостающие продукты',
         'Помыть и нарезать овощи',
         'Собрать оба салата, разложить по контейнерам']}),
-      T('Поддержать порядок в одежде мужа'),
       T('Мелкий быт — текущие мелочи по дому'),
       T('Подобрать средства для уборки без удушья, без аэрозолей'),
       T('Проверить эксперимент «дело под музыку» — уборка и готовка под музыку', {hint:'триггер — итог 2–3 недель'})
@@ -1465,165 +1512,9 @@ const STARTER_PROJECTS = [
       T('Составить бюджет на следующую неделю'),
       T('Свести итоги месяца', {hint:'возможно ежемесячно'})
     ]},
-  // ===== СФЕРА C =====
-  { sphere:'C', num:8, title:'Digital Product Lab', short:'Digital Product Lab', isKey:true, status:'active',
-    goal:'Построить онлайн-доход через систему цифровых продуктов (настроил → поддерживаешь).',
-    tasks:[
-      T('Разработать детальный пошаговый план проекта'),
-      T('Решить вопрос с блогом — нужен или нет'),
-      T('Выбрать тему и формат первого micro-tool'),
-      T('Сделать первый micro-tool'),
-      T('Сделать остальные micro-tools (план — 8 штук)'),
-      T('Написать и опубликовать пост в LinkedIn'),
-      T('Выбрать 1–2 micro-tools для платной версии'),
-      T('Сделать платную версию выбранного продукта'),
-      T('Настроить «формулу» в систему — чтобы новый продукт делался по шаблону'),
-      T('Ежедневный минимум ~1 час на проект', {hint:'защита от откладывания — ежедневно'}),
-      T('Пройти внутренний дедлайн-чекпоинт', {hint:'искусственные дедлайны по плану'})
-    ]},
-  { sphere:'C', num:9, title:'Borough Council', short:'Borough Council', isKey:false, status:'active',
-    goal:'Этап 1 — разобраться в Uniform и Power BI, собрать карту точек ввода, выявить корневые проблемы.',
-    tasks:[
-      T('Разобраться в системе Uniform'),
-      T('Разобраться в Power BI'),
-      T('Собрать карту точек ввода данных'),
-      T('Выявить корневые проблемы в процессе'),
-      T('Подготовить выводы по этапу 1 — что дальше'),
-      T('Решить про контракт с Council, когда этап 1 закрыт', {hint:'триггер — итоги этапа 1'}),
-      T('Вести проект в формате контракта 3–6 месяцев', {hint:'триггер — контракт заключён'})
-    ]},
-  { sphere:'C', num:10, title:'Бухгалтерия компании мужа', short:'Бухгалтерия мужа', isKey:false, status:'active',
-    goal:'Сделать минимум корректно и снять с себя как можно больше работы.',
-    tasks:[
-      T('Определить необходимый минимум — чек-лист документов к сдаче'),
-      T('Перенести данные в Xero вручную', {subs:[
-        'Получить доступ к Xero, разобраться в интерфейсе',
-        'Понять, за какой период переносить данные',
-        'Свести исходные данные из старой программы в один список',
-        'Внести данные в Xero по частям — по периодам или разделам',
-        'Сверить итоги в Xero со старыми — баланс сошёлся']}),
-      T('Подготовить документы к сдаче отчётности'),
-      T('Сдать отчётность', {hint:'периодично, по срокам'}),
-      T('Найти, как упростить и минимизировать свою работу по бухгалтерии'),
-      T('Перенести данные вручную, если старая программа не открывается', {hint:'триггер — программа не запускается'})
-    ]},
-  // ===== СФЕРА D =====
-  { sphere:'D', num:11, title:"Olya's Angels — Вселенная ангелов", short:"Olya's Angels", isKey:false, status:'active',
-    goal:'Развивать вселенную ангелов как живую тему — выставки, аудитория, люди, которым это нужно.',
-    tasks:[
-      T('Собрать в одном месте всё, что уже есть — картины, принты, открытки, ткань для сумок', {subs:[
-        'Собрать физически в одно место все принты, открытки, ткани, фурнитуру, кожу',
-        'Сфотографировать каждую вещь / группу',
-        'Составить список: что это, сколько, в каком состоянии',
-        'Отметить, что готово к показу/продаже, а что — материал на будущее']}),
-      T('Дописать новую картину, когда приходит идея', {hint:'по мере появления идей'}),
-      T('Собрать наброски для Glass Cube — эскизы в разных ракурсах', {subs:[
-        'Определить, что именно за объект — что внутри куба, общая идея сцены',
-        'Сделать черновые наброски с разных ракурсов — спереди, сбоку, сверху',
-        'Выбрать сильные ракурсы, отрисовать их чище']}),
-      T('Определить масштаб и форму Glass Cube'),
-      T('Дошить коллекцию сумок из готовых напечатанных тканей', {subs:[
-        'Разложить напечатанные нарезанные ткани и подобрать к ним фурнитуру и кожу',
-        'Определить модель и порядок сборки одной сумки',
-        'Сшить пробную сумку, проверить и поправить процесс',
-        'Сшить остальные сумки из коллекции']}),
-      T('Решить, как и где показывать вселенную людям — выставки, площадки, аудитория'),
-      T('Найти и подать заявки на подходящие выставки / open calls', {subs:[
-        'Найти подходящие выставки и open calls, собрать список с дедлайнами',
-        'Подготовить материалы заявки — фото работ, описание, био',
-        'Подать заявку — шаблон, повторяется для каждой выставки']}),
-      T('Разобрать и описать старые арт-материалы как ассет на хранении')
-    ]},
-  { sphere:'D', num:12, title:'Музыка', short:'Музыка', isKey:false, status:'paused',
-    goal:'Гитара, пианино, пение. Сознательно не в приоритете до появления свободного времени.',
-    tasks:[]},
-  { sphere:'D', num:13, title:'«Холлоуз»', short:'«Холлоуз»', isKey:false, status:'paused',
-    goal:'Sci-fi / фэнтези книга. Возможно, когда-нибудь как 3-месячный проект.',
-    tasks:[]},
-  // ===== СФЕРА E =====
-  { sphere:'E', num:14, title:'Семья: муж', short:'Муж', isKey:false, status:'active',
-    goal:'Проводить время вместе, общаться, строить совместное будущее; совместные поездки.',
-    tasks:[
-      T('Общение за завтраком утром', {hint:'ежедневно, окно 8:00–10:00'}),
-      T('Придумать и провести что-то совместное — не бытовое'),
-      T('Обсудить и планировать совместные поездки'),
-      T('Обсуждать семейные финансы вместе', {hint:'возможно еженедельно'})
-    ]},
-  { sphere:'E', num:15, title:'Семья: мама', short:'Мама', isKey:false, status:'active',
-    goal:'Поддерживать общение и двигаться к тому, чтобы видеться.',
-    tasks:[
-      T('Созвон / связь с мамой', {hint:'регулярно'}),
-      T('Решить техническую преграду со связью — WhatsApp работает плохо', {subs:[
-        'Понять, в чём именно проблема — связь, приложение, блокировки',
-        'Собрать варианты — другие мессенджеры, VPN, звонки иначе',
-        'Проверить варианты вместе с мамой, что реально работает у вас обеих',
-        'Закрепить рабочий способ связи']}),
-      T('Проработать варианты «видеться» — съездить / приезд на несколько месяцев / жить рядом')
-    ]},
-  { sphere:'E', num:16, title:'Семья: сестра и племянница', short:'Сестра и племянница', isKey:false, status:'active',
-    goal:'Поддерживать контакт с сестрой и принимать рисунки племянницы.',
-    tasks:[
-      T('Связь с сестрой', {hint:'регулярно'}),
-      T('Принять и сохранить рисунки племянницы, когда присылает', {hint:'по мере поступления'})
-    ]},
-  { sphere:'E', num:17, title:'Друзья', short:'Друзья', isKey:false, status:'active',
-    goal:'Поддерживать связь с подругами (Пуэрто-Рико, Испания, Колорадо) и найти способ видеться чаще.',
-    tasks:[
-      T('Связь с подругой в Пуэрто-Рико', {hint:'периодически'}),
-      T('Связь с подругой в Испании', {hint:'периодически'}),
-      T('Связь с подругой в Колорадо', {hint:'периодически'}),
-      T('Найти способ видеться чаще — продумать варианты')
-    ]},
-  { sphere:'E', num:18, title:'Новые контакты (митапы)', short:'Митапы', isKey:false, status:'active',
-    goal:'Выйти «в свет» после долгих лет за экраном — митапы в Лондоне, живое общение.',
-    tasks:[
-      T('Найти подходящие митапы в Лондоне — бизнес, ИИ, продакт-дизайн'),
-      T('Выбрать конкретный митап и записаться'),
-      T('Сходить на митап', {hint:'повторяется по мере выбора'})
-    ]},
-  // ===== СФЕРА F =====
-  { sphere:'F', num:19, title:'Цифровая уборка', short:'Цифровая уборка', isKey:false, status:'backlog',
-    goal:'Навести порядок в цифровой жизни — файлы, имейлы и аккаунты, книжка паролей.',
-    tasks:[
-      T('Разобрать файлы на компьютере по категориям', {subs:[
-        'Придумать простую структуру папок — основные категории',
-        'Разобрать рабочий стол и папку «Загрузки»',
-        'Разобрать документы и проекты по папкам',
-        'Разобрать фото и картинки',
-        'Удалить дубли и явный мусор']}),
-      T('Разобрать ~20 имейлов и аккаунтов — удалить ненужное, оставить нужное', {subs:[
-        'Составить список всех имейлов и аккаунтов, что вообще есть',
-        'Отметить по каждому: нужен / не нужен / под вопросом',
-        'Закрыть или удалить ненужные аккаунты',
-        'Отписаться от ненужных рассылок в оставшихся ящиках',
-        'Навести порядок в нужных ящиках — папки, разбор накопленного']}),
-      T('Перенести логины и пароли в новую книжку'),
-      T('Отписаться от ненужных рассылок')
-    ]},
-  { sphere:'F', num:20, title:'Языки', short:'Языки', isKey:false, status:'paused',
-    goal:'Французский и испанский, своя система обучения. Пересмотр в августе.',
-    tasks:[]},
-  // ===== СФЕРА G =====
-  { sphere:'G', num:21, title:'Курс по самосовершенствованию', short:'Курс (Мост)', isKey:false, status:'active',
-    goal:'Продвигаться по Мосту через регулярное прохождение заочного курса.',
-    tasks:[
-      T('Прочитать материал урока', {hint:'~по часу, несколько раз в неделю'}),
-      T('Пройти урок'),
-      T('Разработать систему, как проходить курс без перебарывания себя')
-    ]},
-  { sphere:'G', num:22, title:'Поездка в Тампу (Флаг)', short:'Поездка в Тампу', isKey:true, status:'active',
-    goal:'Поехать в Тампу (~ноябрь 2026), пройти программу на Флаге, уладить давнюю личную проблему.',
-    tasks:[
-      T('Посчитать полную стоимость поездки — билеты, гостиница, питание, ~$10 000 на программу'),
-      T('Спланировать 2–3 недели под поездку'),
-      T('Забронировать билеты и гостиницу', {hint:'триггер — ближе к ноябрю'})
-    ]},
-  { sphere:'G', num:23, title:'Е-метр', short:'Е-метр', isKey:false, status:'active',
-    goal:'Выяснить последствия просрочки и реальный срок — затем решить, продлевать ли сейчас.',
-    tasks:[
-      T('Выяснить последствия просрочки и реальный срок'),
-      T('Решить, продлевать ли регистрацию сейчас', {hint:'триггер — после выяснения'})
-    ]}
+  // ===== СФЕРА C — Доход и работа (пока без проектов) =====
+  // ===== СФЕРА E — Отношения и связи (пока без проектов) =====
+  // ===== СФЕРА F — Разное (пока без проектов) =====
 ];
 
 </script>
@@ -3028,7 +2919,12 @@ function resetData() {
 // ===== ТАБ «ВРЕМЯ» (лог учёта) =====
 let timeMode = 'month';   // 'week' | 'month'
 let timeOffset = 0;       // смещение периода
+let logView = 'time';     // 'time' | 'done' — какой журнал показываем
 
+function logSetView(view) {
+  logView = view;
+  renderTimeLog();
+}
 function timeSetMode(mode) {
   timeMode = mode;
   timeOffset = 0;
@@ -3062,6 +2958,12 @@ function fmtDuration(min) {
 }
 
 function renderTimeLog() {
+  // подсветка переключателя вида (Время / Выполнено)
+  const tvb = document.getElementById('lv-time');
+  const dvb = document.getElementById('lv-done');
+  if (tvb) tvb.classList.toggle('on', logView === 'time');
+  if (dvb) dvb.classList.toggle('on', logView === 'done');
+
   // переключатель режима
   const wb = document.getElementById('tm-week');
   const mb = document.getElementById('tm-month');
@@ -3103,6 +3005,9 @@ function renderTimeLog() {
       : 'через ' + timeOffset + ' мес.';
   }
   document.getElementById('time-today-btn').classList.toggle('hidden', timeOffset === 0);
+
+  // ветвление по виду журнала
+  if (logView === 'done') { renderDoneBody(range, periodSub); return; }
 
   // записи периода
   const entries = state.log.filter(function (r) {
@@ -3206,6 +3111,83 @@ function renderTimeLog() {
       '<span class="tdl-sum">' + fmtDuration(daySum) + '</span></div>';
     byDate[dk].forEach(function (r) {
       h += renderTimeEntry(r);
+    });
+    h += '</div>';
+  });
+
+  body.innerHTML = h;
+}
+
+// тело журнала: выполненные дела (вид «Выполнено»), из dayLog, по дням
+function renderDoneBody(range, periodSub) {
+  const subEl = document.getElementById('time-sub');
+  const body = document.getElementById('time-body');
+  const MON_FULL = ['января','февраля','марта','апреля','мая','июня','июля',
+                     'августа','сентября','октября','ноября','декабря'];
+  const WD_SH = ['вс','пн','вт','ср','чт','пт','сб'];
+
+  // выполненное за период
+  const done = (state.dayLog || []).filter(function (r) {
+    return r.date >= range.from && r.date <= range.to;
+  });
+
+  if (subEl) {
+    if (done.length) {
+      subEl.innerHTML = escapeHtml(periodSub) +
+        ' · <span class="tn-total">' + done.length + ' ' +
+        plural(done.length, 'дело', 'дела', 'дел') + '</span>';
+    } else {
+      subEl.textContent = periodSub;
+    }
+  }
+
+  if (!done.length) {
+    body.innerHTML = '<div class="time-empty"><div class="big">✓</div>' +
+      'За этот период ничего не отмечено.<br>' +
+      'Дела, которые отмечаешь в плане дня или недели, появятся здесь.</div>';
+    return;
+  }
+
+  // группировка по дате, свежие сверху; внутри дня — по времени выполнения
+  const byDate = {};
+  done.forEach(function (r) {
+    if (!byDate[r.date]) byDate[r.date] = [];
+    byDate[r.date].push(r);
+  });
+  const dateKeys = Object.keys(byDate).sort(function (a, b) { return a > b ? -1 : 1; });
+
+  let h = '';
+  dateKeys.forEach(function (dk) {
+    const recs = byDate[dk].slice().sort(function (a, b) {
+      return (b.doneAt || 0) - (a.doneAt || 0);
+    });
+    const dp = dk.split('-');
+    const dObj = new Date(+dp[0], +dp[1]-1, +dp[2]);
+    h += '<div class="time-day-group">';
+    h += '<div class="time-day-label">' +
+      '<span>' + capitalize(WD_SH[dObj.getDay()]) + ', ' +
+        dObj.getDate() + ' ' + MON_FULL[dObj.getMonth()] + '</span>' +
+      '<span class="dlabel-count">' + recs.length + ' ' +
+        plural(recs.length, 'дело', 'дела', 'дел') + '</span></div>';
+    recs.forEach(function (r) {
+      const p = state.projects.find(function (x) { return x.num === r.projectNum; });
+      const s = p ? sphereById(p.sphere) : null;
+      const taskName = (r.snapshot && r.snapshot.name) ? r.snapshot.name : 'Дело';
+      const color = s ? s.color : '#9a7b30';
+      const projLabel = p
+        ? (s ? s.name + ' · ' : '') + p.short
+        : 'Проект удалён';
+      h += '<div class="done-entry">' +
+        '<span class="done-check">✓</span>' +
+        '<div class="done-entry-body">' +
+          '<div class="done-entry-task">' + escapeHtml(taskName) + '</div>' +
+          '<div class="done-entry-meta">' +
+            '<span class="done-entry-proj" style="background:' + color + '">' +
+              escapeHtml(projLabel) + '</span>' +
+          '</div>' +
+        '</div>' +
+        (r.doneAt ? '<span class="done-entry-time">' + fmtTimeShort(r.doneAt) + '</span>' : '') +
+      '</div>';
     });
     h += '</div>';
   });
@@ -3755,12 +3737,25 @@ function renderDayTask(it, dISO, gi, gcount) {
   if (isRep) h += '<span class="day-rep-tag">↻ каждый день</span>';
   h += '</div>';
   if (t.hint) h += '<div class="day-task-hint">' + escapeHtml(t.hint) + '</div>';
-  // подзадачи — прогресс (только если есть и задача жива в проекте)
+  // подзадачи — прогресс + раскрываемый чек-лист (только если есть и задача жива в проекте)
   if (!it.fromLog && t.subs && t.subs.length) {
     const sd = t.subs.filter(function (x){ return x.done; }).length;
     const pct = Math.round(sd / t.subs.length * 100);
-    h += '<div class="day-subs-line">Подзадачи: ' + sd + '/' + t.subs.length +
+    const isOpen = !!daySubsOpen[t.tid];
+    h += '<div class="day-subs-line' + (isOpen ? ' open' : '') + '" onclick="toggleDaySubs(\'' + t.tid + '\')">' +
+      '<span class="dsl-arrow">▶</span>Подзадачи: ' + sd + '/' + t.subs.length +
       '<span class="dsl-bar"><span class="dsl-fill" style="width:' + pct + '%"></span></span></div>';
+    if (isOpen) {
+      h += '<div class="day-subs-wrap">';
+      t.subs.forEach(function (sub, si) {
+        h += '<div class="sub-row' + (sub.done ? ' s-done' : '') + '">';
+        h += '<div class="sub-check' + (sub.done ? ' checked' : '') + '" ' +
+          'onclick="toggleSubByTid(\'' + t.tid + '\',' + si + ',\'day\')">' + (sub.done ? '✓' : '') + '</div>';
+        h += '<span class="sub-name">' + escapeHtml(sub.name) + '</span>';
+        h += '</div>';
+      });
+      h += '</div>';
+    }
   }
   h += '</div>';   // day-task-body
   h += '</div>';   // day-task-main
@@ -3806,6 +3801,22 @@ function fmtTimeShort(ts) {
 }
 function capitalize(s) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
+// реестр раскрытия подзадач в плане дня/недели: tid -> bool
+let daySubsOpen = {};
+function toggleDaySubs(tid) { daySubsOpen[tid] = !daySubsOpen[tid]; renderDay(); }
+let weekSubsOpen = {};
+function toggleWeekSubs(tid) { weekSubsOpen[tid] = !weekSubsOpen[tid]; renderWeek(); }
+
+// отметить/снять подзадачу по tid задачи (из плана дня или недели)
+function toggleSubByTid(tid, sIdx, rerender) {
+  const found = findTaskByTid(tid);
+  if (!found || !found.task.subs || !found.task.subs[sIdx]) return;
+  found.task.subs[sIdx].done = !found.task.subs[sIdx].done;
+  saveState(true);
+  if (rerender === 'week') renderWeek();
+  else renderDay();
 }
 
 // найти задачу по tid во всех проектах
@@ -4168,6 +4179,28 @@ function renderWeekTile(b, dates, todayI, bi, bcount) {
         (t.date < todayI ? ' · просрочено' : '') + '</span>';
       if (t.time) when += ' · ' + t.time;
       h += '<div class="week-task-when">' + when + '</div>';
+      // подзадачи — прогресс + раскрываемый чек-лист
+      if (t.subs && t.subs.length) {
+        const wsd = t.subs.filter(function (x){ return x.done; }).length;
+        const wpct = Math.round(wsd / t.subs.length * 100);
+        const wOpen = !!weekSubsOpen[t.tid];
+        h += '<div class="day-subs-line' + (wOpen ? ' open' : '') +
+          '" onclick="event.stopPropagation();toggleWeekSubs(\'' + t.tid + '\')">' +
+          '<span class="dsl-arrow">▶</span>Подзадачи: ' + wsd + '/' + t.subs.length +
+          '<span class="dsl-bar"><span class="dsl-fill" style="width:' + wpct + '%"></span></span></div>';
+        if (wOpen) {
+          h += '<div class="day-subs-wrap">';
+          t.subs.forEach(function (sub, si) {
+            h += '<div class="sub-row' + (sub.done ? ' s-done' : '') + '">';
+            h += '<div class="sub-check' + (sub.done ? ' checked' : '') + '" ' +
+              'onclick="event.stopPropagation();toggleSubByTid(\'' + t.tid + '\',' + si + ',\'week\')">' +
+              (sub.done ? '✓' : '') + '</div>';
+            h += '<span class="sub-name">' + escapeHtml(sub.name) + '</span>';
+            h += '</div>';
+          });
+          h += '</div>';
+        }
+      }
       h += '</div></div>';
     });
     h += '</div>';
