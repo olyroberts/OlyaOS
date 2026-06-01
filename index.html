@@ -69,6 +69,31 @@
   .savebar button:hover { border-color: var(--gold); color: var(--text); }
   .savebar button.danger:hover { border-color: #a33636; color: #a33636; }
 
+  /* тултипы-подсказки */
+  .tip-wrap { position: relative; display: inline-flex; }
+  .tip-wrap[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%);
+    width: max-content; max-width: 240px;
+    background: #3a3128; color: #f5ecd9;
+    font-size: 11.5px; line-height: 1.4; text-align: left;
+    padding: 8px 11px; border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    opacity: 0; visibility: hidden; transition: opacity 0.14s, visibility 0.14s;
+    pointer-events: none; z-index: 60; white-space: normal;
+  }
+  .tip-wrap[data-tip]::before {
+    content: ''; position: absolute; left: 50%; bottom: calc(100% + 3px);
+    transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: #3a3128;
+    opacity: 0; visibility: hidden; transition: opacity 0.14s, visibility 0.14s;
+    pointer-events: none; z-index: 60;
+  }
+  .tip-wrap:hover::after, .tip-wrap:hover::before,
+  .tip-wrap:focus-within::after, .tip-wrap:focus-within::before {
+    opacity: 1; visibility: visible;
+  }
+
 
   /* ---- Полоса таймера (сквозная) ---- */
   .timerbar {
@@ -1047,6 +1072,38 @@
   .day-nav-label .dn-date { font-size: 14.5px; font-weight: 600; }
   .day-nav-label .dn-sub { font-size: 11px; color: var(--text-faint); margin-top: 1px; }
   .day-nav-label .dn-sub.is-today { color: #1d6b51; font-weight: 600; }
+  .nav-label-click { cursor: pointer; border-radius: 7px; padding: 2px 6px; transition: background 0.12s; }
+  .nav-label-click:hover { background: var(--surface-2); }
+  .nav-date-edit { flex: 1; display: flex; justify-content: center; align-items: center; gap: 6px; position: relative; }
+  .nav-date-fields {
+    display: inline-flex; align-items: center; gap: 2px;
+    border: 1px solid var(--gold); border-radius: 7px;
+    padding: 4px 8px; background: var(--surface);
+  }
+  .ndf-seg {
+    font-family: inherit; font-size: 14px; text-align: center;
+    border: none; background: transparent; color: var(--text);
+    padding: 2px 0;
+  }
+  .ndf-seg:focus { outline: none; background: #f3e6c4; border-radius: 4px; }
+  .ndf-seg::placeholder { color: var(--text-faint); }
+  .ndf-dd, .ndf-mm { width: 26px; }
+  .ndf-yyyy { width: 42px; }
+  .ndf-sep { color: var(--text-faint); font-size: 14px; }
+  .nav-cal-btn {
+    font-family: inherit; font-size: 15px; line-height: 1;
+    width: 32px; height: 32px; padding: 0; border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.12s; flex-shrink: 0;
+  }
+  .nav-cal-btn:hover { border-color: var(--gold); }
+  .nav-native-date {
+    position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
+    width: 1px; height: 1px;
+    opacity: 0; pointer-events: none; border: 0; padding: 0; margin: 0;
+  }
+  .hidden { display: none; }
   .day-today-btn {
     font-family: inherit; font-size: 11.5px;
     padding: 6px 11px; border-radius: 7px; cursor: pointer;
@@ -1062,6 +1119,22 @@
   }
   .day-summary b { color: var(--text); }
   .day-summary .ds-done { color: #1d6b51; }
+
+  /* строка с кнопкой добавления задачи в Дне */
+  .day-add-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px;
+  }
+  .day-print-btn {
+    font-family: inherit; font-size: 12.5px;
+    padding: 8px 14px; border-radius: 9px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text-dim);
+    transition: all 0.12s;
+  }
+  .day-print-btn:hover { border-color: var(--gold); color: var(--text); }
+
+  /* печатная версия дня — скрыта на экране, видна только при печати */
+  .day-print { display: none; }
 
   /* группа приоритета */
   .day-group { margin-bottom: 18px; }
@@ -1109,6 +1182,10 @@
   .day-proj-tag {
     font-size: 10.5px; color: #fff; padding: 2px 8px; border-radius: 9px;
     font-weight: 500; white-space: nowrap;
+  }
+  .day-proj-tag.none {
+    background: transparent; color: var(--text-faint);
+    border: 1px dashed var(--line); font-style: italic;
   }
   .day-rep-tag {
     font-size: 10px; letter-spacing: 0.3px;
@@ -1162,6 +1239,27 @@
   .day-act-btn.arrow:hover:not(:disabled) { border-color: #45528f; color: #45528f; }
   .day-task-actions .da-spacer { flex: 1; }
   .day-act-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .day-act-btn.on { background: var(--gold); color: #fff; border-color: var(--gold); }
+  .day-act-btn.on:hover { background: #b08d2e; color: #fff; }
+
+  /* инлайн-правка дела */
+  .day-edit { padding: 12px 13px; display: flex; flex-direction: column; gap: 9px; }
+  .day-edit .de-field { display: flex; flex-direction: column; gap: 3px; }
+  .day-edit .de-field label {
+    font-size: 10px; letter-spacing: 0.4px; text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .day-edit input[type="text"], .day-edit select {
+    font-family: inherit; font-size: 13px;
+    padding: 7px 9px; border-radius: 7px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text);
+  }
+  .day-edit input[type="text"]:focus, .day-edit select:focus {
+    outline: none; border-color: var(--gold);
+  }
+  .day-edit .de-row2 { display: flex; gap: 9px; }
+  .day-edit .de-row2 .de-field { flex: 1; }
+  .day-edit .de-note { font-size: 11px; color: var(--text-faint); }
 
   .day-empty {
     text-align: center; padding: 50px 20px;
@@ -1335,6 +1433,58 @@
     color: var(--gold); text-decoration: none;
   }
   footer a:hover { text-decoration: underline; }
+
+  /* ===== печатная версия дня ===== */
+  .day-print-head h1 {
+    font-size: 22px; font-weight: 600; margin-bottom: 2px;
+  }
+  .day-print-head .dp-weekday {
+    font-size: 14px; color: #555; margin-bottom: 18px;
+  }
+  .day-print-group { margin-bottom: 16px; }
+  .day-print-group-label {
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 8px;
+    border-bottom: 1px solid #000; padding-bottom: 3px;
+  }
+  .day-print-task { margin: 0 0 9px; }
+  .day-print-row {
+    display: flex; align-items: flex-start; gap: 9px;
+    font-size: 14px; line-height: 1.5;
+  }
+  .dp-box {
+    width: 15px; height: 15px; border: 1.5px solid #000; border-radius: 3px;
+    flex-shrink: 0; margin-top: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; line-height: 1;
+  }
+  .day-print-task.dp-done .dp-name { text-decoration: line-through; color: #666; }
+  .day-print-subs { margin: 4px 0 0 26px; }
+  .day-print-sub {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 13px; line-height: 1.45; margin-bottom: 4px;
+  }
+  .dp-box-sm {
+    width: 12px; height: 12px; border: 1.2px solid #555; border-radius: 2px;
+    flex-shrink: 0; margin-top: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; line-height: 1;
+  }
+  .day-print-sub.dp-done .dp-sub-name { text-decoration: line-through; color: #888; }
+  .day-print-empty { font-size: 14px; color: #555; }
+
+  @media print {
+    /* скрываем весь интерфейс, кроме печатного списка дня */
+    body > *:not(.wrap) { display: none !important; }
+    .wrap { max-width: none; padding: 0; margin: 0; }
+    .wrap > *:not(#page-day) { display: none !important; }
+    /* показываем только таб дня, даже если активен другой */
+    .tab-page#page-day { display: block !important; }
+    /* внутри дня прячем всё, кроме печатного блока */
+    #page-day > *:not(#day-print) { display: none !important; }
+    .day-print { display: block !important; color: #000; }
+    @page { margin: 16mm; }
+  }
 </style>
 </head>
 <body>
@@ -1363,9 +1513,15 @@
 
   <div class="savebar">
     <span class="status" id="save-status">Saved</span>
-    <button onclick="exportData()">Export</button>
-    <button onclick="importData()">Import</button>
-    <button class="danger" onclick="resetData()">Reset</button>
+    <span class="tip-wrap" data-tip="Download a backup file (JSON) with all your spheres, projects and tasks. Keep it safe — you can restore from it later with Import.">
+      <button onclick="exportData()">Export</button>
+    </span>
+    <span class="tip-wrap" data-tip="Load a backup file you saved earlier with Export. This replaces your current data with the file's contents.">
+      <button onclick="importData()">Import</button>
+    </span>
+    <span class="tip-wrap" data-tip="Erase everything and start fresh. Export a backup first if you might want your data back.">
+      <button class="danger" onclick="resetData()">Reset</button>
+    </span>
   </div>
 
   <div class="tabs">
@@ -1380,9 +1536,27 @@
   <div class="tab-page" id="page-week">
     <div class="week-nav">
       <button class="week-nav-btn" onclick="weekShift(-1)" title="Previous week">‹</button>
-      <div class="week-nav-label">
+      <div class="week-nav-label nav-label-click" id="week-label" onclick="openWeekDatePicker()" title="Click to pick or type a date">
         <div class="wn-range" id="week-range">—</div>
         <div class="wn-sub" id="week-sub"></div>
+      </div>
+      <div class="nav-date-edit hidden" id="week-date-edit">
+        <span class="nav-date-fields">
+          <input type="text" inputmode="numeric" maxlength="2" class="ndf-seg ndf-dd" id="week-dd"
+            placeholder="DD" oninput="onSegInput('week','dd')" onkeydown="onSegKey(event,'week','dd')"
+            onfocus="this.select()">
+          <span class="ndf-sep">/</span>
+          <input type="text" inputmode="numeric" maxlength="2" class="ndf-seg ndf-mm" id="week-mm"
+            placeholder="MM" oninput="onSegInput('week','mm')" onkeydown="onSegKey(event,'week','mm')"
+            onfocus="this.select()">
+          <span class="ndf-sep">/</span>
+          <input type="text" inputmode="numeric" maxlength="4" class="ndf-seg ndf-yyyy" id="week-yyyy"
+            placeholder="YYYY" oninput="onSegInput('week','yyyy')" onkeydown="onSegKey(event,'week','yyyy')"
+            onfocus="this.select()">
+        </span>
+        <button type="button" class="nav-cal-btn" title="Open calendar"
+          onmousedown="event.preventDefault()" onclick="showWeekPicker()">📅</button>
+        <input type="date" class="nav-native-date" id="week-date-input" onchange="onNativeWeekPick(this.value)">
       </div>
       <button class="week-nav-btn" onclick="weekShift(1)" title="Next week">›</button>
       <button class="week-today-btn" id="week-today-btn" onclick="weekToday()">This week</button>
@@ -1399,24 +1573,61 @@
   <div class="tab-page" id="page-day">
     <div class="day-nav">
       <button class="day-nav-btn" onclick="dayShift(-1)" title="Yesterday">‹</button>
-      <div class="day-nav-label">
+      <div class="day-nav-label nav-label-click" id="day-label" onclick="openDayDatePicker()" title="Click to pick or type a date">
         <div class="dn-date" id="day-date">—</div>
         <div class="dn-sub" id="day-sub"></div>
+      </div>
+      <div class="nav-date-edit hidden" id="day-date-edit">
+        <span class="nav-date-fields">
+          <input type="text" inputmode="numeric" maxlength="2" class="ndf-seg ndf-dd" id="day-dd"
+            placeholder="DD" oninput="onSegInput('day','dd')" onkeydown="onSegKey(event,'day','dd')"
+            onfocus="this.select()">
+          <span class="ndf-sep">/</span>
+          <input type="text" inputmode="numeric" maxlength="2" class="ndf-seg ndf-mm" id="day-mm"
+            placeholder="MM" oninput="onSegInput('day','mm')" onkeydown="onSegKey(event,'day','mm')"
+            onfocus="this.select()">
+          <span class="ndf-sep">/</span>
+          <input type="text" inputmode="numeric" maxlength="4" class="ndf-seg ndf-yyyy" id="day-yyyy"
+            placeholder="YYYY" oninput="onSegInput('day','yyyy')" onkeydown="onSegKey(event,'day','yyyy')"
+            onfocus="this.select()">
+        </span>
+        <button type="button" class="nav-cal-btn" title="Open calendar"
+          onmousedown="event.preventDefault()" onclick="showDayPicker()">📅</button>
+        <input type="date" class="nav-native-date" id="day-date-input" onchange="onNativeDayPick(this.value)">
       </div>
       <button class="day-nav-btn" onclick="dayShift(1)" title="Tomorrow">›</button>
       <button class="day-today-btn" id="day-today-btn" onclick="dayToday()">Today</button>
     </div>
     <div class="day-summary" id="day-summary"></div>
+    <div class="day-add-row">
+      <button class="day-print-btn" onclick="printDay()" title="Open a clean printable list">🖨 Print</button>
+      <button class="add-task-btn" onclick="addDayTask()">+ Add task</button>
+    </div>
     <div id="day-body"></div>
+    <div id="day-print" class="day-print"></div>
   </div>
 
   <!-- CALENDAR -->
   <div class="tab-page" id="page-calendar">
     <div class="cal-nav">
       <button class="cal-nav-btn" onclick="calShift(-1)" title="Previous month">‹</button>
-      <div class="cal-nav-label">
+      <div class="cal-nav-label nav-label-click" id="cal-label" onclick="openCalDatePicker()" title="Click to pick or type a month">
         <div class="cn-month" id="cal-month">—</div>
         <div class="cn-sub" id="cal-sub"></div>
+      </div>
+      <div class="nav-date-edit hidden" id="cal-date-edit">
+        <span class="nav-date-fields">
+          <input type="text" inputmode="numeric" maxlength="2" class="ndf-seg ndf-mm" id="cal-mm"
+            placeholder="MM" oninput="onCalSegInput('mm')" onkeydown="onCalSegKey(event,'mm')"
+            onfocus="this.select()">
+          <span class="ndf-sep">/</span>
+          <input type="text" inputmode="numeric" maxlength="4" class="ndf-seg ndf-yyyy" id="cal-yyyy"
+            placeholder="YYYY" oninput="onCalSegInput('yyyy')" onkeydown="onCalSegKey(event,'yyyy')"
+            onfocus="this.select()">
+        </span>
+        <button type="button" class="nav-cal-btn" title="Open calendar"
+          onmousedown="event.preventDefault()" onclick="showCalPicker()">📅</button>
+        <input type="date" class="nav-native-date" id="cal-date-input" onchange="onNativeCalPick(this.value)">
       </div>
       <button class="cal-nav-btn" onclick="calShift(1)" title="Next month">›</button>
       <button class="cal-today-btn" id="cal-today-btn" onclick="calToday()">This month</button>
@@ -1647,6 +1858,8 @@ function loadState() {
       // миграция: дотягиваем задачи до новой схемы
       state.projects.forEach(function (p) {
         if (Array.isArray(p.tasks)) p.tasks.forEach(normalizeTask);
+        // старый служебный проект назывался Inbox — приводим к понятному имени
+        if (p.isInbox) { p.title = 'No project'; p.short = 'No project'; }
       });
     } else {
       state = defaultState();
@@ -3471,6 +3684,101 @@ let calSelectedDay = '';  // выбранный день (ISO) — раскры�
 function calShift(dir) { calOffset += dir; calSelectedDay = ''; renderCalendar(); }
 function calToday() { calOffset = 0; calSelectedDay = ''; renderCalendar(); }
 
+// ----- редактор месяца (ММ/ГГГГ) с автоперескоком -----
+function calFillSegs(year, month) {
+  const eMM = document.getElementById('cal-mm');
+  const eYY = document.getElementById('cal-yyyy');
+  if (eMM) eMM.value = String(month + 1).padStart(2, '0');
+  if (eYY) eYY.value = String(year);
+}
+// прочитать {year, month0} из сегментов; null если неполно/некорректно
+function calReadSegs() {
+  const mm = (document.getElementById('cal-mm') || {}).value || '';
+  const yyyy = (document.getElementById('cal-yyyy') || {}).value || '';
+  if (!/^\d{1,2}$/.test(mm) || !/^\d{4}$/.test(yyyy)) return null;
+  const m = parseInt(mm, 10), y = parseInt(yyyy, 10);
+  if (m < 1 || m > 12) return null;
+  return { year: y, month0: m - 1 };
+}
+function onCalSegInput(seg) {
+  const el = document.getElementById('cal-' + seg);
+  if (!el) return;
+  el.value = el.value.replace(/\D/g, '');
+  const max = (seg === 'yyyy') ? 4 : 2;
+  if (el.value.length >= max) {
+    if (seg === 'mm') {
+      const next = document.getElementById('cal-yyyy');
+      if (next) { next.focus(); next.select(); }
+    } else {
+      applyCalSegs();
+    }
+  }
+}
+function onCalSegKey(ev, seg) {
+  if (ev.key === 'Enter') { ev.preventDefault(); applyCalSegs(); return; }
+  if (ev.key === 'Backspace') {
+    const el = document.getElementById('cal-' + seg);
+    if (el && el.value === '' && seg === 'yyyy') {
+      ev.preventDefault();
+      const prev = document.getElementById('cal-mm');
+      if (prev) { prev.focus(); prev.select(); }
+    }
+  }
+}
+function applyCalSegs() {
+  const v = calReadSegs();
+  if (!v) return;
+  jumpToMonth(v.year, v.month0);
+}
+function openCalDatePicker() {
+  const edit = document.getElementById('cal-date-edit');
+  const label = document.getElementById('cal-label');
+  if (!edit || !label) return;
+  const ms = calMonthStart(calOffset);
+  calFillSegs(ms.getFullYear(), ms.getMonth());
+  label.classList.add('hidden');
+  edit.classList.remove('hidden');
+  const eMM = document.getElementById('cal-mm');
+  if (eMM) { eMM.focus(); eMM.select(); }
+}
+function showCalPicker() {
+  const inp = document.getElementById('cal-date-input');
+  if (!inp) return;
+  const v = calReadSegs();
+  if (v) {
+    inp.value = v.year + '-' + String(v.month0 + 1).padStart(2, '0') + '-01';
+  } else {
+    const ms = calMonthStart(calOffset);
+    inp.value = dateToISO(ms);
+  }
+  if (typeof inp.showPicker === 'function') {
+    try { inp.showPicker(); return; } catch (e) {}
+  }
+  inp.focus();
+}
+function onNativeCalPick(iso) {
+  if (!iso) return;
+  const parts = iso.split('-');
+  if (parts.length !== 3) return;
+  const y = +parts[0], m0 = +parts[1] - 1;
+  calFillSegs(y, m0);
+  jumpToMonth(y, m0);
+}
+function closeCalDatePicker() {
+  const edit = document.getElementById('cal-date-edit');
+  const label = document.getElementById('cal-label');
+  if (edit) edit.classList.add('hidden');
+  if (label) label.classList.remove('hidden');
+}
+// перейти к указанному месяцу
+function jumpToMonth(year, month0) {
+  closeCalDatePicker();
+  const now = new Date();
+  calOffset = (year - now.getFullYear()) * 12 + (month0 - now.getMonth());
+  calSelectedDay = '';
+  renderCalendar();
+}
+
 // первый день показываемого месяца как Date
 function calMonthStart(offset) {
   const d = new Date();
@@ -3723,11 +4031,130 @@ function renderCalDayPanel() {
 }
 
 
+// ===== редактор даты из трёх сегментов (ДД/ММ/ГГГГ) с автоперескоком =====
+// заполнить сегменты из ISO-даты
+function fillSegs(prefix, iso) {
+  const parts = (iso || '').split('-');
+  const yyyy = parts[0] || '';
+  const mm = parts[1] || '';
+  const dd = parts[2] || '';
+  const eDD = document.getElementById(prefix + '-dd');
+  const eMM = document.getElementById(prefix + '-mm');
+  const eYY = document.getElementById(prefix + '-yyyy');
+  if (eDD) eDD.value = dd;
+  if (eMM) eMM.value = mm;
+  if (eYY) eYY.value = yyyy;
+}
+// прочитать ISO из сегментов; null если неполно/некорректно
+function readSegs(prefix) {
+  const dd = (document.getElementById(prefix + '-dd') || {}).value || '';
+  const mm = (document.getElementById(prefix + '-mm') || {}).value || '';
+  const yyyy = (document.getElementById(prefix + '-yyyy') || {}).value || '';
+  if (!/^\d{1,2}$/.test(dd) || !/^\d{1,2}$/.test(mm) || !/^\d{4}$/.test(yyyy)) return null;
+  const d = parseInt(dd, 10), m = parseInt(mm, 10), y = parseInt(yyyy, 10);
+  if (m < 1 || m > 12) return null;
+  if (d < 1 || d > 31) return null;
+  // проверка реальной даты (например 31 февраля)
+  const dt = new Date(y, m - 1, d);
+  if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return null;
+  return y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+}
+// порядок сегментов и переход к следующему
+const SEG_ORDER = ['dd', 'mm', 'yyyy'];
+function focusSeg(prefix, seg) {
+  const el = document.getElementById(prefix + '-' + seg);
+  if (el) { el.focus(); el.select(); }
+}
+// ввод в сегмент: только цифры, автоперескок при заполнении
+function onSegInput(prefix, seg) {
+  const el = document.getElementById(prefix + '-' + seg);
+  if (!el) return;
+  // оставляем только цифры
+  el.value = el.value.replace(/\D/g, '');
+  const max = (seg === 'yyyy') ? 4 : 2;
+  if (el.value.length >= max) {
+    const i = SEG_ORDER.indexOf(seg);
+    if (i < SEG_ORDER.length - 1) {
+      focusSeg(prefix, SEG_ORDER[i + 1]);
+    } else {
+      // последний сегмент заполнен — пробуем применить дату
+      applySegs(prefix);
+    }
+  }
+}
+// клавиши: Enter — применить; Backspace на пустом — к предыдущему сегменту
+function onSegKey(ev, prefix, seg) {
+  if (ev.key === 'Enter') {
+    ev.preventDefault();
+    applySegs(prefix);
+    return;
+  }
+  if (ev.key === 'Backspace') {
+    const el = document.getElementById(prefix + '-' + seg);
+    if (el && el.value === '') {
+      const i = SEG_ORDER.indexOf(seg);
+      if (i > 0) { ev.preventDefault(); focusSeg(prefix, SEG_ORDER[i - 1]); }
+    }
+  }
+}
+function applySegs(prefix) {
+  const iso = readSegs(prefix);
+  if (!iso) return;   // дата ещё не полная/некорректная — ждём
+  if (prefix === 'day') jumpToDay(iso);
+  else jumpToWeek(iso);
+}
+
 // ===== ТАБ «ДЕНЬ» =====
 let dayOffset = 0;   // 0 = сегодня, -1 вчера, +1 завтра
 
 function dayShift(dir) { dayOffset += dir; renderDay(); }
 function dayToday() { dayOffset = 0; renderDay(); }
+
+// открыть редактор даты (сегменты ДД/ММ/ГГГГ, фокус на день)
+function openDayDatePicker() {
+  const edit = document.getElementById('day-date-edit');
+  const label = document.getElementById('day-label');
+  if (!edit || !label) return;
+  fillSegs('day', dayISO());
+  label.classList.add('hidden');
+  edit.classList.remove('hidden');
+  focusSeg('day', 'dd');
+}
+// открыть нативный календарь (по клику на кнопку — валидный жест)
+function showDayPicker() {
+  const inp = document.getElementById('day-date-input');
+  if (!inp) return;
+  inp.value = readSegs('day') || dayISO();
+  if (typeof inp.showPicker === 'function') {
+    try { inp.showPicker(); return; } catch (e) {}
+  }
+  inp.focus();
+}
+// выбор в нативном календаре заполняет сегменты и применяет дату
+function onNativeDayPick(iso) {
+  if (!iso) return;
+  fillSegs('day', iso);
+  jumpToDay(iso);
+}
+function closeDayDatePicker() {
+  const edit = document.getElementById('day-date-edit');
+  const label = document.getElementById('day-label');
+  if (edit) edit.classList.add('hidden');
+  if (label) label.classList.remove('hidden');
+}
+// перейти к конкретной дате (вводом или из календаря)
+function jumpToDay(iso) {
+  closeDayDatePicker();
+  if (!iso) return;
+  const parts = iso.split('-');
+  if (parts.length !== 3) return;
+  const picked = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+  picked.setHours(0, 0, 0, 0);
+  const base = new Date();
+  base.setHours(0, 0, 0, 0);
+  dayOffset = Math.round((picked - base) / 86400000);
+  renderDay();
+}
 
 // ISO-дата выбранного дня
 function dayISO() {
@@ -3845,6 +4272,136 @@ function moveDayTask(dateISO, tid, dir) {
   renderDay();
 }
 
+// ----- добавление задачи прямо из Daily Plan -----
+// служебный проект для задач без сферы/проекта; создаётся при первой необходимости
+function getInboxProject(create) {
+  let p = state.projects.find(function (x) { return x.isInbox; });
+  if (!p && create) {
+    p = {
+      sphere: '', num: nextProjectNum(),
+      title: 'No project', short: 'No project',
+      goal: '', isKey: false, status: 'active',
+      isInbox: true, tasks: []
+    };
+    state.projects.push(p);
+  }
+  return p || null;
+}
+
+// подзадачи, набираемые в окне добавления задачи дня (живут только пока окно открыто)
+let dayTaskSubs = [];
+function renderDayTaskSubs() {
+  const box = document.getElementById('dt-subs');
+  if (!box) return;
+  let h = '';
+  dayTaskSubs.forEach(function (name, i) {
+    h += '<div class="sub-row">' +
+      '<span class="sub-name">' + escapeHtml(name) + '</span>' +
+      '<div class="sub-actions">' +
+        '<button type="button" class="sub-mini-btn del" title="Remove" ' +
+          'onclick="removeDayTaskSub(' + i + ')">×</button>' +
+      '</div></div>';
+  });
+  box.innerHTML = h;
+}
+function addDayTaskSub() {
+  const inp = document.getElementById('dt-sub-new');
+  if (!inp) return;
+  const name = inp.value.trim();
+  if (!name) { inp.focus(); return; }
+  dayTaskSubs.push(name);
+  inp.value = '';
+  renderDayTaskSubs();
+  inp.focus();
+}
+function removeDayTaskSub(i) {
+  dayTaskSubs.splice(i, 1);
+  renderDayTaskSubs();
+}
+
+// окно добавления задачи в выбранный день
+function addDayTask() {
+  const dISO = dayISO();
+  dayTaskSubs = [];
+
+  // список проектов по сферам (как в окне записи времени), + вариант без проекта
+  let projOpts = '<option value="">— no project —</option>';
+  state.spheres.forEach(function (s) {
+    const inSphere = state.projects.filter(function (p) {
+      return p.sphere === s.id && p.status !== 'paused';
+    });
+    if (!inSphere.length) return;
+    projOpts += '<optgroup label="' + escapeHtml(s.id + ' · ' + s.name) + '">';
+    inSphere.forEach(function (p) {
+      projOpts += '<option value="' + p.num + '">' + escapeHtml(p.short) + '</option>';
+    });
+    projOpts += '</optgroup>';
+  });
+
+  const bodyHtml =
+    '<div class="te-modal-field"><label>Task name</label>' +
+      '<input type="text" id="dt-name" placeholder="What needs doing"></div>' +
+    '<div class="te-modal-field"><label>Note / trigger (optional)</label>' +
+      '<input type="text" id="dt-hint" placeholder="Optional"></div>' +
+    '<div class="te-modal-field"><label>Project (optional)</label>' +
+      '<select id="dt-project">' + projOpts + '</select></div>' +
+    '<div class="te-modal-field"><label>Subtasks (optional)</label>' +
+      '<div id="dt-subs"></div>' +
+      '<div class="sub-add-row">' +
+        '<input type="text" id="dt-sub-new" placeholder="New subtask" ' +
+          'onkeydown="if(event.key===\'Enter\'){event.preventDefault();addDayTaskSub();}">' +
+        '<button type="button" onclick="addDayTaskSub()">+</button>' +
+      '</div></div>';
+
+  openCustomModal('Add task · ' + fmtDateHuman(dISO), bodyHtml, [
+    { label: 'Cancel', kind: 'ghost', action: function () { dayTaskSubs = []; closeModal(); } },
+    { label: 'Add', kind: 'primary', action: function () { saveDayTask(dISO); } }
+  ]);
+
+  setTimeout(function () {
+    const el = document.getElementById('dt-name');
+    if (el) el.focus();
+  }, 30);
+}
+
+function saveDayTask(dISO) {
+  const nameEl = document.getElementById('dt-name');
+  const hintEl = document.getElementById('dt-hint');
+  const projEl = document.getElementById('dt-project');
+  const name = (nameEl ? nameEl.value : '').trim();
+  if (!name) {
+    showErrorBar('Give the task a name.');
+    if (nameEl) nameEl.focus();
+    return;
+  }
+  const hint = (hintEl ? hintEl.value : '').trim();
+  const pnum = parseInt(projEl ? projEl.value : '', 10);
+
+  // подобрать ещё не добавленную подзадачу из поля ввода
+  const subInp = document.getElementById('dt-sub-new');
+  if (subInp && subInp.value.trim()) dayTaskSubs.push(subInp.value.trim());
+  const subs = dayTaskSubs.map(function (n) { return { name: n, done: false }; });
+
+  let p = null;
+  if (!isNaN(pnum)) p = state.projects.find(function (x) { return x.num === pnum; });
+  if (!p) p = getInboxProject(true);   // без проекта — кладём в Inbox
+
+  const t = {
+    tid: genId(),
+    name: name, type: 'once', hint: hint,
+    date: dISO, time: '',
+    rhythm: '', repFrom: '',
+    priority: 'norm',
+    subs: subs
+  };
+  p.tasks.unshift(t);
+
+  dayTaskSubs = [];
+  closeModal();
+  saveState(true);
+  renderAll();
+}
+
 
 function renderDay() {
   const dISO = dayISO();
@@ -3904,6 +4461,7 @@ function renderDay() {
       (dayOffset < 0 ? '🌙' : '☀️') + '</div>' +
       'No tasks for this day.<br>' +
       'Give a task a date on the project page and it will show up here.</div>';
+    renderDayPrint(dISO, dObj, WD_FULL, MON_FULL);
     return;
   }
 
@@ -3951,6 +4509,87 @@ function renderDay() {
   }
 
   body.innerHTML = h;
+
+  // обновляем печатную версию для текущего дня
+  renderDayPrint(dISO, dObj, WD_FULL, MON_FULL);
+}
+
+// собрать чистый список дня для печати (дата, день недели, задачи с чекбоксами и подзадачами)
+function renderDayPrint(dISO, dObj, WD_FULL, MON_FULL) {
+  const box = document.getElementById('day-print');
+  if (!box) return;
+
+  const items = collectDayItems(dISO);
+  const openItems = items.filter(function (it) { return !it.logRec; });
+  const doneItems = items.filter(function (it) { return !!it.logRec; });
+
+  let h = '<div class="day-print-head">';
+  h += '<h1>' + dObj.getDate() + ' ' + MON_FULL[dObj.getMonth()] + ' ' + dObj.getFullYear() + '</h1>';
+  h += '<div class="dp-weekday">' + capitalize(WD_FULL[dObj.getDay()]) + '</div>';
+  h += '</div>';
+
+  if (!items.length) {
+    h += '<div class="day-print-empty">No tasks for this day.</div>';
+    box.innerHTML = h;
+    return;
+  }
+
+  function taskBlock(it, doneGroup) {
+    const t = it.task;
+    const done = !!it.logRec;
+    let b = '<div class="day-print-task' + (done ? ' dp-done' : '') + '">';
+    b += '<div class="day-print-row">';
+    b += '<span class="dp-box">' + (done ? '✓' : '') + '</span>';
+    b += '<span class="dp-name">' + escapeHtml(t.name) + '</span>';
+    b += '</div>';
+    if (t.subs && t.subs.length) {
+      b += '<div class="day-print-subs">';
+      t.subs.forEach(function (sub) {
+        b += '<div class="day-print-sub' + (sub.done ? ' dp-done' : '') + '">';
+        b += '<span class="dp-box-sm">' + (sub.done ? '✓' : '') + '</span>';
+        b += '<span class="dp-sub-name">' + escapeHtml(sub.name) + '</span>';
+        b += '</div>';
+      });
+      b += '</div>';
+    }
+    b += '</div>';
+    return b;
+  }
+
+  // группы по приоритету (невыполненные), порядок как на экране
+  const groups = [
+    { id: 'crit', label: '🔴 Critical' },
+    { id: 'imp',  label: '🟡 Important' },
+    { id: 'norm', label: '⚪ Normal' }
+  ];
+  groups.forEach(function (g) {
+    const inGroup = openItems.filter(function (it) {
+      return (it.task.priority || 'norm') === g.id;
+    });
+    if (!inGroup.length) return;
+    sortDayGroup(inGroup, dISO);
+    h += '<div class="day-print-group">';
+    h += '<div class="day-print-group-label">' + g.label + '</div>';
+    inGroup.forEach(function (it) { h += taskBlock(it); });
+    h += '</div>';
+  });
+
+  // выполненные — отдельной группой
+  if (doneItems.length) {
+    doneItems.sort(function (a, b) { return (b.logRec.doneAt || 0) - (a.logRec.doneAt || 0); });
+    h += '<div class="day-print-group">';
+    h += '<div class="day-print-group-label">✓ Done</div>';
+    doneItems.forEach(function (it) { h += taskBlock(it); });
+    h += '</div>';
+  }
+
+  box.innerHTML = h;
+}
+
+// открыть печать (печатная версия уже отрисована для текущего дня)
+function printDay() {
+  renderDay();   // гарантируем, что печатный блок соответствует текущему дню
+  window.print();
 }
 
 function renderDayTask(it, dISO, gi, gcount) {
@@ -3960,6 +4599,12 @@ function renderDayTask(it, dISO, gi, gcount) {
   const isRep = t.type === 'rep';
   const s = p ? sphereById(p.sphere) : null;
   const color = s ? s.color : '#9a7b30';
+  const editing = !!dayEditMode[t.tid];
+
+  // ===== режим инлайн-правки =====
+  if (editing) {
+    return renderDayTaskEdit(it, dISO);
+  }
 
   let h = '<div class="day-task' + (done ? ' dt-done' : '') + '">';
   h += '<div class="day-task-main">';
@@ -3975,9 +4620,11 @@ function renderDayTask(it, dISO, gi, gcount) {
   h += '</div>';
   // метки: проект + тип
   h += '<div class="day-task-meta">';
-  if (p) {
+  if (p && !p.isInbox) {
     h += '<span class="day-proj-tag" style="background:' + color + '">' +
       escapeHtml(p.short) + '</span>';
+  } else {
+    h += '<span class="day-proj-tag none" title="No project chosen — tap Edit to assign one">no project</span>';
   }
   if (isRep) h += '<span class="day-rep-tag">' + escapeHtml(rhythmInfo(t.rhythm).chip) + '</span>';
   h += '</div>';
@@ -4011,6 +4658,7 @@ function renderDayTask(it, dISO, gi, gcount) {
     h += '<span style="font-size:11px;color:#1d6b51;">✓ Done' +
       (it.logRec.doneAt ? ' · ' + fmtTimeShort(it.logRec.doneAt) : '') + '</span>';
     h += '<span class="da-spacer"></span>';
+    h += '<button class="day-act-btn" onclick="toggleDayEdit(\'' + t.tid + '\')">✎ Edit</button>';
     h += '<button class="day-act-btn" onclick="toggleDayTask(\'' + dISO + '\',\'' +
       t.tid + '\')">↩ Move back to tasks</button>';
   } else {
@@ -4026,12 +4674,104 @@ function renderDayTask(it, dISO, gi, gcount) {
         ')"><span class="ab-ico">↗</span>To project</button>';
     }
     h += '<span class="da-spacer"></span>';
+    h += '<button class="day-act-btn" onclick="toggleDayEdit(\'' + t.tid + '\')">✎ Edit</button>';
     // перенос — только для неповторяющихся
     if (!isRep) {
       h += '<button class="day-act-btn move" onclick="openMoveDialog(\'' +
         t.tid + '\')"><span class="ab-ico">📅</span>Reschedule</button>';
     }
   }
+  h += '</div>';
+
+  h += '</div>';   // day-task
+  return h;
+}
+
+// инлайн-форма правки дела
+function renderDayTaskEdit(it, dISO) {
+  const t = it.task;
+  const isRep = t.type === 'rep';
+  const curProjNum = it.logRec ? it.logRec.projectNum : (it.project ? it.project.num : null);
+  if (!Array.isArray(t.subs)) t.subs = [];
+
+  // список проектов по сферам + без проекта
+  let projOpts = '<option value=""' + (curProjNum == null ? ' selected' : '') + '>— no project —</option>';
+  state.spheres.forEach(function (s) {
+    const inSphere = state.projects.filter(function (pr) {
+      return pr.sphere === s.id && pr.status !== 'paused';
+    });
+    if (!inSphere.length) return;
+    projOpts += '<optgroup label="' + escapeHtml(s.id + ' · ' + s.name) + '">';
+    inSphere.forEach(function (pr) {
+      projOpts += '<option value="' + pr.num + '"' +
+        (pr.num === curProjNum ? ' selected' : '') + '>' + escapeHtml(pr.short) + '</option>';
+    });
+    projOpts += '</optgroup>';
+  });
+
+  let priOpts = '';
+  PRIORITIES.forEach(function (pr) {
+    priOpts += '<option value="' + pr.id + '"' +
+      ((t.priority || 'norm') === pr.id ? ' selected' : '') + '>' +
+      pr.icon + ' ' + escapeHtml(pr.label) + '</option>';
+  });
+
+  let h = '<div class="day-task' + (it.logRec ? ' dt-done' : '') + '">';
+  h += '<div class="day-edit">';
+
+  h += '<div class="de-field"><label>Task name</label>' +
+    '<input type="text" id="de-name-' + t.tid + '" value="' + escapeHtml(t.name) + '" ' +
+    'oninput="setDayTaskName(\'' + dISO + '\',\'' + t.tid + '\',this.value)" ' +
+    'onkeydown="if(event.key===\'Enter\')saveDayEdit(\'' + t.tid + '\')"></div>';
+
+  h += '<div class="de-field"><label>Note / trigger</label>' +
+    '<input type="text" value="' + escapeHtml(t.hint || '') + '" placeholder="Optional" ' +
+    'oninput="setDayTaskHint(\'' + dISO + '\',\'' + t.tid + '\',this.value)"></div>';
+
+  h += '<div class="de-row2">';
+  h += '<div class="de-field"><label>Project</label>' +
+    '<select onchange="setDayTaskProject(\'' + dISO + '\',\'' + t.tid + '\',this.value)">' +
+    projOpts + '</select></div>';
+  h += '<div class="de-field"><label>Priority</label>' +
+    '<select onchange="setDayTaskPriority(\'' + dISO + '\',\'' + t.tid + '\',this.value)">' +
+    priOpts + '</select></div>';
+  h += '</div>';
+
+  // подзадачи (редактируемые)
+  h += '<div class="de-field"><label>Subtasks</label>';
+  h += '<div class="subs-wrap" style="margin:0;">';
+  t.subs.forEach(function (sub, si) {
+    h += '<div class="sub-row' + (sub.done ? ' s-done' : '') + '">';
+    h += '<div class="sub-check' + (sub.done ? ' checked' : '') + '" ' +
+      'onclick="toggleDaySubEdit(\'' + dISO + '\',\'' + t.tid + '\',' + si + ')">' +
+      (sub.done ? '✓' : '') + '</div>';
+    h += '<span class="sub-name">' + escapeHtml(sub.name) + '</span>';
+    h += '<div class="sub-actions">' +
+      '<button class="sub-mini-btn" title="Rename" ' +
+        'onclick="renameDaySub(\'' + dISO + '\',\'' + t.tid + '\',' + si + ')">✎</button>' +
+      '<button class="sub-mini-btn del" title="Delete" ' +
+        'onclick="deleteDaySub(\'' + dISO + '\',\'' + t.tid + '\',' + si + ')">✕</button>' +
+      '</div>';
+    h += '</div>';
+  });
+  h += '<div class="sub-add-row">' +
+    '<input type="text" id="de-sub-new-' + t.tid + '" placeholder="New subtask" ' +
+      'onkeydown="if(event.key===\'Enter\'){event.preventDefault();addDaySubEdit(\'' +
+        dISO + '\',\'' + t.tid + '\');}">' +
+    '<button type="button" onclick="addDaySubEdit(\'' + dISO + '\',\'' + t.tid + '\')">+</button>' +
+    '</div>';
+  h += '</div></div>';
+
+  if (isRep) {
+    h += '<div class="de-note">This task recurs — its rhythm and date are managed on the project page.</div>';
+  }
+
+  h += '</div>';   // day-edit
+
+  // строка действий: Save
+  h += '<div class="day-task-actions">';
+  h += '<span class="da-spacer"></span>';
+  h += '<button class="day-act-btn on" onclick="saveDayEdit(\'' + t.tid + '\')">✓ Save</button>';
   h += '</div>';
 
   h += '</div>';   // day-task
@@ -4072,6 +4812,119 @@ function findTaskByTid(tid) {
     if (idx !== -1) return { project: p, task: p.tasks[idx], idx: idx };
   }
   return null;
+}
+
+// ===== инлайн-правка дела в Daily Plan =====
+let dayEditMode = {};   // tid -> true
+function toggleDayEdit(tid) {
+  if (dayEditMode[tid]) delete dayEditMode[tid];
+  else dayEditMode[tid] = true;
+  renderDay();
+  if (dayEditMode[tid]) {
+    setTimeout(function () {
+      const el = document.getElementById('de-name-' + tid);
+      if (el) el.focus();
+    }, 30);
+  }
+}
+function saveDayEdit(tid) {
+  delete dayEditMode[tid];
+  saveState(true);
+  renderAll();
+}
+
+// вернуть редактируемый объект задачи: живая в проекте или снимок из лога
+function resolveDayEditable(dISO, tid) {
+  const live = findTaskByTid(tid);
+  if (live) return { task: live.task, project: live.project, isLog: false, logRec: null };
+  const rec = findDayLog(dISO, tid);
+  if (rec && rec.snapshot) {
+    const proj = state.projects.find(function (x) { return x.num === rec.projectNum; });
+    return { task: rec.snapshot, project: proj || null, isLog: true, logRec: rec };
+  }
+  return null;
+}
+
+function setDayTaskName(dISO, tid, val) {
+  const r = resolveDayEditable(dISO, tid);
+  if (r) r.task.name = val;
+}
+function setDayTaskHint(dISO, tid, val) {
+  const r = resolveDayEditable(dISO, tid);
+  if (r) r.task.hint = val;
+}
+function setDayTaskPriority(dISO, tid, val) {
+  const r = resolveDayEditable(dISO, tid);
+  if (!r) return;
+  if (['crit','imp','norm'].indexOf(val) !== -1) r.task.priority = val;
+  saveState(true);
+  renderDay();
+}
+// смена проекта: живую задачу переносим между проектами; для выполненной — правим запись лога
+function setDayTaskProject(dISO, tid, val) {
+  const r = resolveDayEditable(dISO, tid);
+  if (!r) return;
+  const pnum = parseInt(val, 10);
+  let target = null;
+  if (!isNaN(pnum)) target = state.projects.find(function (x) { return x.num === pnum; });
+  if (!target) target = getInboxProject(true);
+
+  if (r.isLog) {
+    r.logRec.projectNum = target.num;
+  } else if (r.project && r.project.num !== target.num) {
+    const i = r.project.tasks.findIndex(function (t) { return t.tid === tid; });
+    if (i !== -1) {
+      const moved = r.project.tasks.splice(i, 1)[0];
+      if (!Array.isArray(target.tasks)) target.tasks = [];
+      target.tasks.unshift(moved);
+    }
+  }
+  saveState(true);
+  renderDay();
+}
+// подзадачи в режиме инлайн-правки дела
+function toggleDaySubEdit(dISO, tid, sIdx) {
+  const r = resolveDayEditable(dISO, tid);
+  if (!r || !r.task.subs || !r.task.subs[sIdx]) return;
+  r.task.subs[sIdx].done = !r.task.subs[sIdx].done;
+  saveState(true);
+  renderDay();
+}
+function renameDaySub(dISO, tid, sIdx) {
+  const r = resolveDayEditable(dISO, tid);
+  if (!r || !r.task.subs || !r.task.subs[sIdx]) return;
+  const sub = r.task.subs[sIdx];
+  openModal('Subtask', [
+    { key: 'name', label: 'Subtask name', value: sub.name }
+  ], function (vals) {
+    const nm = vals.name.trim();
+    if (nm) sub.name = nm;
+    saveState(true);
+    renderDay();
+  });
+}
+function deleteDaySub(dISO, tid, sIdx) {
+  const r = resolveDayEditable(dISO, tid);
+  if (!r || !r.task.subs || !r.task.subs[sIdx]) return;
+  r.task.subs.splice(sIdx, 1);
+  saveState(true);
+  renderDay();
+}
+function addDaySubEdit(dISO, tid) {
+  const r = resolveDayEditable(dISO, tid);
+  if (!r) return;
+  const inp = document.getElementById('de-sub-new-' + tid);
+  if (!inp) return;
+  const name = inp.value.trim();
+  if (!name) { inp.focus(); return; }
+  if (!Array.isArray(r.task.subs)) r.task.subs = [];
+  r.task.subs.push({ name: name, done: false });
+  saveState(true);
+  renderDay();
+  setTimeout(function () {
+    const el = document.getElementById('de-sub-new-' + tid);
+    if (el) el.focus();
+  }, 30);
 }
 
 // ----- отметка выполнения -----
@@ -4259,6 +5112,53 @@ function weekToday() {
   renderWeek();
 }
 
+// открыть редактор даты для недели (сегменты ДД/ММ/ГГГГ)
+function openWeekDatePicker() {
+  const edit = document.getElementById('week-date-edit');
+  const label = document.getElementById('week-label');
+  if (!edit || !label) return;
+  fillSegs('week', weekDates(weekOffset)[0]);   // понедельник текущей недели
+  label.classList.add('hidden');
+  edit.classList.remove('hidden');
+  focusSeg('week', 'dd');
+}
+function showWeekPicker() {
+  const inp = document.getElementById('week-date-input');
+  if (!inp) return;
+  inp.value = readSegs('week') || weekDates(weekOffset)[0];
+  if (typeof inp.showPicker === 'function') {
+    try { inp.showPicker(); return; } catch (e) {}
+  }
+  inp.focus();
+}
+function onNativeWeekPick(iso) {
+  if (!iso) return;
+  fillSegs('week', iso);
+  jumpToWeek(iso);
+}
+function closeWeekDatePicker() {
+  const edit = document.getElementById('week-date-edit');
+  const label = document.getElementById('week-label');
+  if (edit) edit.classList.add('hidden');
+  if (label) label.classList.remove('hidden');
+}
+// перейти к неделе, содержащей выбранную дату
+function jumpToWeek(iso) {
+  closeWeekDatePicker();
+  if (!iso) return;
+  const parts = iso.split('-');
+  if (parts.length !== 3) return;
+  const picked = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+  picked.setHours(0, 0, 0, 0);
+  // понедельник недели выбранной даты
+  const dow = (picked.getDay() + 6) % 7;
+  const pickedMon = new Date(picked);
+  pickedMon.setDate(picked.getDate() - dow);
+  const thisMon = weekMonday(0);
+  weekOffset = Math.round((pickedMon - thisMon) / (7 * 86400000));
+  renderWeek();
+}
+
 // сколько важных задач показывать в плитке до сворачивания
 const WEEK_TILE_LIMIT = 6;
 
@@ -4307,6 +5207,7 @@ function renderWeek() {
 
   state.projects.forEach(function (p) {
     if (p.status === 'paused') return;   // спящие проекты не показываем
+    if (p.isInbox) return;               // служебный Inbox — не плиткой в неделе
     const dated = [];
     const rep = [];
     (p.tasks || []).forEach(function (t) {
