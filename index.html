@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Моя система — дашборд</title>
+<title>My system — dashboard</title>
 <style>
   :root {
     --bg: #f4f2ec;
@@ -203,14 +203,17 @@
     display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
     margin-bottom: 16px;
   }
+  .ov-toolbar-spacer { flex: 1; }
   .ov-mode-btn {
-    font-family: inherit; font-size: 12px;
-    padding: 6px 13px; border-radius: 7px; cursor: pointer;
-    border: 1px solid var(--line); background: var(--surface); color: var(--text-dim);
-    transition: all 0.12s;
+    font-family: inherit; font-size: 13.5px; font-weight: 600;
+    padding: 9px 18px; border-radius: 9px; cursor: pointer; flex-shrink: 0;
+    border: none; background: var(--gold); color: #fff;
+    transition: all 0.12s; box-shadow: 0 1px 3px rgba(0,0,0,0.12);
   }
-  .ov-mode-btn:hover { border-color: var(--gold); color: var(--text); }
-  .ov-mode-btn.on { background: var(--gold); color: #fff; border-color: var(--gold); }
+  .ov-mode-btn:hover { background: #b08d2e; }
+  .ov-mode-btn:active { transform: translateY(1px); }
+  .ov-mode-btn.on { background: #1d6b51; }
+  .ov-mode-btn.on:hover { background: #185a44; }
   .ov-hint { font-size: 11.5px; color: var(--text-faint); }
 
   .edit-icon-btn {
@@ -225,6 +228,15 @@
   .edit-icon-btn.del:hover { border-color: #a33636; color: #a33636; }
   .edit-icon-btn.on-date { background: var(--gold); color: #fff; border-color: var(--gold); }
   .edit-icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .set-date-btn {
+    font-family: inherit; font-size: 11.5px; font-weight: 500; line-height: 1;
+    height: 26px; padding: 0 11px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text-dim);
+    display: inline-flex; align-items: center; gap: 4px;
+    transition: all 0.12s; flex-shrink: 0; white-space: nowrap;
+  }
+  .set-date-btn:hover { border-color: var(--gold); color: var(--text); }
+  .set-date-btn.on-date { background: var(--gold); color: #fff; border-color: var(--gold); }
   .sphere-edit-actions { display: flex; gap: 4px; align-items: center; }
 
   .add-row {
@@ -292,6 +304,20 @@
   }
   .modal input:focus, .modal textarea:focus { outline: none; border-color: var(--gold); background: var(--surface); }
   .modal textarea { resize: vertical; min-height: 60px; }
+  .swatch-grid {
+    display: grid; grid-template-columns: repeat(6, 1fr);
+    gap: 9px; margin-top: 2px;
+  }
+  .swatch {
+    width: 100%; aspect-ratio: 1 / 1; border-radius: 50%;
+    cursor: pointer; padding: 0; border: 2px solid transparent;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.08); transition: transform 0.1s;
+  }
+  .swatch:hover { transform: scale(1.12); }
+  .swatch.on {
+    border-color: var(--surface);
+    box-shadow: 0 0 0 2px var(--text);
+  }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
   .modal-actions button {
     font-family: inherit; font-size: 13px;
@@ -379,6 +405,42 @@
     transition: all 0.12s;
   }
   .proj-head-edit button:hover { border-color: var(--gold); color: var(--text); }
+  .pht-spacer { flex: 1; }
+  .proj-head-edit-btn {
+    font-family: inherit; font-size: 12px; font-weight: 500;
+    padding: 6px 13px; border-radius: 7px; cursor: pointer; flex-shrink: 0;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+    transition: all 0.12s; white-space: nowrap;
+  }
+  .proj-head-edit-btn:hover { border-color: var(--gold); color: var(--text); }
+  .proj-head-edit-btn.on { background: #1d6b51; color: #fff; border-color: #1d6b51; }
+  .proj-head-form { margin-top: 14px; display: flex; flex-direction: column; gap: 4px; }
+  .proj-head-form label {
+    font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase;
+    color: var(--text-faint); margin-top: 8px;
+  }
+  .proj-head-form input, .proj-head-form textarea, .proj-head-form select {
+    font-family: inherit; font-size: 14px; width: 100%; box-sizing: border-box;
+    padding: 9px 11px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text);
+  }
+  .proj-head-form textarea { resize: vertical; line-height: 1.5; }
+  .proj-head-form .phf-row { display: flex; gap: 10px; }
+  .proj-head-form .phf-row > div { flex: 1; }
+  .proj-head-form .phf-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .proj-head-form .phf-save {
+    font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    padding: 9px 18px; border-radius: 8px; border: none;
+    background: #1d6b51; color: #fff; transition: all 0.12s;
+  }
+  .proj-head-form .phf-save:hover { background: #185a44; }
+  .proj-head-form .phf-cancel {
+    font-family: inherit; font-size: 13px; cursor: pointer;
+    padding: 9px 16px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+    transition: all 0.12s;
+  }
+  .proj-head-form .phf-cancel:hover { border-color: var(--gold); color: var(--text); }
 
   /* счётчик прогресса */
   .proj-progress {
@@ -396,8 +458,28 @@
     display: flex; align-items: center; gap: 10px;
     margin-bottom: 6px;
   }
+  .tasks-section-head .tsh-left {
+    display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;
+  }
   .tasks-section-head h3 { font-size: 15px; font-weight: 600; }
   .tasks-section-head .t-count { font-size: 11.5px; color: var(--text-faint); }
+  .tasks-edit-btn {
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    padding: 8px 16px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text);
+    white-space: nowrap; transition: all 0.12s; flex-shrink: 0;
+  }
+  .tasks-edit-btn:hover { border-color: var(--gold); }
+  .tasks-edit-btn.on { background: var(--gold); color: #fff; border-color: var(--gold); }
+  .add-task-btn {
+    font-family: inherit; font-size: 13.5px; font-weight: 600;
+    padding: 9px 18px; border-radius: 9px; cursor: pointer;
+    border: none; background: var(--gold); color: #fff;
+    white-space: nowrap; transition: all 0.12s; flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+  .add-task-btn:hover { background: #b08d2e; }
+  .add-task-btn:active { transform: translateY(1px); }
   .tasks-section-hint { font-size: 11.5px; color: var(--text-faint); margin-bottom: 14px; }
 
   /* группа задач по типу */
@@ -466,12 +548,13 @@
     color: var(--text-faint);
   }
   .task-date-edit input[type="date"],
-  .task-date-edit input[type="time"] {
+  .task-date-edit input[type="time"],
+  .task-date-edit select {
     font-family: inherit; font-size: 12px;
     padding: 5px 8px; border-radius: 6px;
     border: 1px solid var(--line); background: var(--surface); color: var(--text);
   }
-  .task-date-edit input:focus { outline: none; border-color: var(--gold); }
+  .task-date-edit input:focus, .task-date-edit select:focus { outline: none; border-color: var(--gold); }
   .task-date-edit .clear-date {
     font-family: inherit; font-size: 11px;
     padding: 5px 9px; border-radius: 6px; cursor: pointer;
@@ -491,6 +574,35 @@
   .ttp-cond { background: #f3e9d2; color: #876a26; }
   .ttp-back { background: #f7dcdc; color: #a33636; }
   .ttp-none { background: #ebe9e3; color: #807d75; }
+
+  .task-edit-toggle {
+    font-family: inherit; font-size: 11px; font-weight: 500;
+    padding: 5px 11px; border-radius: 7px; cursor: pointer; flex-shrink: 0;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+    white-space: nowrap; transition: all 0.12s; align-self: flex-start; margin-top: 1px;
+  }
+  .task-edit-toggle:hover { border-color: var(--gold); color: var(--text); }
+  .task-edit-toggle.on { background: #1d6b51; color: #fff; border-color: #1d6b51; }
+  .task-card.t-editing { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+  .task-noname { color: var(--text-faint); font-style: italic; }
+  .task-name-input {
+    font-family: inherit; font-size: 14px; font-weight: 500; width: 100%;
+    box-sizing: border-box; padding: 7px 10px; border-radius: 7px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text);
+  }
+  .task-hint-input {
+    font-family: inherit; font-size: 12px; width: 100%; box-sizing: border-box;
+    padding: 6px 10px; border-radius: 7px; margin-top: 6px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text-dim);
+  }
+  .subs-edit-label {
+    font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 2px;
+  }
+  .teb-lbl {
+    font-size: 10px; letter-spacing: 0.4px; text-transform: uppercase;
+    color: var(--text-faint);
+  }
 
   .task-meta-row {
     display: flex; align-items: center; gap: 8px;
@@ -695,6 +807,12 @@
     font-weight: 500; white-space: nowrap;
   }
   .time-entry-task { font-size: 12.5px; color: var(--text-dim); }
+  .log-kind {
+    font-size: 9px; letter-spacing: 0.5px; text-transform: uppercase;
+    font-weight: 700; padding: 2px 7px; border-radius: 7px; white-space: nowrap;
+  }
+  .log-kind-time { background: #e9e3d2; color: #6f5a22; }
+  .log-kind-done { background: #d7ece2; color: #1d6b51; }
   .time-entry-note {
     font-size: 12px; color: var(--text); margin-top: 4px; line-height: 1.45;
   }
@@ -904,6 +1022,10 @@
   .cal-hint {
     font-size: 11.5px; color: var(--text-faint);
     text-align: center; margin-top: 14px;
+  }
+  .cal-note {
+    font-size: 12px; color: var(--text-dim); font-weight: 500; line-height: 1.5;
+    margin: 2px auto 14px; max-width: 520px; text-align: center;
   }
 
   /* ---- Таб «День» ---- */
@@ -1219,10 +1341,10 @@
 
 <div class="wrap">
   <header>
-    <div class="kicker" id="app-kicker">Моя система</div>
+    <div class="kicker" id="app-kicker">My system</div>
     <div class="header-title-row">
-      <h1 id="app-title">Рабочий дашборд</h1>
-      <button class="header-edit-btn" title="Переименовать" onclick="editHeader()">✎</button>
+      <h1 id="app-title">Work dashboard</h1>
+      <button class="header-edit-btn" title="Rename" onclick="editHeader()">✎</button>
     </div>
     <div class="today" id="today-label"></div>
   </header>
@@ -1230,110 +1352,108 @@
   <div class="timerbar">
     <div class="timer-clock-block">
       <div class="timer-clock" id="timer-clock">0:00:00</div>
-      <div class="timer-state" id="timer-state">остановлен</div>
+      <div class="timer-state" id="timer-state">stopped</div>
     </div>
-    <button class="tb-start"  id="tb-start"  onclick="timerStart()">▶ Старт</button>
-    <button class="tb-pause"  id="tb-pause"  onclick="timerPause()" disabled>❚❚ Пауза</button>
-    <button class="tb-stop"   id="tb-stop"   onclick="timerStop()"  disabled>■ Стоп</button>
+    <button class="tb-start"  id="tb-start"  onclick="timerStart()">▶ Start</button>
+    <button class="tb-pause"  id="tb-pause"  onclick="timerPause()" disabled>❚❚ Pause</button>
+    <button class="tb-stop"   id="tb-stop"   onclick="timerStop()"  disabled>■ Stop</button>
     <div class="spacer"></div>
-    <button class="tb-manual" onclick="openManualEntry()">+ Ввести время вручную</button>
+    <button class="tb-manual" onclick="openManualEntry()">+ Add time manually</button>
   </div>
 
   <div class="savebar">
-    <span class="status" id="save-status">Сохранено</span>
-    <button onclick="exportData()">Экспорт</button>
-    <button onclick="importData()">Импорт</button>
-    <button class="danger" onclick="resetData()">Сброс</button>
+    <span class="status" id="save-status">Saved</span>
+    <button onclick="exportData()">Export</button>
+    <button onclick="importData()">Import</button>
+    <button class="danger" onclick="resetData()">Reset</button>
   </div>
 
   <div class="tabs">
-    <button class="tab active" data-tab="week"     onclick="showTab('week')">Неделя</button>
-    <button class="tab"        data-tab="day"      onclick="showTab('day')">День</button>
-    <button class="tab"        data-tab="overview" onclick="showTab('overview')">Обзор</button>
-    <button class="tab"        data-tab="calendar" onclick="showTab('calendar')">Календарь</button>
-    <button class="tab"        data-tab="time"     onclick="showTab('time')">Время</button>
+    <button class="tab active" data-tab="overview" onclick="showTab('overview')">Overview</button>
+    <button class="tab"        data-tab="day"      onclick="showTab('day')">Daily Plan</button>
+    <button class="tab"        data-tab="week"     onclick="showTab('week')">Weekly Plan</button>
+    <button class="tab"        data-tab="calendar" onclick="showTab('calendar')">Calendar</button>
+    <button class="tab"        data-tab="time"     onclick="showTab('time')">Log</button>
   </div>
 
-  <!-- НЕДЕЛЯ -->
+  <!-- WEEK -->
   <div class="tab-page" id="page-week">
     <div class="week-nav">
-      <button class="week-nav-btn" onclick="weekShift(-1)" title="Прошлая неделя">‹</button>
+      <button class="week-nav-btn" onclick="weekShift(-1)" title="Previous week">‹</button>
       <div class="week-nav-label">
         <div class="wn-range" id="week-range">—</div>
         <div class="wn-sub" id="week-sub"></div>
       </div>
-      <button class="week-nav-btn" onclick="weekShift(1)" title="Следующая неделя">›</button>
-      <button class="week-today-btn" id="week-today-btn" onclick="weekToday()">Эта неделя</button>
+      <button class="week-nav-btn" onclick="weekShift(1)" title="Next week">›</button>
+      <button class="week-today-btn" id="week-today-btn" onclick="weekToday()">This week</button>
     </div>
     <div class="week-toolbar">
-      <button class="ov-mode-btn" id="week-order-btn" onclick="toggleWeekOrder()">↕ Порядок плиток</button>
+      <button class="ov-mode-btn" id="week-order-btn" onclick="toggleWeekOrder()">↕ Tile order</button>
       <span class="ov-hint" id="week-order-hint"></span>
     </div>
     <div class="week-summary" id="week-summary"></div>
     <div id="week-body"></div>
   </div>
 
-  <!-- ДЕНЬ -->
+  <!-- DAY -->
   <div class="tab-page" id="page-day">
     <div class="day-nav">
-      <button class="day-nav-btn" onclick="dayShift(-1)" title="Вчера">‹</button>
+      <button class="day-nav-btn" onclick="dayShift(-1)" title="Yesterday">‹</button>
       <div class="day-nav-label">
         <div class="dn-date" id="day-date">—</div>
         <div class="dn-sub" id="day-sub"></div>
       </div>
-      <button class="day-nav-btn" onclick="dayShift(1)" title="Завтра">›</button>
-      <button class="day-today-btn" id="day-today-btn" onclick="dayToday()">Сегодня</button>
+      <button class="day-nav-btn" onclick="dayShift(1)" title="Tomorrow">›</button>
+      <button class="day-today-btn" id="day-today-btn" onclick="dayToday()">Today</button>
     </div>
     <div class="day-summary" id="day-summary"></div>
     <div id="day-body"></div>
   </div>
 
-  <!-- КАЛЕНДАРЬ -->
+  <!-- CALENDAR -->
   <div class="tab-page" id="page-calendar">
     <div class="cal-nav">
-      <button class="cal-nav-btn" onclick="calShift(-1)" title="Прошлый месяц">‹</button>
+      <button class="cal-nav-btn" onclick="calShift(-1)" title="Previous month">‹</button>
       <div class="cal-nav-label">
         <div class="cn-month" id="cal-month">—</div>
         <div class="cn-sub" id="cal-sub"></div>
       </div>
-      <button class="cal-nav-btn" onclick="calShift(1)" title="Следующий месяц">›</button>
-      <button class="cal-today-btn" id="cal-today-btn" onclick="calToday()">Этот месяц</button>
+      <button class="cal-nav-btn" onclick="calShift(1)" title="Next month">›</button>
+      <button class="cal-today-btn" id="cal-today-btn" onclick="calToday()">This month</button>
     </div>
+    <div class="cal-note">Shows both planned tasks (coloured dots by priority) and completed ones (faded green dot). Recurring tasks appear on the days they fall on.</div>
     <div class="cal-summary" id="cal-summary"></div>
     <div id="cal-grid-wrap"></div>
     <div id="cal-day-panel-wrap"></div>
   </div>
 
-  <!-- ОБЗОР -->
+  <!-- OVERVIEW -->
   <div class="tab-page" id="page-overview">
     <div class="overview-toolbar">
-      <button class="ov-mode-btn" id="ov-mode-btn" onclick="toggleEditMode()">✎ Редактировать структуру</button>
       <span class="ov-hint" id="ov-hint"></span>
+      <span class="ov-toolbar-spacer"></span>
+      <button class="ov-mode-btn" id="ov-mode-btn" onclick="toggleEditMode()">✎ Edit structure</button>
     </div>
     <div class="sphere-filter" id="sphere-filter"></div>
     <div id="overview-body"></div>
   </div>
 
-  <!-- ВРЕМЯ -->
+  <!-- LOG -->
   <div class="tab-page" id="page-time">
     <div class="log-switchbar">
-      <div class="time-modeswitch log-viewswitch">
-        <button id="lv-time" onclick="logSetView('time')">Время</button>
-        <button id="lv-done" onclick="logSetView('done')">Выполнено</button>
-      </div>
       <div class="time-modeswitch">
-        <button id="tm-week" onclick="timeSetMode('week')">Неделя</button>
-        <button id="tm-month" onclick="timeSetMode('month')">Месяц</button>
+        <button id="tm-week" onclick="timeSetMode('week')">Week</button>
+        <button id="tm-month" onclick="timeSetMode('month')">Month</button>
       </div>
     </div>
     <div class="time-nav">
-      <button class="time-nav-btn" onclick="timeShift(-1)" title="Назад">‹</button>
+      <button class="time-nav-btn" onclick="timeShift(-1)" title="Back">‹</button>
       <div class="time-nav-label">
         <div class="tn-range" id="time-range">—</div>
         <div class="tn-sub" id="time-sub"></div>
       </div>
-      <button class="time-nav-btn" onclick="timeShift(1)" title="Вперёд">›</button>
-      <button class="time-today-btn" id="time-today-btn" onclick="timeToday()">Сейчас</button>
+      <button class="time-nav-btn" onclick="timeShift(1)" title="Forward">›</button>
+      <button class="time-today-btn" id="time-today-btn" onclick="timeToday()">Now</button>
     </div>
     <div id="time-body"></div>
   </div>
@@ -1341,18 +1461,16 @@
   <footer>© 2026 · <a href="https://olyrobertsdesigns.com/" target="_blank" rel="noopener">olyrobertsdesigns.com</a></footer>
 </div>
 
-<!-- Модалка-редактор -->
+<!-- Editor modal -->
 <div class="modal-bg" id="modal-bg">
   <div class="modal" id="modal-box"></div>
 </div>
 
-<!-- Страница проекта (overlay) -->
+<!-- Project page (overlay) -->
 <div class="proj-overlay" id="proj-overlay">
   <div class="proj-inner">
     <div class="proj-topbar">
-      <button class="proj-back" onclick="closeProject()">← К обзору</button>
-      <div class="spacer"></div>
-      <button class="proj-edit-toggle" id="proj-edit-toggle" onclick="toggleProjEdit()">✎ Редактировать</button>
+      <button class="proj-back" onclick="closeProject()">← Back to overview</button>
     </div>
     <div id="proj-content"></div>
   </div>
@@ -1393,11 +1511,11 @@ function genId() {
 
 // Сферы: id, имя, короткая подпись, цвет
 const STARTER_SPHERES = [
-  { id: 'A', name: 'Тело и здоровье',   tag: 'здоровье',  color: '#1d6b51' },
-  { id: 'B', name: 'Дом и быт',         tag: 'хозяйство', color: '#9a7b30' },
-  { id: 'C', name: 'Доход и работа',    tag: 'доход',     color: '#45528f' },
-  { id: 'E', name: 'Отношения и связи', tag: 'связи',     color: '#2f5a82' },
-  { id: 'F', name: 'Разное',            tag: 'разное',    color: '#56544e' }
+  { id: 'A', name: 'Body & health',      tag: 'health',    color: '#1d6b51' },
+  { id: 'B', name: 'Home',               tag: 'household', color: '#9a7b30' },
+  { id: 'C', name: 'Income & work',      tag: 'income',    color: '#45528f' },
+  { id: 'E', name: 'Relationships',      tag: 'people',    color: '#2f5a82' },
+  { id: 'F', name: 'Other',              tag: 'other',     color: '#56544e' }
 ];
 
 // Тип задачи: 'rep' повторяющаяся, 'once' разовая, 'back' backlog, 'cond' условная, '' не выбран
@@ -1419,102 +1537,52 @@ function T(name, opts) {
 
 const STARTER_PROJECTS = [
   // ===== СФЕРА A =====
-  { sphere:'A', num:1, title:'Тело: вес и движение', short:'Тело', isKey:false, status:'active',
-    goal:'Сбросить ~9–10 кг здоровым, поддерживаемым образом; тело здоровое и с энергией.',
+  { sphere:'A', num:1, title:'Body & movement', short:'Body', isKey:false, status:'active',
+    goal:'Keep the body active and feeling good.',
     tasks:[
-      T('Утренняя зарядка'),
-      T('Принять витамины к завтраку'),
-      T('Принять витамины к ужину'),
-      T('Прогулка 30–60 минут'),
-      T('Велотренажёр ~10 минут'),
-      T('Танцы дома ~30 минут'),
-      T('Взвеситься и отметить вес'),
-      T('Разработать «образ питания» — постоянный формат еды, не диета для похудения'),
-      T('Определить целевой вес и реалистичный темп снижения'),
-      T('Решить, какие витамины и в какой дозировке принимать'),
-      T('Проверить эксперимент «витамины в 15:00 для энергии»', {hint:'триггер — итог 2–3 недель'}),
-      T('Пересмотреть образ питания, если вес встал', {hint:'триггер — 3+ недели без движения'})
+      T('Morning exercise'),
+      T('Walk 30–60 minutes')
     ]},
-  { sphere:'A', num:2, title:'Уход за собой', short:'Уход за собой', isKey:false, status:'active',
-    goal:'Ввести в систему регулярный уход, который сейчас не делается.',
+  { sphere:'A', num:2, title:'Self-care', short:'Self-care', isKey:false, status:'active',
+    goal:'Build a regular self-care routine.',
     tasks:[
-      T('Сделать маникюр'),
-      T('Сделать педикюр'),
-      T('Зарядка для лица'),
-      T('Уход за кожей рук'),
-      T('Уход за лицом'),
-      T('Подобрать уход за лицом с учётом, что кожа потеет от кремов'),
-      T('Подобрать средство от припухлостей под глазами'),
-      T('Разобраться, как сдерживать грибок в бытовом режиме'),
-      T('Завести уход за лицом в рутину, когда продукт подобран', {hint:'триггер — продукт найден'})
+      T('Facial care'),
+      T('Hand skincare')
     ]},
-  { sphere:'A', num:3, title:'Здоровье', short:'Здоровье', isKey:false, status:'active',
-    goal:'Закрыть отложенные вопросы здоровья и держать состояние под наблюдением.',
+  { sphere:'A', num:3, title:'Health', short:'Health', isKey:false, status:'active',
+    goal:'Keep health in check and not put off doctor visits.',
     tasks:[
-      T('Вечерняя чистка зубов + ирригатор'),
-      T('Записаться на консультацию по имплантам'),
-      T('Пройти лечение зубов / импланты', {subs:[
-        'Пройти консультацию, получить план лечения и смету',
-        'Решить вопрос с оплатой — сразу / рассрочка / по этапам',
-        'Записаться на первый этап лечения']}),
-      T('Записаться к врачу по желчному пузырю и обследоваться'),
-      T('Записаться к гинекологу'),
-      T('Завести задачи по наблюдению/диете для желчного, если назначат', {hint:'триггер — назначение врача'})
+      T('Evening teeth brushing'),
+      T('Book a check-up with the doctor')
     ]},
   // ===== СФЕРА B =====
-  { sphere:'B', num:4, title:'Ведение дома', short:'Дом и быт', isKey:false, status:'active',
-    goal:'Поддерживать дом в порядке без накопления хаоса и без авралов — и без раздражения.',
+  { sphere:'B', num:4, title:'Running the home', short:'Home', isKey:false, status:'active',
+    goal:'Keep the home tidy without chaos building up or last-minute rushes.',
     tasks:[
-      T('Загрузить и запустить посудомойку вечером'),
-      T('Разобрать чистую посуду'),
-      T('Запустить стирку'),
-      T('Развесить и убрать бельё'),
-      T('Протереть пыль'),
-      T('Пропылесосить'),
-      T('Помыть ванную'),
-      T('Помыть кухню'),
-      T('Помыть полы'),
-      T('Сходить в магазин за продуктами'),
-      T('Приготовить еду на 3–4 дня (2 салата)', {subs:[
-        'Выбрать 2 салата из меню недели',
-        'Купить недостающие продукты',
-        'Помыть и нарезать овощи',
-        'Собрать оба салата, разложить по контейнерам']}),
-      T('Мелкий быт — текущие мелочи по дому'),
-      T('Подобрать средства для уборки без удушья, без аэрозолей'),
-      T('Проверить эксперимент «дело под музыку» — уборка и готовка под музыку', {hint:'триггер — итог 2–3 недель'})
+      T('Start a load of laundry'),
+      T('Vacuum')
     ]},
-  { sphere:'B', num:5, title:'Меню на неделю', short:'Меню на неделю', isKey:false, status:'active',
-    goal:'Построить систему питания на неделю — чтобы не думать каждый раз, что купить и приготовить.',
+  { sphere:'B', num:5, title:'Weekly menu', short:'Weekly menu', isKey:false, status:'active',
+    goal:'Set up a weekly meal system — so there is no need to decide what to cook each time.',
     tasks:[
-      T('Собрать список блюд, которые реально нравятся и не бесят в готовке'),
-      T('Составить шаблон меню на неделю'),
-      T('Свести из меню постоянный список покупок'),
-      T('Обновлять меню на неделю', {hint:'после настройки — повторяется'})
+      T('Create a weekly menu template'),
+      T('Update the weekly menu', {hint:'recurring once set up'})
     ]},
-  { sphere:'B', num:6, title:'Квартира', short:'Квартира', isKey:false, status:'backlog',
-    goal:'Привести съёмную квартиру в порядок по списку доделок (покраска, трещины, подклейка).',
+  { sphere:'B', num:6, title:'Apartment', short:'Apartment', isKey:false, status:'backlog',
+    goal:'Get the apartment in order, working through a to-do list.',
     tasks:[
-      T('Составить полный список доделок по квартире (покраска, трещины, подклейка)'),
-      T('Подготовить материалы и инструменты'),
-      T('Привести в порядок одну комнату', {subs:[
-        'Выбрать комнату и составить список доделок именно по ней',
-        'Освободить рабочие зоны — отодвинуть мебель, накрыть',
-        'Сделать ремонтные работы — подклейка, трещины, мелочи',
-        'Покрасить',
-        'Убрать комнату после работ, вернуть на места']})
+      T('Make a list of fixes for the apartment'),
+      T('Prepare materials and tools')
     ]},
-  { sphere:'B', num:7, title:'Семейные финансы', short:'Семейные финансы', isKey:false, status:'active',
-    goal:'Вести таблицу доходов и расходов регулярно, без откладывания.',
+  { sphere:'B', num:7, title:'Family finances', short:'Family finances', isKey:false, status:'active',
+    goal:'Track income and expenses regularly, without putting it off.',
     tasks:[
-      T('Внести расходы за неделю — чеки'),
-      T('Внести расходы за неделю — банковские выписки'),
-      T('Составить бюджет на следующую неделю'),
-      T('Свести итоги месяца', {hint:'возможно ежемесячно'})
+      T('Log the week\'s expenses'),
+      T('Summarise the month', {hint:'possibly monthly'})
     ]},
-  // ===== СФЕРА C — Доход и работа (пока без проектов) =====
-  // ===== СФЕРА E — Отношения и связи (пока без проектов) =====
-  // ===== СФЕРА F — Разное (пока без проектов) =====
+  // ===== SPHERE C — Income & work (no projects yet) =====
+  // ===== SPHERE E — Relationships (no projects yet) =====
+  // ===== SPHERE F — Other (no projects yet) =====
 ];
 
 </script>
@@ -1525,8 +1593,8 @@ let state = null;
 
 function defaultState() {
   return {
-    appKicker: 'Моя система',
-    appTitle: 'Рабочий дашборд',
+    appKicker: 'My system',
+    appTitle: 'Work dashboard',
     spheres: JSON.parse(JSON.stringify(STARTER_SPHERES)),
     projects: JSON.parse(JSON.stringify(STARTER_PROJECTS)),
     log: [],                 // записи учёта времени
@@ -1534,7 +1602,7 @@ function defaultState() {
     dayPlan: {},             // правки плана по датам: { 'YYYY-MM-DD': {order:[], removed:[], moved:{}} }
     weekOrder: [],           // свой порядок плиток в табе «Неделя» (номера проектов)
     timer: { running: false, startedAt: null, accumMs: 0 },
-    lastTab: 'week',
+    lastTab: 'overview',
     sphereFilter: 'all'
   };
 }
@@ -1544,6 +1612,16 @@ function normalizeTask(t) {
   if (typeof t.date !== 'string') t.date = '';
   if (typeof t.time !== 'string') t.time = '';
   if (typeof t.rhythm !== 'string') t.rhythm = (t.type === 'rep' ? 'daily' : '');
+  // валидный ритм только у повторяющихся
+  if (t.type === 'rep') {
+    if (REP_RHYTHMS.indexOf(t.rhythm) === -1) t.rhythm = 'daily';
+    if (typeof t.repFrom !== 'string') t.repFrom = '';
+    // для не-ежедневных нужен якорь; если его нет — ставим сегодня
+    if (t.rhythm !== 'daily' && !t.repFrom) t.repFrom = todayISO();
+  } else {
+    t.rhythm = '';
+    if (typeof t.repFrom !== 'string') t.repFrom = '';
+  }
   if (['crit','imp','norm'].indexOf(t.priority) === -1) t.priority = 'norm';
   if (!Array.isArray(t.subs)) t.subs = [];
   if (!t.tid) t.tid = genId();
@@ -1562,8 +1640,8 @@ function loadState() {
       if (!state.dayLog)   state.dayLog = [];
       if (!state.dayPlan)  state.dayPlan = {};
       if (!Array.isArray(state.weekOrder)) state.weekOrder = [];
-      if (typeof state.appKicker !== 'string') state.appKicker = 'Моя система';
-      if (typeof state.appTitle !== 'string') state.appTitle = 'Рабочий дашборд';
+      if (typeof state.appKicker !== 'string') state.appKicker = 'My system';
+      if (typeof state.appTitle !== 'string') state.appTitle = 'Work dashboard';
       if (!state.timer)    state.timer = { running: false, startedAt: null, accumMs: 0 };
       if (!state.sphereFilter) state.sphereFilter = 'all';
       // миграция: дотягиваем задачи до новой схемы
@@ -1574,21 +1652,21 @@ function loadState() {
       state = defaultState();
     }
   } catch (e) {
-    console.error('Ошибка загрузки:', e);
+    console.error('Load error:', e);
     state = defaultState();
   }
 }
 
 let saveTimer = null;
 function saveState(immediate) {
-  setSaveStatus('Сохранение…', true);
+  setSaveStatus('Saving…', true);
   if (saveTimer) clearTimeout(saveTimer);
   const doSave = function () {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      setSaveStatus('Сохранено', false);
+      setSaveStatus('Saved', false);
     } catch (e) {
-      setSaveStatus('Ошибка сохранения', true);
+      setSaveStatus('Save error', true);
       console.error(e);
     }
   };
@@ -1697,16 +1775,16 @@ function resetTimer() {
 function renderHeader() {
   const k = document.getElementById('app-kicker');
   const t = document.getElementById('app-title');
-  if (k) k.textContent = state.appKicker || 'Моя система';
-  if (t) t.textContent = state.appTitle || 'Рабочий дашборд';
+  if (k) k.textContent = state.appKicker || 'My system';
+  if (t) t.textContent = state.appTitle || 'Work dashboard';
 }
 function editHeader() {
-  openModal('Название дашборда', [
-    { key: 'kicker', label: 'Надстрочник (мелкий текст сверху)', value: state.appKicker || '' },
-    { key: 'title',  label: 'Заголовок', value: state.appTitle || '' }
+  openModal('Dashboard name', [
+    { key: 'kicker', label: 'Kicker (small text on top)', value: state.appKicker || '' },
+    { key: 'title',  label: 'Title', value: state.appTitle || '' }
   ], function (vals) {
-    state.appKicker = vals.kicker.trim() || 'Моя система';
-    state.appTitle  = vals.title.trim()  || 'Рабочий дашборд';
+    state.appKicker = vals.kicker.trim() || 'My system';
+    state.appTitle  = vals.title.trim()  || 'Work dashboard';
     saveState(true);
     renderHeader();
   });
@@ -1723,13 +1801,13 @@ function renderTimer() {
   clock.classList.toggle('running', state.timer.running);
   clock.classList.toggle('paused', !state.timer.running && state.timer.accumMs > 0);
   if (state.timer.running) {
-    stateEl.textContent = 'идёт';
+    stateEl.textContent = 'running';
     bStart.disabled = true; bPause.disabled = false; bStop.disabled = false;
   } else if (state.timer.accumMs > 0) {
-    stateEl.textContent = 'на паузе';
+    stateEl.textContent = 'paused';
     bStart.disabled = false; bPause.disabled = true; bStop.disabled = false;
   } else {
-    stateEl.textContent = 'остановлен';
+    stateEl.textContent = 'stopped';
     bStart.disabled = false; bPause.disabled = true; bStop.disabled = true;
   }
 }
@@ -1792,7 +1870,7 @@ function openTimeEntryModal(opts) {
   const h = Math.floor(minutes / 60), m = minutes % 60;
 
   // список проектов (активные + backlog, без paused), сгруппированы по сферам
-  let projOpts = '<option value="">— выбери проект —</option>';
+  let projOpts = '<option value="">— select a project —</option>';
   state.spheres.forEach(function (s) {
     const inSphere = state.projects.filter(function (p) {
       return p.sphere === s.id && p.status !== 'paused';
@@ -1809,36 +1887,36 @@ function openTimeEntryModal(opts) {
 
   let durHtml;
   if (opts.fixedDuration) {
-    durHtml = '<div class="te-dur-display">Засечено таймером: <b>' +
-      (h > 0 ? h + ' ч ' : '') + m + ' мин</b></div>';
+    durHtml = '<div class="te-dur-display">Tracked by timer: <b>' +
+      (h > 0 ? h + 'h ' : '') + m + 'min</b></div>';
   } else {
     durHtml = '<div class="te-modal-row">' +
-      '<div class="te-modal-field"><label>Часы</label>' +
+      '<div class="te-modal-field"><label>Hours</label>' +
         '<input type="number" id="te-hours" min="0" max="24" value="' + h + '"></div>' +
-      '<div class="te-modal-field"><label>Минуты</label>' +
+      '<div class="te-modal-field"><label>Minutes</label>' +
         '<input type="number" id="te-mins" min="0" max="59" value="' + m + '"></div>' +
       '</div>';
   }
 
-  const titleMap = { stop: 'Запись времени', manual: 'Ввод времени вручную', edit: 'Правка записи' };
+  const titleMap = { stop: 'Time entry', manual: 'Add time manually', edit: 'Edit entry' };
   const bodyHtml =
     durHtml +
-    '<div class="te-modal-field"><label>Дата</label>' +
+    '<div class="te-modal-field"><label>Date</label>' +
       '<input type="date" id="te-date" value="' + escapeHtml(opts.date || todayISO()) + '"></div>' +
-    '<div class="te-modal-field"><label>Проект</label>' +
+    '<div class="te-modal-field"><label>Project</label>' +
       '<select id="te-project" onchange="teRefreshTasks()">' + projOpts + '</select></div>' +
-    '<div class="te-modal-field"><label>Задача (по желанию)</label>' +
-      '<select id="te-task"><option value="">— весь проект —</option></select></div>' +
-    '<div class="te-modal-field"><label>Описание (по желанию)</label>' +
-      '<textarea id="te-note" placeholder="Над чем работала">' +
+    '<div class="te-modal-field"><label>Task (optional)</label>' +
+      '<select id="te-task"><option value="">— whole project —</option></select></div>' +
+    '<div class="te-modal-field"><label>Note (optional)</label>' +
+      '<textarea id="te-note" placeholder="What you worked on">' +
       escapeHtml(opts.note || '') + '</textarea></div>';
 
-  openCustomModal(titleMap[opts.mode] || 'Запись времени', bodyHtml, [
-    { label: 'Отмена', kind: 'ghost', action: function () {
+  openCustomModal(titleMap[opts.mode] || 'Time entry', bodyHtml, [
+    { label: 'Cancel', kind: 'ghost', action: function () {
         closeModal();
         if (opts.onCancel) opts.onCancel();
       } },
-    { label: opts.mode === 'edit' ? 'Сохранить' : 'Записать', kind: 'primary',
+    { label: opts.mode === 'edit' ? 'Save' : 'Log it', kind: 'primary',
       action: function () { saveTimeEntry(opts); } }
   ]);
 
@@ -1852,7 +1930,7 @@ function teRefreshTasks(preselectTid) {
   const taskSel = document.getElementById('te-task');
   if (!projSel || !taskSel) return;
   const pnum = parseInt(projSel.value, 10);
-  let opts = '<option value="">— весь проект —</option>';
+  let opts = '<option value="">— whole project —</option>';
   const p = state.projects.find(function (x) { return x.num === pnum; });
   if (p) {
     (p.tasks || []).forEach(function (t) {
@@ -1878,7 +1956,7 @@ function saveTimeEntry(opts) {
     minutes = hh * 60 + mm;
   }
   if (!minutes || minutes < 1) {
-    showErrorBar('Укажи длительность больше нуля.');
+    showErrorBar('Enter a duration greater than zero.');
     return;
   }
   const dateEl = document.getElementById('te-date');
@@ -1889,7 +1967,7 @@ function saveTimeEntry(opts) {
   const date = dateEl ? dateEl.value : todayISO();
   const projectNum = projEl && projEl.value ? parseInt(projEl.value, 10) : null;
   if (!projectNum) {
-    showErrorBar('Выбери проект, к которому отнести время.');
+    showErrorBar('Choose a project to log the time against.');
     return;
   }
   const taskTid = taskEl && taskEl.value ? taskEl.value : '';
@@ -1934,9 +2012,9 @@ function toggleEditMode() {
   const btn = document.getElementById('ov-mode-btn');
   const hint = document.getElementById('ov-hint');
   btn.classList.toggle('on', editMode);
-  btn.textContent = editMode ? '✓ Готово' : '✎ Редактировать структуру';
+  btn.textContent = editMode ? '✓ Save' : '✎ Edit structure';
   hint.textContent = editMode
-    ? 'Переименовать, добавить, удалить, двигать стрелками ▲▼'
+    ? 'Rename, add, delete, move with the ▲▼ arrows'
     : '';
   renderOverview();
 }
@@ -1944,7 +2022,7 @@ function toggleEditMode() {
 function renderSphereFilter() {
   const box = document.getElementById('sphere-filter');
   let html = '<button class="sf-btn ' + (state.sphereFilter === 'all' ? 'active' : '') +
-             '" onclick="setSphereFilter(\'all\')">Все сферы</button>';
+             '" onclick="setSphereFilter(\'all\')">All spheres</button>';
   state.spheres.forEach(function (s) {
     html += '<button class="sf-btn ' + (state.sphereFilter === s.id ? 'active' : '') +
             '" onclick="setSphereFilter(\'' + s.id + '\')">' +
@@ -1973,9 +2051,9 @@ function renderOverview() {
       const isFirst = si === 0;
       const isLast  = si === state.spheres.length - 1;
       html += '<span class="move-arrows">' +
-        '<button class="move-btn" title="Выше" ' + (isFirst ? 'disabled' : '') +
+        '<button class="move-btn" title="Up" ' + (isFirst ? 'disabled' : '') +
           ' onclick="moveSphere(\'' + s.id + '\',-1)">▲</button>' +
-        '<button class="move-btn" title="Ниже" ' + (isLast ? 'disabled' : '') +
+        '<button class="move-btn" title="Down" ' + (isLast ? 'disabled' : '') +
           ' onclick="moveSphere(\'' + s.id + '\',1)">▼</button>' +
         '</span>';
     }
@@ -1983,14 +2061,14 @@ function renderOverview() {
       '<h2>' + escapeHtml(s.name) + '</h2>';
     if (editMode) {
       html += '<div class="sphere-edit-actions">' +
-        '<button class="edit-icon-btn" title="Переименовать сферу" ' +
+        '<button class="edit-icon-btn" title="Rename sphere" ' +
           'onclick="editSphere(\'' + s.id + '\')">✎</button>' +
-        '<button class="edit-icon-btn del" title="Удалить сферу" ' +
+        '<button class="edit-icon-btn del" title="Delete sphere" ' +
           'onclick="deleteSphere(\'' + s.id + '\')">✕</button>' +
         '</div>';
     } else {
       html += '<span class="s-count">' + projs.length + ' ' +
-        plural(projs.length, 'проект', 'проекта', 'проектов') + '</span>';
+        plural(projs.length, 'project', 'projects', 'projects') + '</span>';
     }
     html += '</div>';
 
@@ -1999,28 +2077,28 @@ function renderOverview() {
       projs.forEach(function (p, pi) { html += renderTile(p, s, pi, projs.length); });
       html += '</div>';
     } else if (!editMode) {
-      html += '<div class="ov-hint" style="padding:6px 2px;">В сфере пока нет проектов.</div>';
+      html += '<div class="ov-hint" style="padding:6px 2px;">No projects in this sphere yet.</div>';
     }
 
     if (editMode) {
       html += '<div class="add-row">' +
-        '<input type="text" id="add-proj-' + s.id + '" placeholder="Название нового проекта" ' +
+        '<input type="text" id="add-proj-' + s.id + '" placeholder="New project name" ' +
         'onkeydown="if(event.key===\'Enter\')addProject(\'' + s.id + '\')">' +
-        '<button onclick="addProject(\'' + s.id + '\')">+ Проект</button>' +
+        '<button onclick="addProject(\'' + s.id + '\')">+ Project</button>' +
         '</div>';
     }
     html += '</div>';
   });
 
-  if (!html) html = '<div class="stub">Нет сфер для показа.</div>';
+  if (!html) html = '<div class="stub">No spheres to show.</div>';
 
   if (editMode && state.sphereFilter === 'all') {
     html += '<div class="add-sphere-row">' +
-      '<div class="ar-title">Добавить новую сферу</div>' +
+      '<div class="ar-title">Add a new sphere</div>' +
       '<div class="add-row">' +
-      '<input type="text" id="add-sphere-name" placeholder="Название сферы" ' +
+      '<input type="text" id="add-sphere-name" placeholder="Sphere name" ' +
       'onkeydown="if(event.key===\'Enter\')addSphere()">' +
-      '<button onclick="addSphere()">+ Сфера</button>' +
+      '<button onclick="addSphere()">+ Sphere</button>' +
       '</div></div>';
   }
   body.innerHTML = html;
@@ -2030,14 +2108,14 @@ function renderTile(p, s, pi, pcount) {
   const st = projectStats(p);
   const dimmed = (p.status === 'paused') ? ' dimmed' : '';
   let badge = '';
-  if (p.status === 'paused')  badge = '<span class="tile-badge bg-paused">на паузе</span>';
+  if (p.status === 'paused')  badge = '<span class="tile-badge bg-paused">paused</span>';
   if (p.status === 'backlog') badge = '<span class="tile-badge bg-backlog">backlog</span>';
   let stat;
   if (p.status === 'paused') {
-    stat = 'свёрнут, задач нет';
+    stat = 'collapsed, no tasks';
   } else {
-    stat = '<b>' + st.total + '</b> ' + plural(st.total, 'задача','задачи','задач');
-    if (st.subs > 0) stat += ' · <b>' + st.subs + '</b> ' + plural(st.subs,'подзадача','подзадачи','подзадач');
+    stat = '<b>' + st.total + '</b> ' + plural(st.total, 'task','tasks','tasks');
+    if (st.subs > 0) stat += ' · <b>' + st.subs + '</b> ' + plural(st.subs,'subtask','subtasks','subtasks');
   }
   const editing = editMode ? ' editing' : '';
   const clickAttr = editMode ? '' : ' onclick="openProject(' + p.num + ')"';
@@ -2046,22 +2124,22 @@ function renderTile(p, s, pi, pcount) {
   h += '<div class="tile-stripe" style="background:' + s.color + '"></div>';
   h += '<div class="tile-body">';
   h += '<div class="tile-name">';
-  h += escapeHtml(p.short) + (p.isKey ? '<span class="tile-key">ключ</span>' : '') + '</div>';
-  h += '<div class="tile-sub">сфера ' + s.id + ' · ' + escapeHtml(s.tag) + '</div>';
+  h += escapeHtml(p.short) + (p.isKey ? '<span class="tile-key">key</span>' : '') + '</div>';
+  h += '<div class="tile-sub">sphere ' + s.id + ' · ' + escapeHtml(s.tag) + '</div>';
   h += '<div class="tile-stat">' + stat + ' ' + badge + '</div>';
   h += '</div>';
   if (editMode) {
     const isFirst = pi === 0;
     const isLast  = pi === pcount - 1;
     h += '<div class="tile-edit-bar">' +
-      '<button class="edit-icon-btn" title="Выше" ' + (isFirst ? 'disabled' : '') +
+      '<button class="edit-icon-btn" title="Up" ' + (isFirst ? 'disabled' : '') +
         ' onclick="moveProject(' + p.num + ',-1)">▲</button>' +
-      '<button class="edit-icon-btn" title="Ниже" ' + (isLast ? 'disabled' : '') +
+      '<button class="edit-icon-btn" title="Down" ' + (isLast ? 'disabled' : '') +
         ' onclick="moveProject(' + p.num + ',1)">▼</button>' +
       '<span style="flex:1"></span>' +
-      '<button class="edit-icon-btn" title="Редактировать проект" ' +
+      '<button class="edit-icon-btn" title="Edit project" ' +
         'onclick="editProject(' + p.num + ')">✎</button>' +
-      '<button class="edit-icon-btn del" title="Удалить проект" ' +
+      '<button class="edit-icon-btn del" title="Delete project" ' +
         'onclick="deleteProject(' + p.num + ')">✕</button>' +
       '</div>';
   }
@@ -2073,10 +2151,10 @@ function renderTile(p, s, pi, pcount) {
 function editSphere(id) {
   const s = sphereById(id);
   if (!s) return;
-  openModal('Сфера: ' + escapeHtml(s.name), [
-    { key: 'name', label: 'Название сферы', value: s.name },
-    { key: 'tag',  label: 'Короткая подпись (для плиток)', value: s.tag },
-    { key: 'color', label: 'Цвет (HEX, напр. #1d6b51)', value: s.color }
+  openModal('Sphere: ' + escapeHtml(s.name), [
+    { key: 'name', label: 'Sphere name', value: s.name },
+    { key: 'tag',  label: 'Short label (for tiles)', value: s.tag },
+    { key: 'color', label: 'Colour', value: s.color, type: 'swatch' }
   ], function (vals) {
     s.name = vals.name.trim() || s.name;
     s.tag = vals.tag.trim() || s.tag;
@@ -2103,9 +2181,9 @@ function addSphere() {
 }
 function deleteSphere(id) {
   const projs = state.projects.filter(function (p) { return p.sphere === id; });
-  let msg = 'Удалить сферу?';
-  if (projs.length) msg = 'В сфере ' + projs.length + ' ' +
-    plural(projs.length,'проект','проекта','проектов') + '. Удалить сферу вместе со всеми проектами?';
+  let msg = 'Delete sphere?';
+  if (projs.length) msg = 'This sphere has ' + projs.length + ' ' +
+    plural(projs.length,'project','projects','projects') + '. Delete the sphere with all its projects?';
   confirmModal(msg, function () {
     state.spheres = state.spheres.filter(function (s) { return s.id !== id; });
     state.projects = state.projects.filter(function (p) { return p.sphere !== id; });
@@ -2137,19 +2215,19 @@ function addProject(sphereId) {
 function editProject(num) {
   const p = state.projects.find(function (x) { return x.num === num; });
   if (!p) return;
-  openModal('Проект: ' + escapeHtml(p.short), [
-    { key: 'title', label: 'Полное название', value: p.title },
-    { key: 'short', label: 'Короткое имя (для плитки)', value: p.short },
-    { key: 'goal',  label: 'Цель проекта', value: p.goal, area: true },
-    { key: 'status', label: 'Статус: active / backlog / paused', value: p.status },
-    { key: 'isKey', label: 'Проект-ключ? (да / нет)', value: p.isKey ? 'да' : 'нет' }
+  openModal('Project: ' + escapeHtml(p.short), [
+    { key: 'title', label: 'Full name', value: p.title },
+    { key: 'short', label: 'Short name (for the tile)', value: p.short },
+    { key: 'goal',  label: 'Project goal', value: p.goal, area: true },
+    { key: 'status', label: 'Status: active / backlog / paused', value: p.status },
+    { key: 'isKey', label: 'Key project? (yes / no)', value: p.isKey ? 'yes' : 'no' }
   ], function (vals) {
     p.title = vals.title.trim() || p.title;
     p.short = vals.short.trim() || p.short;
     p.goal = vals.goal.trim();
     const st = vals.status.trim().toLowerCase();
     if (['active','backlog','paused'].indexOf(st) !== -1) p.status = st;
-    p.isKey = /^(да|yes|y|1)$/i.test(vals.isKey.trim());
+    p.isKey = /^(yes|y|1)$/i.test(vals.isKey.trim());
     saveState(true);
     renderOverview();
   });
@@ -2157,7 +2235,7 @@ function editProject(num) {
 function deleteProject(num) {
   const p = state.projects.find(function (x) { return x.num === num; });
   if (!p) return;
-  confirmModal('Удалить проект «' + p.short + '» со всеми его задачами?', function () {
+  confirmModal('Delete project “' + p.short + '” with all its tasks?', function () {
     state.projects = state.projects.filter(function (x) { return x.num !== num; });
     saveState(true);
     renderOverview();
@@ -2209,20 +2287,46 @@ function openModal(title, fields, onSave) {
   let html = '<h3>' + title + '</h3>';
   fields.forEach(function (f) {
     html += '<label>' + escapeHtml(f.label) + '</label>';
-    if (f.area) {
+    if (f.type === 'swatch') {
+      const cur = (f.value || '').toLowerCase();
+      html += '<input type="hidden" id="modal-f-' + f.key + '" value="' + escapeHtml(f.value || '') + '">';
+      html += '<div class="swatch-grid">';
+      SPHERE_PALETTE.forEach(function (c) {
+        const on = c.toLowerCase() === cur;
+        html += '<button type="button" class="swatch' + (on ? ' on' : '') + '" ' +
+          'style="background:' + c + '" data-color="' + c + '" ' +
+          'onclick="pickSwatch(\'' + f.key + '\',\'' + c + '\')"></button>';
+      });
+      html += '</div>';
+    } else if (f.area) {
       html += '<textarea id="modal-f-' + f.key + '">' + escapeHtml(f.value || '') + '</textarea>';
     } else {
       html += '<input type="text" id="modal-f-' + f.key + '" value="' + escapeHtml(f.value || '') + '">';
     }
   });
   html += '<div class="modal-actions">' +
-    '<button class="btn-cancel" onclick="closeModal()">Отмена</button>' +
-    '<button class="btn-save" onclick="saveModal()">Сохранить</button>' +
+    '<button class="btn-cancel" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn-save" onclick="saveModal()">Save</button>' +
     '</div>';
   box.innerHTML = html;
   box.dataset.fields = JSON.stringify(fields.map(function (f){ return f.key; }));
   modalCallback = onSave;
   document.getElementById('modal-bg').classList.add('open');
+}
+// палитра цветов сфер (тёплая, в тон теме)
+const SPHERE_PALETTE = [
+  '#1d6b51', '#2f5a82', '#45528f', '#6a4f8a',
+  '#9a3a5a', '#b0453a', '#c0392b', '#c97f2e',
+  '#9a7b30', '#7a8b3a', '#56544e', '#5a7d6a'
+];
+// выбор цвета в палитре: проставляем значение и подсветку
+function pickSwatch(key, color) {
+  const inp = document.getElementById('modal-f-' + key);
+  if (inp) inp.value = color;
+  const box = document.getElementById('modal-box');
+  box.querySelectorAll('.swatch').forEach(function (b) {
+    b.classList.toggle('on', b.dataset.color.toLowerCase() === color.toLowerCase());
+  });
 }
 function saveModal() {
   const box = document.getElementById('modal-box');
@@ -2245,16 +2349,16 @@ function closeModal() {
 let confirmCallback = null;
 function confirmModal(message, onYes, opts) {
   opts = opts || {};
-  const okLabel = opts.okLabel || 'Удалить';
+  const okLabel = opts.okLabel || 'Delete';
   const okColor = opts.okColor || '#a33636';
-  const title = opts.title || 'Подтверждение';
+  const title = opts.title || 'Confirm';
   const box = document.getElementById('modal-box');
   // поддержка переносов строк в сообщении
   const msgHtml = escapeHtml(message).replace(/\n/g, '<br>');
   box.innerHTML = '<h3>' + escapeHtml(title) + '</h3>' +
     '<p style="font-size:13.5px;color:var(--text-dim);line-height:1.55;">' + msgHtml + '</p>' +
     '<div class="modal-actions">' +
-    '<button class="btn-cancel" onclick="closeConfirm()">Отмена</button>' +
+    '<button class="btn-cancel" onclick="closeConfirm()">Cancel</button>' +
     '<button class="btn-save" style="background:' + okColor + ';" onclick="acceptConfirm()">' +
       escapeHtml(okLabel) + '</button>' +
     '</div>';
@@ -2297,16 +2401,23 @@ function runCustomModalAction(i) {
 
 // ===== СТРАНИЦА ПРОЕКТА =====
 let currentProjectNum = null;   // открытый проект
-let projEditMode = false;       // режим правки внутри проекта
 let openSubsFor = {};           // какие задачи раскрыты {taskIdx:true}
 let openDateFor = {};           // у каких задач открыт выбор даты {taskIdx:true}
+let headerEditMode = false;     // правка шапки проекта (инлайн)
+let taskEditMode = {};          // правка отдельной задачи: { tid: true }
+function isTaskEditing(tid) { return !!taskEditMode[tid]; }
+function toggleTaskEdit(tid) {
+  if (taskEditMode[tid]) delete taskEditMode[tid];
+  else taskEditMode[tid] = true;
+  renderProject();
+}
 
 const TASK_TYPES = [
-  { id: 'rep',  label: 'Повторяющаяся', short: 'повтор.',  cls: 'rep'  },
-  { id: 'once', label: 'Разовая',       short: 'разовая',  cls: 'once' },
-  { id: 'cond', label: 'Условная',      short: 'условная', cls: 'cond' },
+  { id: 'rep',  label: 'Recurring',     short: 'recur.',   cls: 'rep'  },
+  { id: 'once', label: 'One-off',       short: 'one-off',  cls: 'once' },
+  { id: 'cond', label: 'Conditional',   short: 'cond.',    cls: 'cond' },
   { id: 'back', label: 'Backlog',       short: 'backlog',  cls: 'back' },
-  { id: '',     label: 'Тип не выбран', short: 'без типа', cls: 'none' }
+  { id: '',     label: 'No type set',   short: 'no type',  cls: 'none' }
 ];
 function taskTypeInfo(id) {
   return TASK_TYPES.find(function (t) { return t.id === (id || ''); }) || TASK_TYPES[4];
@@ -2314,12 +2425,66 @@ function taskTypeInfo(id) {
 
 // Приоритеты задач
 const PRIORITIES = [
-  { id: 'crit', label: 'Критично',  short: 'критично', icon: '🔴', rank: 0 },
-  { id: 'imp',  label: 'Важно',     short: 'важно',    icon: '🟡', rank: 1 },
-  { id: 'norm', label: 'Обычное',   short: 'обычное',  icon: '⚪', rank: 2 }
+  { id: 'crit', label: 'Critical', short: 'critical', icon: '🔴', rank: 0 },
+  { id: 'imp',  label: 'Important', short: 'important', icon: '🟡', rank: 1 },
+  { id: 'norm', label: 'Normal',    short: 'normal',   icon: '⚪', rank: 2 }
 ];
 function priorityInfo(id) {
   return PRIORITIES.find(function (p) { return p.id === id; }) || PRIORITIES[2];
+}
+
+// ----- ритмы повторения -----
+// daily игнорирует якорь; остальные считаются от repFrom (якорной даты)
+const REP_RHYTHMS = ['daily','weekly','monthly','quarterly','halfyearly','yearly'];
+const RHYTHM_INFO = [
+  { id: 'daily',      label: 'Every day',       chip: '↻ every day' },
+  { id: 'weekly',     label: 'Every week',      chip: '↻ weekly' },
+  { id: 'monthly',    label: 'Every month',     chip: '↻ monthly' },
+  { id: 'quarterly',  label: 'Every 3 months',  chip: '↻ quarterly' },
+  { id: 'halfyearly', label: 'Every 6 months',  chip: '↻ every 6 mo' },
+  { id: 'yearly',     label: 'Every year',      chip: '↻ yearly' }
+];
+function rhythmInfo(id) {
+  return RHYTHM_INFO.find(function (r) { return r.id === id; }) || RHYTHM_INFO[0];
+}
+// ISO -> Date (локальная полночь)
+function isoToDate(iso) {
+  const p = iso.split('-');
+  return new Date(+p[0], +p[1] - 1, +p[2]);
+}
+// последний день месяца (year, month0)
+function lastDayOfMonth(year, month0) {
+  return new Date(year, month0 + 1, 0).getDate();
+}
+// выпадает ли повторяющаяся задача на дату dateISO?
+function repOccursOn(t, dateISO) {
+  if (t.type !== 'rep') return false;
+  const rhythm = t.rhythm || 'daily';
+  if (rhythm === 'daily') return true;
+  const anchor = t.repFrom;
+  if (!anchor) return false;
+  const a = isoToDate(anchor);
+  const d = isoToDate(dateISO);
+  if (isNaN(a.getTime()) || isNaN(d.getTime())) return false;
+  // повторение не раньше якоря
+  if (d < a) return false;
+  if (rhythm === 'weekly') {
+    // тот же день недели, и кратное число недель от якоря
+    if (d.getDay() !== a.getDay()) return false;
+    const days = Math.round((d - a) / 86400000);
+    return days % 7 === 0;
+  }
+  // месячные ритмы: monthly=1, quarterly=3, halfyearly=6, yearly=12
+  const step = rhythm === 'monthly' ? 1
+    : rhythm === 'quarterly' ? 3
+    : rhythm === 'halfyearly' ? 6
+    : rhythm === 'yearly' ? 12 : 0;
+  if (!step) return false;
+  const monthsApart = (d.getFullYear() - a.getFullYear()) * 12 + (d.getMonth() - a.getMonth());
+  if (monthsApart < 0 || monthsApart % step !== 0) return false;
+  // целевой день месяца — как у якоря, но не больше, чем дней в этом месяце
+  const targetDay = Math.min(a.getDate(), lastDayOfMonth(d.getFullYear(), d.getMonth()));
+  return d.getDate() === targetDay;
 }
 
 function currentProject() {
@@ -2327,8 +2492,8 @@ function currentProject() {
 }
 
 // ----- форматирование даты -----
-const WD_SHORT = ['вс','пн','вт','ср','чт','пт','сб'];
-const MON_SHORT = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+const WD_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MON_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function todayISO() {
   const d = new Date();
   return d.getFullYear() + '-' +
@@ -2348,15 +2513,15 @@ function dateRelLabel(iso) {
   // 'сегодня' / 'завтра' / 'просрочено' — для подсветки
   if (!iso) return '';
   const t = todayISO();
-  if (iso === t) return 'сегодня';
-  if (iso < t) return 'просрочено';
+  if (iso === t) return 'today';
+  if (iso < t) return 'overdue';
   // завтра?
   const d = new Date();
   d.setDate(d.getDate() + 1);
   const tm = d.getFullYear() + '-' +
     String(d.getMonth() + 1).padStart(2, '0') + '-' +
     String(d.getDate()).padStart(2, '0');
-  if (iso === tm) return 'завтра';
+  if (iso === tm) return 'tomorrow';
   return '';
 }
 
@@ -2364,7 +2529,8 @@ function openProject(num) {
   const p = state.projects.find(function (x) { return x.num === num; });
   if (!p) return;
   currentProjectNum = num;
-  projEditMode = false;
+  headerEditMode = false;
+  taskEditMode = {};
   openSubsFor = {};
   openDateFor = {};
   // по умолчанию раскрываем задачи с незавершёнными подзадачами
@@ -2383,25 +2549,22 @@ function closeProject() {
   document.getElementById('proj-overlay').classList.remove('open');
   document.body.style.overflow = '';
   currentProjectNum = null;
-  projEditMode = false;
+  headerEditMode = false;
+  taskEditMode = {};
   renderOverview();   // обновим статистику на плитках
   renderWeek();       // изменения дат/приоритетов отразятся в Неделе
   renderDay();        // и в Дне
   renderCalendar();   // и в Календаре
 }
-function toggleProjEdit() {
-  projEditMode = !projEditMode;
-  const btn = document.getElementById('proj-edit-toggle');
-  btn.classList.toggle('on', projEditMode);
-  btn.textContent = projEditMode ? '✓ Готово' : '✎ Редактировать';
-  if (!projEditMode) openDateFor = {};
+function toggleHeaderEdit() {
+  headerEditMode = !headerEditMode;
   renderProject();
 }
 
 function renderProject() {
   const p = currentProject();
   const box = document.getElementById('proj-content');
-  if (!p) { box.innerHTML = '<div class="tasks-empty">Проект не найден.</div>'; return; }
+  if (!p) { box.innerHTML = '<div class="tasks-empty">Project not found.</div>'; return; }
   const s = sphereById(p.sphere);
   const color = s ? s.color : '#9a7b30';
   const st = projectStats(p);
@@ -2413,50 +2576,79 @@ function renderProject() {
   h += '<div class="proj-head-top">';
   if (s) h += '<span class="proj-sphere-tag" style="background:' + color + '">' +
     escapeHtml(s.id + ' · ' + s.name) + '</span>';
-  if (p.isKey) h += '<span class="proj-key-tag">проект-ключ</span>';
+  if (p.isKey) h += '<span class="proj-key-tag">key project</span>';
   if (p.status === 'paused')
-    h += '<span class="proj-status-tag bg-paused">на паузе</span>';
+    h += '<span class="proj-status-tag bg-paused">paused</span>';
   if (p.status === 'backlog')
     h += '<span class="proj-status-tag bg-backlog">backlog</span>';
+  h += '<span class="pht-spacer"></span>';
+  h += '<button class="proj-head-edit-btn' + (headerEditMode ? ' on' : '') +
+    '" onclick="' + (headerEditMode ? 'saveHeaderEdit()' : 'toggleHeaderEdit()') + '">' +
+    (headerEditMode ? '✓ Save' : '✎ Edit') + '</button>';
   h += '</div>';
-  h += '<div class="proj-title">' + escapeHtml(p.title) + '</div>';
-  h += '<div class="proj-goal-label">Цель проекта</div>';
-  if (p.goal) {
-    h += '<div class="proj-goal">' + escapeHtml(p.goal) + '</div>';
-  } else {
-    h += '<div class="proj-goal empty">Цель пока не задана.</div>';
-  }
-  if (st.subs > 0) {
-    const pct = Math.round(st.subsDone / st.subs * 100);
-    h += '<div class="proj-progress">' +
-      '<span>Подзадачи: ' + st.subsDone + ' / ' + st.subs + '</span>' +
-      '<span class="proj-progress-bar"><span class="proj-progress-fill" style="width:' +
-        pct + '%;background:' + color + '"></span></span>' +
-      '<span>' + pct + '%</span></div>';
-  }
-  if (projEditMode) {
-    h += '<div class="proj-head-edit">' +
-      '<button onclick="editProjectFromPage()">✎ Цель, название, статус</button>' +
+
+  if (headerEditMode) {
+    // инлайн-поля правки шапки
+    let statusOpts = '';
+    ['active','backlog','paused'].forEach(function (st2) {
+      statusOpts += '<option value="' + st2 + '"' +
+        (p.status === st2 ? ' selected' : '') + '>' +
+        st2.charAt(0).toUpperCase() + st2.slice(1) + '</option>';
+    });
+    h += '<div class="proj-head-form">' +
+      '<label>Full name</label>' +
+      '<input type="text" id="ph-title" value="' + escapeHtml(p.title) + '">' +
+      '<label>Short name (for the tile)</label>' +
+      '<input type="text" id="ph-short" value="' + escapeHtml(p.short) + '">' +
+      '<label>Project goal</label>' +
+      '<textarea id="ph-goal" rows="3">' + escapeHtml(p.goal || '') + '</textarea>' +
+      '<div class="phf-row">' +
+        '<div><label>Status</label>' +
+          '<select id="ph-status">' + statusOpts + '</select></div>' +
+        '<div><label>Key project?</label>' +
+          '<select id="ph-key"><option value="no"' + (!p.isKey ? ' selected' : '') + '>No</option>' +
+          '<option value="yes"' + (p.isKey ? ' selected' : '') + '>Yes</option></select></div>' +
+      '</div>' +
+      '<div class="phf-actions">' +
+        '<button class="phf-save" onclick="saveHeaderEdit()">✓ Save</button>' +
+        '<button class="phf-cancel" onclick="toggleHeaderEdit()">Cancel</button>' +
+      '</div>' +
       '</div>';
+  } else {
+    h += '<div class="proj-title">' + escapeHtml(p.title) + '</div>';
+    h += '<div class="proj-goal-label">Project goal</div>';
+    if (p.goal) {
+      h += '<div class="proj-goal">' + escapeHtml(p.goal) + '</div>';
+    } else {
+      h += '<div class="proj-goal empty">No goal set yet.</div>';
+    }
+    if (st.subs > 0) {
+      const pct = Math.round(st.subsDone / st.subs * 100);
+      h += '<div class="proj-progress">' +
+        '<span>Subtasks: ' + st.subsDone + ' / ' + st.subs + '</span>' +
+        '<span class="proj-progress-bar"><span class="proj-progress-fill" style="width:' +
+          pct + '%;background:' + color + '"></span></span>' +
+        '<span>' + pct + '%</span></div>';
+    }
   }
   h += '</div></div>';
 
   // ----- секция задач -----
   h += '<div class="tasks-section-head">' +
-    '<h3>Задачи</h3>' +
+    '<div class="tsh-left">' +
+    '<h3>Tasks</h3>' +
     '<span class="t-count">' + st.total + ' ' +
-      plural(st.total,'задача','задачи','задач') +
-      (st.typed < st.total ? ' · ' + (st.total - st.typed) + ' без типа' : '') +
-    '</span></div>';
+      plural(st.total,'task','tasks','tasks') +
+      (st.typed < st.total ? ' · ' + (st.total - st.typed) + ' untyped' : '') +
+    '</span></div>' +
+    '<button class="add-task-btn" onclick="addTask()">+ Add task</button>' +
+    '</div>';
   h += '<div class="tasks-section-hint">' +
-    (projEditMode
-      ? 'Это склад задач. Задай задаче дату — она попадёт в план недели и дня. Повторяющиеся приходят в день сами. Тип, дату, порядок и подзадачи меняй здесь.'
-      : 'Это склад задач проекта. Отмечать выполнение и планировать время — в табах «Неделя» и «День». Нажми «Редактировать», чтобы менять задачи.') +
+    'Tick a task to mark it done for today. Use “Edit” on a task to set its type, priority, date and subtasks.' +
     '</div>';
 
   if (!p.tasks.length) {
-    h += '<div class="tasks-empty">В проекте пока нет задач.' +
-      (projEditMode ? '' : ' Нажми «Редактировать», чтобы добавить.') + '</div>';
+    h += '<div class="tasks-empty">No tasks in this project yet. Click “+ Add task” to create one.</div>';
   } else {
     TASK_TYPES.forEach(function (tt) {
       const items = [];
@@ -2475,22 +2667,6 @@ function renderProject() {
     });
   }
 
-  // ----- добавление задачи -----
-  if (projEditMode) {
-    let typeOpts = '';
-    TASK_TYPES.forEach(function (tt) {
-      typeOpts += '<option value="' + tt.id + '">' + escapeHtml(tt.label) + '</option>';
-    });
-    h += '<div class="task-add-box">' +
-      '<div class="tab-title">Новая задача</div>' +
-      '<div class="add-row">' +
-      '<input type="text" id="new-task-name" placeholder="Название задачи" ' +
-        'onkeydown="if(event.key===\'Enter\')addTask()">' +
-      '<select id="new-task-type">' + typeOpts + '</select>' +
-      '<button onclick="addTask()">+ Задача</button>' +
-      '</div></div>';
-  }
-
   box.innerHTML = h;
 }
 
@@ -2501,115 +2677,164 @@ function renderTaskCard(p, t, idx, gi, gcount) {
   const tt = taskTypeInfo(t.type);
   const subsOpen = !!openSubsFor[idx];
   const dateOpen = !!openDateFor[idx];
+  const doneToday = !!findDayLog(todayISO(), t.tid);   // отмечена выполненной сегодня
+  const editing = isTaskEditing(t.tid);
 
-  let h = '<div class="task-card" data-tidx="' + idx + '">';
+  let h = '<div class="task-card' + (doneToday ? ' t-done' : '') + (editing ? ' t-editing' : '') +
+    '" data-tidx="' + idx + '">';
   h += '<div class="task-main">';
+  // чекбокс выполнения (скрыт в режиме правки)
+  if (!editing) {
+    h += '<div class="task-check' + (doneToday ? ' checked' : '') + '" ' +
+      'title="' + (doneToday ? 'Done today — click to undo' : 'Mark done') + '" ' +
+      'onclick="toggleDayTask(todayISO(), \'' + t.tid + '\')">' + (doneToday ? '✓' : '') + '</div>';
+  }
   h += '<div class="task-text-block">';
-  h += '<div class="task-name">';
-  const pri = priorityInfo(t.priority);
-  if (t.priority && t.priority !== 'norm') {
-    h += '<span class="task-pri" title="' + escapeHtml(pri.label) + '">' + pri.icon + '</span> ';
-  }
-  h += escapeHtml(t.name) + '</div>';
-  if (t.hint) h += '<div class="task-hint">' + escapeHtml(t.hint) + '</div>';
 
-  // строка с датой и подзадачами
-  h += '<div class="task-meta-row">';
-  // плашка даты / ритма
-  if (t.type === 'rep') {
-    h += '<span class="task-date rhythm" title="Повторяется — приходит в план дня сама">' +
-      '↻ каждый день</span>';
-  } else if (t.date) {
-    const rel = dateRelLabel(t.date);
-    let label = fmtDateHuman(t.date);
-    if (t.time) label += ' · ' + t.time;
-    let cls = 'task-date';
-    let title = 'Запланировано';
-    if (rel === 'просрочено') { title = 'Дата уже прошла'; }
-    h += '<span class="' + cls + '" title="' + title + '">📅 ' + escapeHtml(label) +
-      (rel && rel !== 'просрочено' ? ' · ' + rel : '') +
-      (rel === 'просрочено' ? ' · просрочено' : '') + '</span>';
-  } else if (t.type === 'once') {
-    h += '<span class="task-date unplanned" title="Дата не задана — задача не в плане">' +
-      'без даты</span>';
-  }
-  // подзадачи
-  if (subsTotal > 0) {
-    h += '<button class="subs-toggle' + (subsOpen ? ' open' : '') + '" ' +
-      'onclick="toggleSubs(' + idx + ')">' +
-      '<span class="subs-arrow">▶</span> Подзадачи ' +
-      subsDone + '/' + subsTotal + '</button>';
-  } else if (projEditMode) {
-    h += '<button class="subs-toggle' + (subsOpen ? ' open' : '') + '" ' +
-      'onclick="toggleSubs(' + idx + ')">' +
-      '<span class="subs-arrow">▶</span> + добавить подзадачи</button>';
-  }
-  h += '</div>';
-  h += '</div>';   // task-text-block
-  h += '<span class="task-type-pill ttp-' + tt.cls + '">' + escapeHtml(tt.short) + '</span>';
-  h += '</div>';   // task-main
+  if (editing) {
+    // имя задачи редактируемое
+    h += '<input type="text" class="task-name-input" id="te-name-' + t.tid + '" ' +
+      'value="' + escapeHtml(t.name) + '" placeholder="Task name" ' +
+      'oninput="setTaskName(' + idx + ',this.value)" ' +
+      'onkeydown="if(event.key===\'Enter\')saveTaskEdit(\'' + t.tid + '\')">';
+    // примечание/триггер редактируемое
+    h += '<input type="text" class="task-hint-input" ' +
+      'value="' + escapeHtml(t.hint || '') + '" placeholder="Note / trigger (optional)" ' +
+      'oninput="setTaskHint(' + idx + ',this.value)">';
+  } else {
+    h += '<div class="task-name">';
+    const pri = priorityInfo(t.priority);
+    if (t.priority && t.priority !== 'norm') {
+      h += '<span class="task-pri" title="' + escapeHtml(pri.label) + '">' + pri.icon + '</span> ';
+    }
+    h += (t.name ? escapeHtml(t.name) : '<span class="task-noname">Untitled task</span>') + '</div>';
+    if (t.hint) h += '<div class="task-hint">' + escapeHtml(t.hint) + '</div>';
 
-  // ----- блок выбора даты (режим правки, кроме повторяющихся) -----
-  if (projEditMode && dateOpen && t.type !== 'rep') {
-    h += '<div class="task-date-edit">' +
-      '<label>Дата</label>' +
-      '<input type="date" value="' + escapeHtml(t.date || '') + '" ' +
-        'onchange="setTaskDate(' + idx + ',this.value)">' +
-      '<label>Время</label>' +
-      '<input type="time" value="' + escapeHtml(t.time || '') + '" ' +
-        'onchange="setTaskTime(' + idx + ',this.value)">';
-    if (t.date || t.time) {
-      h += '<button class="clear-date" onclick="clearTaskDate(' + idx + ')">Убрать дату</button>';
+    // строка с датой и подзадачами (только в режиме просмотра)
+    h += '<div class="task-meta-row">';
+    if (t.type === 'rep') {
+      const rh = rhythmInfo(t.rhythm);
+      let chipTxt = rh.chip;
+      if (t.rhythm && t.rhythm !== 'daily' && t.repFrom) {
+        chipTxt += ' · from ' + fmtDateHuman(t.repFrom);
+      }
+      h += '<span class="task-date rhythm" title="Recurring task">' + escapeHtml(chipTxt) + '</span>';
+    } else if (t.date) {
+      const rel = dateRelLabel(t.date);
+      let label = fmtDateHuman(t.date);
+      if (t.time) label += ' · ' + t.time;
+      let title = 'Scheduled';
+      if (rel === 'overdue') { title = 'Date has passed'; }
+      h += '<span class="task-date" title="' + title + '">📅 ' + escapeHtml(label) +
+        (rel && rel !== 'overdue' ? ' · ' + rel : '') +
+        (rel === 'overdue' ? ' · overdue' : '') + '</span>';
+    } else if (t.type === 'once') {
+      h += '<span class="task-date unplanned" title="No date set — not in the plan">no date</span>';
+    }
+    if (subsTotal > 0) {
+      h += '<button class="subs-toggle' + (subsOpen ? ' open' : '') + '" ' +
+        'onclick="toggleSubs(' + idx + ')">' +
+        '<span class="subs-arrow">▶</span> Subtasks ' + subsDone + '/' + subsTotal + '</button>';
     }
     h += '</div>';
   }
-  if (projEditMode && dateOpen && t.type === 'rep') {
-    h += '<div class="task-date-edit">' +
-      '<span class="rhythm-note">↻ Повторяющаяся задача приходит в план дня каждый день автоматически. Дату задавать не нужно.</span>' +
-      '</div>';
-  }
+  h += '</div>';   // task-text-block
 
-  // ----- блок подзадач -----
-  if (subsOpen) {
+  // правая часть task-main: тип-пилюля (просмотр) или кнопка Edit/Save
+  if (!editing) {
+    h += '<span class="task-type-pill ttp-' + tt.cls + '">' + escapeHtml(tt.short) + '</span>';
+    h += '<button class="task-edit-toggle" title="Edit task" onclick="toggleTaskEdit(\'' + t.tid + '\')">✎ Edit</button>';
+  } else {
+    h += '<button class="task-edit-toggle on" title="Save task" onclick="saveTaskEdit(\'' + t.tid + '\')">✓ Save</button>';
+  }
+  h += '</div>';   // task-main
+
+  // ----- режим просмотра: раскрытый чек-лист подзадач (read-only с галочками) -----
+  if (!editing && subsOpen && subsTotal > 0) {
     h += '<div class="subs-wrap">';
-    if (subsTotal === 0) {
-      h += '<div style="font-size:11.5px;color:var(--text-faint);padding:2px 0 4px;">Подзадачи — чек-лист шагов внутри задачи. Своей даты у них нет.</div>';
-    }
     t.subs.forEach(function (sub, si) {
       h += '<div class="sub-row' + (sub.done ? ' s-done' : '') + '">';
       h += '<div class="sub-check' + (sub.done ? ' checked' : '') + '" ' +
         'onclick="toggleSub(' + idx + ',' + si + ')">' + (sub.done ? '✓' : '') + '</div>';
       h += '<div class="sub-name">' + escapeHtml(sub.name) + '</div>';
-      if (projEditMode) {
-        h += '<div class="sub-actions">' +
-          '<button class="sub-mini-btn" title="Выше" ' + (si === 0 ? 'disabled' : '') +
-            ' onclick="moveSub(' + idx + ',' + si + ',-1)">▲</button>' +
-          '<button class="sub-mini-btn" title="Ниже" ' + (si === subsTotal - 1 ? 'disabled' : '') +
-            ' onclick="moveSub(' + idx + ',' + si + ',1)">▼</button>' +
-          '<button class="sub-mini-btn" title="Переименовать" ' +
-            'onclick="editSub(' + idx + ',' + si + ')">✎</button>' +
-          '<button class="sub-mini-btn del" title="Удалить" ' +
-            'onclick="deleteSub(' + idx + ',' + si + ')">✕</button>' +
-          '</div>';
-      }
       h += '</div>';
     });
-    h += '<div class="sub-add-row">' +
-      '<input type="text" id="new-sub-' + idx + '" placeholder="Новая подзадача" ' +
-        'onkeydown="if(event.key===\'Enter\')addSub(' + idx + ')">' +
-      '<button onclick="addSub(' + idx + ')">+</button>' +
-      '</div>';
     h += '</div>';
   }
 
-  // ----- панель правки задачи -----
-  if (projEditMode) {
+  // ===== режим правки задачи =====
+  if (editing) {
     let typeOpts = '';
     TASK_TYPES.forEach(function (tt2) {
       typeOpts += '<option value="' + tt2.id + '"' +
         ((t.type || '') === tt2.id ? ' selected' : '') + '>' +
         escapeHtml(tt2.label) + '</option>';
     });
+
+    // ----- верхняя строка: Type + дата/ритм рядом -----
+    h += '<div class="task-date-edit">' +
+      '<label>Type</label>' +
+      '<select title="Task type" onchange="setTaskType(' + idx + ',this.value)">' + typeOpts + '</select>';
+    if (t.type === 'rep') {
+      let rOpts = '';
+      RHYTHM_INFO.forEach(function (r) {
+        rOpts += '<option value="' + r.id + '"' +
+          ((t.rhythm || 'daily') === r.id ? ' selected' : '') + '>' +
+          escapeHtml(r.label) + '</option>';
+      });
+      h += '<label>Repeats</label>' +
+        '<select onchange="setTaskRhythm(' + idx + ',this.value)">' + rOpts + '</select>';
+      if ((t.rhythm || 'daily') !== 'daily') {
+        h += '<label>Starting</label>' +
+          '<input type="date" value="' + escapeHtml(t.repFrom || '') + '" ' +
+            'onchange="setTaskRepFrom(' + idx + ',this.value)">';
+      }
+      h += '<span class="rhythm-note">' +
+        ((t.rhythm || 'daily') === 'daily'
+          ? '↻ Shows up in the day plan every day.'
+          : '↻ Repeats ' + escapeHtml(rhythmInfo(t.rhythm).label.toLowerCase()) + ' from the start date.') +
+        '</span>';
+    } else {
+      h += '<label>Date</label>' +
+        '<input type="date" value="' + escapeHtml(t.date || '') + '" ' +
+          'onchange="setTaskDate(' + idx + ',this.value)">' +
+        '<label>Time</label>' +
+        '<input type="time" value="' + escapeHtml(t.time || '') + '" ' +
+          'onchange="setTaskTime(' + idx + ',this.value)">';
+      if (t.date || t.time) {
+        h += '<button class="clear-date" onclick="clearTaskDate(' + idx + ')">Clear date</button>';
+      }
+    }
+    h += '</div>';
+
+    // подзадачи (редактируемые)
+    h += '<div class="subs-wrap">';
+    h += '<div class="subs-edit-label">Subtasks</div>';
+    t.subs.forEach(function (sub, si) {
+      h += '<div class="sub-row' + (sub.done ? ' s-done' : '') + '">';
+      h += '<div class="sub-check' + (sub.done ? ' checked' : '') + '" ' +
+        'onclick="toggleSub(' + idx + ',' + si + ')">' + (sub.done ? '✓' : '') + '</div>';
+      h += '<div class="sub-name">' + escapeHtml(sub.name) + '</div>';
+      h += '<div class="sub-actions">' +
+        '<button class="sub-mini-btn" title="Up" ' + (si === 0 ? 'disabled' : '') +
+          ' onclick="moveSub(' + idx + ',' + si + ',-1)">▲</button>' +
+        '<button class="sub-mini-btn" title="Down" ' + (si === subsTotal - 1 ? 'disabled' : '') +
+          ' onclick="moveSub(' + idx + ',' + si + ',1)">▼</button>' +
+        '<button class="sub-mini-btn" title="Rename" ' +
+          'onclick="editSub(' + idx + ',' + si + ')">✎</button>' +
+        '<button class="sub-mini-btn del" title="Delete" ' +
+          'onclick="deleteSub(' + idx + ',' + si + ')">✕</button>' +
+        '</div>';
+      h += '</div>';
+    });
+    h += '<div class="sub-add-row">' +
+      '<input type="text" id="new-sub-' + idx + '" placeholder="New subtask" ' +
+        'onkeydown="if(event.key===\'Enter\')addSub(' + idx + ')">' +
+      '<button onclick="addSub(' + idx + ')">+</button>' +
+      '</div>';
+    h += '</div>';
+
+    // ----- нижняя строка: Priority + перемещение/удаление -----
     let priOpts = '';
     PRIORITIES.forEach(function (pr) {
       priOpts += '<option value="' + pr.id + '"' +
@@ -2617,20 +2842,14 @@ function renderTaskCard(p, t, idx, gi, gcount) {
         pr.icon + ' ' + escapeHtml(pr.label) + '</option>';
     });
     h += '<div class="task-edit-bar">' +
-      '<button class="edit-icon-btn" title="Выше" ' + (gi === 0 ? 'disabled' : '') +
-        ' onclick="moveTask(' + idx + ',-1)">▲</button>' +
-      '<button class="edit-icon-btn" title="Ниже" ' + (gi === gcount - 1 ? 'disabled' : '') +
-        ' onclick="moveTask(' + idx + ',1)">▼</button>' +
-      '<select title="Тип задачи" onchange="setTaskType(' + idx + ',this.value)">' +
-        typeOpts + '</select>' +
-      '<select title="Приоритет" onchange="setTaskPriority(' + idx + ',this.value)">' +
-        priOpts + '</select>' +
-      '<button class="edit-icon-btn' + (dateOpen ? ' on-date' : '') +
-        '" title="Дата и время" onclick="toggleDateEdit(' + idx + ')">📅</button>' +
+      '<label class="teb-lbl">Priority</label>' +
+      '<select title="Priority" onchange="setTaskPriority(' + idx + ',this.value)">' + priOpts + '</select>' +
       '<span class="te-spacer"></span>' +
-      '<button class="edit-icon-btn" title="Редактировать задачу" ' +
-        'onclick="editTask(' + idx + ')">✎</button>' +
-      '<button class="edit-icon-btn del" title="Удалить задачу" ' +
+      '<button class="edit-icon-btn" title="Move up" ' + (gi === 0 ? 'disabled' : '') +
+        ' onclick="moveTask(' + idx + ',-1)">▲</button>' +
+      '<button class="edit-icon-btn" title="Move down" ' + (gi === gcount - 1 ? 'disabled' : '') +
+        ' onclick="moveTask(' + idx + ',1)">▼</button>' +
+      '<button class="edit-icon-btn del" title="Delete task" ' +
         'onclick="deleteTask(' + idx + ')">✕</button>' +
       '</div>';
   }
@@ -2639,26 +2858,51 @@ function renderTaskCard(p, t, idx, gi, gcount) {
   return h;
 }
 
+// ----- поля задачи (инлайн в режиме правки) -----
+function setTaskName(idx, val) {
+  const p = currentProject();
+  if (!p || !p.tasks[idx]) return;
+  p.tasks[idx].name = val;
+  saveState(true);
+  // без перерисовки — не сбивать фокус и каретку
+}
+function setTaskHint(idx, val) {
+  const p = currentProject();
+  if (!p || !p.tasks[idx]) return;
+  p.tasks[idx].hint = val;
+  saveState(true);
+}
+function saveTaskEdit(tid) {
+  const found = findTaskByTid(tid);
+  if (found && !found.task.name.trim()) {
+    // пустое имя — не сохраняем, подсветим
+    showErrorBar('Give the task a name first.');
+    const el = document.getElementById('te-name-' + tid);
+    if (el) el.focus();
+    return;
+  }
+  delete taskEditMode[tid];
+  saveState(true);
+  renderProject();
+}
+
 // ----- цель / шапка проекта -----
-function editProjectFromPage() {
+function saveHeaderEdit() {
   const p = currentProject();
   if (!p) return;
-  openModal('Проект: ' + escapeHtml(p.short), [
-    { key: 'title', label: 'Полное название', value: p.title },
-    { key: 'short', label: 'Короткое имя (для плитки)', value: p.short },
-    { key: 'goal',  label: 'Цель проекта', value: p.goal, area: true },
-    { key: 'status', label: 'Статус: active / backlog / paused', value: p.status },
-    { key: 'isKey', label: 'Проект-ключ? (да / нет)', value: p.isKey ? 'да' : 'нет' }
-  ], function (vals) {
-    p.title = vals.title.trim() || p.title;
-    p.short = vals.short.trim() || p.short;
-    p.goal = vals.goal.trim();
-    const stt = vals.status.trim().toLowerCase();
-    if (['active','backlog','paused'].indexOf(stt) !== -1) p.status = stt;
-    p.isKey = /^(да|yes|y|1)$/i.test(vals.isKey.trim());
-    saveState(true);
-    renderProject();
-  });
+  const titleEl = document.getElementById('ph-title');
+  const shortEl = document.getElementById('ph-short');
+  const goalEl = document.getElementById('ph-goal');
+  const statusEl = document.getElementById('ph-status');
+  const keyEl = document.getElementById('ph-key');
+  if (titleEl) p.title = titleEl.value.trim() || p.title;
+  if (shortEl) p.short = shortEl.value.trim() || p.short;
+  if (goalEl) p.goal = goalEl.value.trim();
+  if (statusEl && ['active','backlog','paused'].indexOf(statusEl.value) !== -1) p.status = statusEl.value;
+  if (keyEl) p.isKey = (keyEl.value === 'yes');
+  headerEditMode = false;
+  saveState(true);
+  renderProject();
 }
 
 // ----- галочки подзадач -----
@@ -2688,12 +2932,14 @@ function setTaskType(idx, type) {
   const t = p.tasks[idx];
   t.type = type || '';
   if (t.type === 'rep') {
-    // повторяющаяся — конкретная дата не нужна, ставим ритм
-    t.rhythm = 'daily';
+    // повторяющаяся — конкретная дата не нужна, ставим ритм по умолчанию
+    if (REP_RHYTHMS.indexOf(t.rhythm) === -1) t.rhythm = 'daily';
+    if (t.rhythm !== 'daily' && !t.repFrom) t.repFrom = todayISO();
     t.date = '';
     t.time = '';
   } else {
     t.rhythm = '';
+    t.repFrom = '';
   }
   saveState(true);
   renderProject();
@@ -2732,35 +2978,68 @@ function clearTaskDate(idx) {
   renderProject();
 }
 
+// ----- ритм повторяющейся задачи -----
+function setTaskRhythm(idx, val) {
+  const p = currentProject();
+  if (!p || !p.tasks[idx]) return;
+  const t = p.tasks[idx];
+  t.rhythm = (REP_RHYTHMS.indexOf(val) !== -1) ? val : 'daily';
+  // для не-ежедневных нужен якорь — по умолчанию сегодня
+  if (t.rhythm !== 'daily' && !t.repFrom) t.repFrom = todayISO();
+  saveState(true);
+  renderProject();
+}
+function setTaskRepFrom(idx, val) {
+  const p = currentProject();
+  if (!p || !p.tasks[idx]) return;
+  p.tasks[idx].repFrom = val || '';
+  saveState(true);
+  renderProject();
+}
+
 // ----- добавление / правка / удаление задач -----
 function addTask() {
   const p = currentProject();
   if (!p) return;
-  const inp = document.getElementById('new-task-name');
-  const sel = document.getElementById('new-task-type');
-  const name = inp.value.trim();
-  if (!name) { inp.focus(); return; }
-  const type = sel ? sel.value : '';
-  p.tasks.push({
-    tid: genId(),
-    name: name, type: type, hint: '',
+  const tid = genId();
+  const newTask = {
+    tid: tid,
+    name: '', type: '', hint: '',
     date: '', time: '',
-    rhythm: type === 'rep' ? 'daily' : '',
+    rhythm: '', repFrom: '',
     priority: 'norm',
     subs: []
-  });
-  inp.value = '';
-  if (sel) sel.value = '';
+  };
+  // вставляем сверху списка
+  p.tasks.unshift(newTask);
+  // индексные карты сдвигаются на +1 (новая задача заняла индекс 0)
+  openSubsFor = shiftIdxMapUp(openSubsFor);
+  openDateFor = shiftIdxMapUp(openDateFor);
+  // сразу открываем новую задачу на редактирование
+  taskEditMode[tid] = true;
   saveState(true);
   renderProject();
+  // фокус на поле имени новой задачи
+  setTimeout(function () {
+    const el = document.getElementById('te-name-' + tid);
+    if (el) el.focus();
+  }, 30);
+}
+// сдвиг индексных карт на +1 (после вставки в начало)
+function shiftIdxMapUp(map) {
+  const out = {};
+  Object.keys(map).forEach(function (k) {
+    if (map[k]) out[(+k) + 1] = true;
+  });
+  return out;
 }
 function editTask(idx) {
   const p = currentProject();
   if (!p || !p.tasks[idx]) return;
   const t = p.tasks[idx];
-  openModal('Задача', [
-    { key: 'name', label: 'Название задачи', value: t.name, area: true },
-    { key: 'hint', label: 'Примечание / триггер (необязательно)', value: t.hint || '' }
+  openModal('Task', [
+    { key: 'name', label: 'Task name', value: t.name, area: true },
+    { key: 'hint', label: 'Note / trigger (optional)', value: t.hint || '' }
   ], function (vals) {
     t.name = vals.name.trim() || t.name;
     t.hint = vals.hint.trim();
@@ -2772,14 +3051,18 @@ function deleteTask(idx) {
   const p = currentProject();
   if (!p || !p.tasks[idx]) return;
   const t = p.tasks[idx];
-  confirmModal('Удалить задачу «' + t.name + '»' +
-    (t.subs && t.subs.length ? ' со всеми подзадачами?' : '?'), function () {
+  const doDelete = function () {
+    if (t.tid) delete taskEditMode[t.tid];
     p.tasks.splice(idx, 1);
     openSubsFor = remapIdxMap(openSubsFor, idx);
     openDateFor = remapIdxMap(openDateFor, idx);
     saveState(true);
     renderProject();
-  });
+  };
+  // пустую (только что добавленную) задачу удаляем без вопросов
+  if (!t.name.trim() && (!t.subs || !t.subs.length)) { doDelete(); return; }
+  confirmModal('Delete task “' + escapeHtml(t.name) + '”' +
+    (t.subs && t.subs.length ? ' with all its subtasks?' : '?'), doDelete);
 }
 // сдвиг карт раскрытия при удалении задачи idx
 function remapIdxMap(map, removedIdx) {
@@ -2839,8 +3122,8 @@ function editSub(tIdx, sIdx) {
   const p = currentProject();
   if (!p || !p.tasks[tIdx] || !p.tasks[tIdx].subs[sIdx]) return;
   const sub = p.tasks[tIdx].subs[sIdx];
-  openModal('Подзадача', [
-    { key: 'name', label: 'Название подзадачи', value: sub.name, area: true }
+  openModal('Subtask', [
+    { key: 'name', label: 'Subtask name', value: sub.name, area: true }
   ], function (vals) {
     sub.name = vals.name.trim() || sub.name;
     saveState(true);
@@ -2851,7 +3134,7 @@ function deleteSub(tIdx, sIdx) {
   const p = currentProject();
   if (!p || !p.tasks[tIdx] || !p.tasks[tIdx].subs[sIdx]) return;
   const sub = p.tasks[tIdx].subs[sIdx];
-  confirmModal('Удалить подзадачу «' + sub.name + '»?', function () {
+  confirmModal('Delete subtask “' + sub.name + '”?', function () {
     p.tasks[tIdx].subs.splice(sIdx, 1);
     saveState(true);
     renderProject();
@@ -2891,15 +3174,15 @@ function importData() {
     reader.onload = function () {
       try {
         const parsed = JSON.parse(reader.result);
-        if (!parsed.projects || !parsed.spheres) throw new Error('Не тот формат');
+        if (!parsed.projects || !parsed.spheres) throw new Error('Wrong format');
         state = parsed;
         if (!state.log) state.log = [];
         if (!state.timer) state.timer = { running: false, startedAt: null, accumMs: 0 };
         saveState(true);
         renderAll();
-        alert('Данные загружены.');
+        alert('Data loaded.');
       } catch (e) {
-        alert('Не удалось прочитать файл: ' + e.message);
+        alert('Could not read the file: ' + e.message);
       }
     };
     reader.readAsText(file);
@@ -2907,7 +3190,7 @@ function importData() {
   input.click();
 }
 function resetData() {
-  if (!confirm('Сбросить все данные к исходному состоянию? Это удалит все твои изменения.')) return;
+  if (!confirm('Reset all data to the initial state? This will erase all your changes.')) return;
   state = defaultState();
   saveState(true);
   renderAll();
@@ -2919,12 +3202,7 @@ function resetData() {
 // ===== ТАБ «ВРЕМЯ» (лог учёта) =====
 let timeMode = 'month';   // 'week' | 'month'
 let timeOffset = 0;       // смещение периода
-let logView = 'time';     // 'time' | 'done' — какой журнал показываем
 
-function logSetView(view) {
-  logView = view;
-  renderTimeLog();
-}
 function timeSetMode(mode) {
   timeMode = mode;
   timeOffset = 0;
@@ -2952,19 +3230,13 @@ function timePeriodRange() {
 // форматирование длительности из минут
 function fmtDuration(min) {
   const h = Math.floor(min / 60), m = min % 60;
-  if (h > 0 && m > 0) return h + ' ч ' + m + ' мин';
-  if (h > 0) return h + ' ч';
-  return m + ' мин';
+  if (h > 0 && m > 0) return h + 'h ' + m + 'min';
+  if (h > 0) return h + 'h';
+  return m + 'min';
 }
 
 function renderTimeLog() {
-  // подсветка переключателя вида (Время / Выполнено)
-  const tvb = document.getElementById('lv-time');
-  const dvb = document.getElementById('lv-done');
-  if (tvb) tvb.classList.toggle('on', logView === 'time');
-  if (dvb) dvb.classList.toggle('on', logView === 'done');
-
-  // переключатель режима
+  // переключатель режима (неделя/месяц)
   const wb = document.getElementById('tm-week');
   const mb = document.getElementById('tm-month');
   if (wb) wb.classList.toggle('on', timeMode === 'week');
@@ -2975,10 +3247,10 @@ function renderTimeLog() {
   // подпись периода
   const rangeEl = document.getElementById('time-range');
   const subEl = document.getElementById('time-sub');
-  const MON_FULL = ['января','февраля','марта','апреля','мая','июня','июля',
-                     'августа','сентября','октября','ноября','декабря'];
-  const MON_NOM = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль',
-                    'Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const MON_FULL = ['January','February','March','April','May','June','July',
+                     'August','September','October','November','December'];
+  const MON_NOM = ['January','February','March','April','May','June','July',
+                    'August','September','October','November','December'];
   let periodSub;
   if (timeMode === 'week') {
     const fp = range.from.split('-'), tp = range.to.split('-');
@@ -2990,127 +3262,139 @@ function renderTimeLog() {
       rangeEl.textContent = fd.getDate() + ' ' + MON_SHORT[fd.getMonth()] + ' – ' +
         td.getDate() + ' ' + MON_SHORT[td.getMonth()];
     }
-    periodSub = timeOffset === 0 ? 'эта неделя'
-      : timeOffset === -1 ? 'прошлая неделя'
-      : timeOffset === 1 ? 'следующая неделя'
-      : timeOffset < 0 ? Math.abs(timeOffset) + ' нед. назад'
-      : 'через ' + timeOffset + ' нед.';
+    periodSub = timeOffset === 0 ? 'this week'
+      : timeOffset === -1 ? 'last week'
+      : timeOffset === 1 ? 'next week'
+      : timeOffset < 0 ? Math.abs(timeOffset) + ' wk ago'
+      : 'in ' + timeOffset + ' wk';
   } else {
     const ms = calMonthStart(timeOffset);
     rangeEl.textContent = MON_NOM[ms.getMonth()] + ' ' + ms.getFullYear();
-    periodSub = timeOffset === 0 ? 'текущий месяц'
-      : timeOffset === -1 ? 'прошлый месяц'
-      : timeOffset === 1 ? 'следующий месяц'
-      : timeOffset < 0 ? Math.abs(timeOffset) + ' мес. назад'
-      : 'через ' + timeOffset + ' мес.';
+    periodSub = timeOffset === 0 ? 'this month'
+      : timeOffset === -1 ? 'last month'
+      : timeOffset === 1 ? 'next month'
+      : timeOffset < 0 ? Math.abs(timeOffset) + ' mo ago'
+      : 'in ' + timeOffset + ' mo';
   }
   document.getElementById('time-today-btn').classList.toggle('hidden', timeOffset === 0);
 
-  // ветвление по виду журнала
-  if (logView === 'done') { renderDoneBody(range, periodSub); return; }
-
-  // записи периода
+  // записи времени за период
   const entries = state.log.filter(function (r) {
     return r.date >= range.from && r.date <= range.to;
   });
-  entries.sort(function (a, b) {
-    if (a.date !== b.date) return a.date > b.date ? -1 : 1;   // свежие сверху
-    return (b.createdAt || 0) - (a.createdAt || 0);
+  // выполненные дела за период
+  const done = (state.dayLog || []).filter(function (r) {
+    return r.date >= range.from && r.date <= range.to;
   });
 
-  // общий итог периода
+  // общий итог времени
   let totalMin = 0;
   entries.forEach(function (r) { totalMin += r.minutes; });
 
-  // подпись периода: «текущий месяц · всего 2 ч 15 мин»
-  if (entries.length) {
-    subEl.innerHTML = escapeHtml(periodSub) +
-      ' · <span class="tn-total">всего ' + fmtDuration(totalMin) + '</span>';
-  } else {
-    subEl.textContent = periodSub;
-  }
+  // подпись периода: «this month · 2h 15min · 4 done»
+  const subBits = [escapeHtml(periodSub)];
+  if (totalMin > 0) subBits.push('<span class="tn-total">' + fmtDuration(totalMin) + '</span>');
+  if (done.length) subBits.push(done.length + ' ' + plural(done.length,'task','tasks','tasks') + ' done');
+  subEl.innerHTML = subBits.join(' · ');
 
   const body = document.getElementById('time-body');
 
-  if (!entries.length) {
-    body.innerHTML = '<div class="time-empty"><div class="big">⏱️</div>' +
-      'За этот период записей нет.<br>' +
-      'Останови таймер или нажми «+ Ввести время вручную», чтобы добавить запись.</div>';
+  if (!entries.length && !done.length) {
+    body.innerHTML = '<div class="time-empty"><div class="big">🗒️</div>' +
+      'Nothing logged for this period.<br>' +
+      'Track time with the timer, or tick off tasks in the day and week plans.</div>';
     return;
   }
 
-  // ----- агрегация по сферам и проектам -----
-  const bySphere = {};   // sphereId -> { min, projects: {projNum: min} }
-  entries.forEach(function (r) {
-    const p = state.projects.find(function (x) { return x.num === r.projectNum; });
-    const sid = p ? p.sphere : '?';
-    if (!bySphere[sid]) bySphere[sid] = { min: 0, projects: {} };
-    bySphere[sid].min += r.minutes;
-    const pk = r.projectNum || 0;
-    bySphere[sid].projects[pk] = (bySphere[sid].projects[pk] || 0) + r.minutes;
-  });
-
   let h = '';
 
-  // ----- сводка по сферам -----
-  h += '<div class="time-section-title">По сферам и проектам</div>';
-  // сферы по убыванию времени
-  const sphereIds = Object.keys(bySphere).sort(function (a, b) {
-    return bySphere[b].min - bySphere[a].min;
-  });
-  sphereIds.forEach(function (sid) {
-    const s = sphereById(sid);
-    const color = s ? s.color : '#9a7b30';
-    const data = bySphere[sid];
-    const pct = totalMin ? Math.round(data.min / totalMin * 100) : 0;
-    h += '<div class="time-bar-row">';
-    h += '<div class="time-bar-head">' +
-      '<span class="tbh-name">' + escapeHtml(s ? (s.id + ' · ' + s.name) : 'Без сферы') + '</span>' +
-      '<span class="tbh-val">' + fmtDuration(data.min) + '</span>' +
-      '<span class="tbh-pct">' + pct + '%</span></div>';
-    h += '<div class="time-bar-track"><div class="time-bar-fill" style="width:' +
-      pct + '%;background:' + color + '"></div></div>';
-    // проекты внутри сферы
-    const projNums = Object.keys(data.projects).sort(function (a, b) {
-      return data.projects[b] - data.projects[a];
+  // ----- сводка времени по сферам и проектам (только если есть время) -----
+  if (entries.length) {
+    const bySphere = {};   // sphereId -> { min, projects: {projNum: min} }
+    entries.forEach(function (r) {
+      const p = state.projects.find(function (x) { return x.num === r.projectNum; });
+      const sid = p ? p.sphere : '?';
+      if (!bySphere[sid]) bySphere[sid] = { min: 0, projects: {} };
+      bySphere[sid].min += r.minutes;
+      const pk = r.projectNum || 0;
+      bySphere[sid].projects[pk] = (bySphere[sid].projects[pk] || 0) + r.minutes;
     });
-    if (projNums.length) {
-      h += '<div class="time-proj-sub">';
-      projNums.forEach(function (pn) {
-        const p = state.projects.find(function (x) { return x.num === parseInt(pn,10); });
-        h += '<div class="tps-row">' +
-          '<span class="tps-name">' + escapeHtml(p ? p.short : 'Проект удалён') + '</span>' +
-          '<span class="tps-val">' + fmtDuration(data.projects[pn]) + '</span></div>';
+    h += '<div class="time-section-title">Time by sphere and project</div>';
+    const sphereIds = Object.keys(bySphere).sort(function (a, b) {
+      return bySphere[b].min - bySphere[a].min;
+    });
+    sphereIds.forEach(function (sid) {
+      const s = sphereById(sid);
+      const color = s ? s.color : '#9a7b30';
+      const data = bySphere[sid];
+      const pct = totalMin ? Math.round(data.min / totalMin * 100) : 0;
+      h += '<div class="time-bar-row">';
+      h += '<div class="time-bar-head">' +
+        '<span class="tbh-name">' + escapeHtml(s ? (s.id + ' · ' + s.name) : 'No sphere') + '</span>' +
+        '<span class="tbh-val">' + fmtDuration(data.min) + '</span>' +
+        '<span class="tbh-pct">' + pct + '%</span></div>';
+      h += '<div class="time-bar-track"><div class="time-bar-fill" style="width:' +
+        pct + '%;background:' + color + '"></div></div>';
+      const projNums = Object.keys(data.projects).sort(function (a, b) {
+        return data.projects[b] - data.projects[a];
       });
+      if (projNums.length) {
+        h += '<div class="time-proj-sub">';
+        projNums.forEach(function (pn) {
+          const p = state.projects.find(function (x) { return x.num === parseInt(pn,10); });
+          h += '<div class="tps-row">' +
+            '<span class="tps-name">' + escapeHtml(p ? p.short : 'Project deleted') + '</span>' +
+            '<span class="tps-val">' + fmtDuration(data.projects[pn]) + '</span></div>';
+        });
+        h += '</div>';
+      }
       h += '</div>';
-    }
-    h += '</div>';
-  });
+    });
+  }
 
-  // ----- список записей по дням -----
-  h += '<div class="time-section-title">Записи</div>';
+  // ----- единая лента: время + выполненное, по дням -----
+  h += '<div class="time-section-title">Activity</div>';
+  // объединяем в один массив с типом
+  const items = [];
+  entries.forEach(function (r) {
+    items.push({ kind: 'time', date: r.date, at: r.createdAt || 0, rec: r });
+  });
+  done.forEach(function (r) {
+    items.push({ kind: 'done', date: r.date, at: r.doneAt || 0, rec: r });
+  });
   // группировка по дате
   const byDate = {};
-  entries.forEach(function (r) {
-    if (!byDate[r.date]) byDate[r.date] = [];
-    byDate[r.date].push(r);
+  items.forEach(function (it) {
+    if (!byDate[it.date]) byDate[it.date] = [];
+    byDate[it.date].push(it);
   });
   const dateKeys = Object.keys(byDate).sort(function (a, b) {
-    return a > b ? -1 : 1;   // свежие сверху
+    return a > b ? -1 : 1;   // свежие дни сверху
   });
-  const WD_SH = ['вс','пн','вт','ср','чт','пт','сб'];
+  const WD_SH = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   dateKeys.forEach(function (dk) {
     const dp = dk.split('-');
     const dObj = new Date(+dp[0], +dp[1]-1, +dp[2]);
-    let daySum = 0;
-    byDate[dk].forEach(function (r) { daySum += r.minutes; });
+    const dayItems = byDate[dk].slice().sort(function (a, b) {
+      return (b.at || 0) - (a.at || 0);   // свежее сверху внутри дня
+    });
+    let daySum = 0, dayDone = 0;
+    dayItems.forEach(function (it) {
+      if (it.kind === 'time') daySum += it.rec.minutes;
+      else dayDone++;
+    });
+    // сводка дня: время и/или число дел
+    const sumBits = [];
+    if (daySum > 0) sumBits.push(fmtDuration(daySum));
+    if (dayDone > 0) sumBits.push(dayDone + ' done');
     h += '<div class="time-day-group">';
     h += '<div class="time-day-label">' +
       '<span>' + capitalize(WD_SH[dObj.getDay()]) + ', ' +
         dObj.getDate() + ' ' + MON_FULL[dObj.getMonth()] + '</span>' +
-      '<span class="tdl-sum">' + fmtDuration(daySum) + '</span></div>';
-    byDate[dk].forEach(function (r) {
-      h += renderTimeEntry(r);
+      (sumBits.length ? '<span class="tdl-sum">' + sumBits.join(' · ') + '</span>' : '') +
+      '</div>';
+    dayItems.forEach(function (it) {
+      h += (it.kind === 'time') ? renderTimeEntry(it.rec) : renderDoneEntry(it.rec);
     });
     h += '</div>';
   });
@@ -3118,81 +3402,28 @@ function renderTimeLog() {
   body.innerHTML = h;
 }
 
-// тело журнала: выполненные дела (вид «Выполнено»), из dayLog, по дням
-function renderDoneBody(range, periodSub) {
-  const subEl = document.getElementById('time-sub');
-  const body = document.getElementById('time-body');
-  const MON_FULL = ['января','февраля','марта','апреля','мая','июня','июля',
-                     'августа','сентября','октября','ноября','декабря'];
-  const WD_SH = ['вс','пн','вт','ср','чт','пт','сб'];
-
-  // выполненное за период
-  const done = (state.dayLog || []).filter(function (r) {
-    return r.date >= range.from && r.date <= range.to;
-  });
-
-  if (subEl) {
-    if (done.length) {
-      subEl.innerHTML = escapeHtml(periodSub) +
-        ' · <span class="tn-total">' + done.length + ' ' +
-        plural(done.length, 'дело', 'дела', 'дел') + '</span>';
-    } else {
-      subEl.textContent = periodSub;
-    }
-  }
-
-  if (!done.length) {
-    body.innerHTML = '<div class="time-empty"><div class="big">✓</div>' +
-      'За этот период ничего не отмечено.<br>' +
-      'Дела, которые отмечаешь в плане дня или недели, появятся здесь.</div>';
-    return;
-  }
-
-  // группировка по дате, свежие сверху; внутри дня — по времени выполнения
-  const byDate = {};
-  done.forEach(function (r) {
-    if (!byDate[r.date]) byDate[r.date] = [];
-    byDate[r.date].push(r);
-  });
-  const dateKeys = Object.keys(byDate).sort(function (a, b) { return a > b ? -1 : 1; });
-
-  let h = '';
-  dateKeys.forEach(function (dk) {
-    const recs = byDate[dk].slice().sort(function (a, b) {
-      return (b.doneAt || 0) - (a.doneAt || 0);
-    });
-    const dp = dk.split('-');
-    const dObj = new Date(+dp[0], +dp[1]-1, +dp[2]);
-    h += '<div class="time-day-group">';
-    h += '<div class="time-day-label">' +
-      '<span>' + capitalize(WD_SH[dObj.getDay()]) + ', ' +
-        dObj.getDate() + ' ' + MON_FULL[dObj.getMonth()] + '</span>' +
-      '<span class="dlabel-count">' + recs.length + ' ' +
-        plural(recs.length, 'дело', 'дела', 'дел') + '</span></div>';
-    recs.forEach(function (r) {
-      const p = state.projects.find(function (x) { return x.num === r.projectNum; });
-      const s = p ? sphereById(p.sphere) : null;
-      const taskName = (r.snapshot && r.snapshot.name) ? r.snapshot.name : 'Дело';
-      const color = s ? s.color : '#9a7b30';
-      const projLabel = p
-        ? (s ? s.name + ' · ' : '') + p.short
-        : 'Проект удалён';
-      h += '<div class="done-entry">' +
-        '<span class="done-check">✓</span>' +
-        '<div class="done-entry-body">' +
-          '<div class="done-entry-task">' + escapeHtml(taskName) + '</div>' +
-          '<div class="done-entry-meta">' +
-            '<span class="done-entry-proj" style="background:' + color + '">' +
-              escapeHtml(projLabel) + '</span>' +
-          '</div>' +
-        '</div>' +
-        (r.doneAt ? '<span class="done-entry-time">' + fmtTimeShort(r.doneAt) + '</span>' : '') +
-      '</div>';
-    });
-    h += '</div>';
-  });
-
-  body.innerHTML = h;
+// одна строка ленты: выполненное дело (из dayLog)
+function renderDoneEntry(r) {
+  const p = state.projects.find(function (x) { return x.num === r.projectNum; });
+  const s = p ? sphereById(p.sphere) : null;
+  const taskName = (r.snapshot && r.snapshot.name) ? r.snapshot.name : 'Task';
+  const color = s ? s.color : '#9a7b30';
+  const projLabel = p
+    ? (s ? s.name + ' · ' : '') + p.short
+    : 'Project deleted';
+  let h = '<div class="done-entry">' +
+    '<span class="done-check">✓</span>' +
+    '<div class="done-entry-body">' +
+      '<div class="done-entry-task">' + escapeHtml(taskName) + '</div>' +
+      '<div class="done-entry-meta">' +
+        '<span class="log-kind log-kind-done">Done</span>' +
+        '<span class="done-entry-proj" style="background:' + color + '">' +
+          escapeHtml(projLabel) + '</span>' +
+      '</div>' +
+    '</div>' +
+    (r.doneAt ? '<span class="done-entry-time">' + fmtTimeShort(r.doneAt) + '</span>' : '') +
+  '</div>';
+  return h;
 }
 
 function renderTimeEntry(r) {
@@ -3204,16 +3435,17 @@ function renderTimeEntry(r) {
   h += '<span class="time-entry-dur">' + fmtDuration(r.minutes) + '</span>';
   h += '<div class="time-entry-body">';
   h += '<div class="time-entry-top">';
+  h += '<span class="log-kind log-kind-time">Time</span>';
   h += '<span class="time-entry-proj" style="background:' + color + '">' +
-    escapeHtml(p ? p.short : 'Проект удалён') + '</span>';
+    escapeHtml(p ? p.short : 'Project deleted') + '</span>';
   if (r.taskName) h += '<span class="time-entry-task">' + escapeHtml(r.taskName) + '</span>';
   h += '</div>';
   if (r.note) h += '<div class="time-entry-note">' + escapeHtml(r.note) + '</div>';
   h += '</div>';
   h += '<div class="time-entry-actions">' +
-    '<button class="time-mini-btn" title="Редактировать" ' +
+    '<button class="time-mini-btn" title="Edit" ' +
       'onclick="openTimeEntryEdit(\'' + r.id + '\')">✎</button>' +
-    '<button class="time-mini-btn del" title="Удалить" ' +
+    '<button class="time-mini-btn del" title="Delete" ' +
       'onclick="deleteTimeEntry(\'' + r.id + '\')">✕</button>' +
     '</div>';
   h += '</div>';
@@ -3223,7 +3455,7 @@ function renderTimeEntry(r) {
 function deleteTimeEntry(id) {
   const rec = state.log.find(function (r) { return r.id === id; });
   if (!rec) return;
-  confirmModal('Удалить запись на ' + fmtDuration(rec.minutes) + '?', function () {
+  confirmModal('Delete entry for ' + fmtDuration(rec.minutes) + '?', function () {
     const i = state.log.findIndex(function (r) { return r.id === id; });
     if (i !== -1) state.log.splice(i, 1);
     saveState(true);
@@ -3258,12 +3490,25 @@ function collectMonthItems(year, month) {
   }
   const seen = {};   // dateISO::tid
 
-  // задачи из проектов (неповторяющиеся, с датой)
+  // задачи из проектов (неповторяющиеся с датой + не-ежедневные повторяющиеся)
   state.projects.forEach(function (p) {
     if (p.status === 'paused') return;
     (p.tasks || []).forEach(function (t) {
       normalizeTask(t);
-      if (t.type === 'rep') return;       // повторяющиеся в календаре не показываем
+      if (t.type === 'rep') {
+        // ежедневные не показываем (засорят сетку); остальные — в дни, когда выпадают
+        if ((t.rhythm || 'daily') === 'daily') return;
+        const dim = lastDayOfMonth(year, month);
+        for (let dd = 1; dd <= dim; dd++) {
+          const dISO = year + '-' + String(month + 1).padStart(2, '0') + '-' +
+            String(dd).padStart(2, '0');
+          if (!repOccursOn(t, dISO)) continue;
+          const rec = findDayLog(dISO, t.tid);
+          push(dISO, { task: t, project: p, done: !!rec });
+          seen[dISO + '::' + t.tid] = true;
+        }
+        return;
+      }
       if (!t.date) return;
       const parts = t.date.split('-');
       if (parts.length !== 3) return;
@@ -3294,15 +3539,15 @@ function renderCalendar() {
   const month = monthStart.getMonth();   // 0-11
   const todayI = todayISO();
 
-  const MON_FULL = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль',
-                     'Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const MON_FULL = ['January','February','March','April','May','June','July',
+                     'August','September','October','November','December'];
   document.getElementById('cal-month').textContent = MON_FULL[month] + ' ' + year;
   let sub = '';
-  if (calOffset === 0) sub = 'текущий месяц';
-  else if (calOffset === -1) sub = 'прошлый месяц';
-  else if (calOffset === 1) sub = 'следующий месяц';
-  else if (calOffset < 0) sub = Math.abs(calOffset) + ' мес. назад';
-  else sub = 'через ' + calOffset + ' мес.';
+  if (calOffset === 0) sub = 'this month';
+  else if (calOffset === -1) sub = 'last month';
+  else if (calOffset === 1) sub = 'next month';
+  else if (calOffset < 0) sub = Math.abs(calOffset) + ' mo ago';
+  else sub = 'in ' + calOffset + ' mo';
   document.getElementById('cal-sub').textContent = sub;
   document.getElementById('cal-today-btn').classList.toggle('hidden', calOffset === 0);
 
@@ -3321,16 +3566,16 @@ function renderCalendar() {
   const summary = document.getElementById('cal-summary');
   if (totalTasks) {
     let s = '<span><b>' + totalTasks + '</b> ' +
-      plural(totalTasks,'задача','задачи','задач') + ' в месяце</span>';
-    s += '<span>в <b>' + daysWith + '</b> ' +
-      plural(daysWith,'день','дня','дней') + '</span>';
+      plural(totalTasks,'task','tasks','tasks') + ' this month</span>';
+    s += '<span>across <b>' + daysWith + '</b> ' +
+      plural(daysWith,'day','days','days') + '</span>';
     if (totalCrit) {
       s += '<span style="color:#a33636;">🔴 <b>' + totalCrit + '</b> ' +
-        plural(totalCrit,'критичная','критичных','критичных') + '</span>';
+        plural(totalCrit,'critical','critical','critical') + '</span>';
     }
     summary.innerHTML = s;
   } else {
-    summary.innerHTML = '<span>В этом месяце задач с датой нет.</span>';
+    summary.innerHTML = '<span>No dated tasks this month.</span>';
   }
 
   // сетка
@@ -3340,7 +3585,7 @@ function renderCalendar() {
   // сколько дней предыдущего месяца показать в первой строке
   const prevMonthDays = new Date(year, month, 0).getDate();
 
-  const WD = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const WD = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   let g = '<div class="cal-grid"><div class="cal-weekdays">';
   WD.forEach(function (w, i) {
     g += '<div' + (i >= 5 ? ' class="cw-end"' : '') + '>' + w + '</div>';
@@ -3392,7 +3637,7 @@ function renderCalendar() {
       dots(nDone, 'cd-done');
       g += '</div>';
       g += '<div class="cal-count' + (hasCrit ? ' has-crit' : '') + '">' +
-        items.length + ' ' + plural(items.length,'дело','дела','дел') + '</div>';
+        items.length + ' ' + plural(items.length,'task','tasks','tasks') + '</div>';
     }
     g += '</div>';
   }
@@ -3402,7 +3647,7 @@ function renderCalendar() {
   // подсказка
   if (totalTasks) {
     document.getElementById('cal-grid-wrap').innerHTML +=
-      '<div class="cal-hint">Нажми на день, чтобы увидеть список дел.</div>';
+      '<div class="cal-hint">Tap a day to see its task list.</div>';
   }
 
   // раскрытый день
@@ -3434,9 +3679,9 @@ function renderCalDayPanel() {
   });
 
   const dObj = new Date(+parts[0], +parts[1] - 1, +parts[2]);
-  const WD_FULL = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
-  const MON_FULL = ['января','февраля','марта','апреля','мая','июня','июля',
-                     'августа','сентября','октября','ноября','декабря'];
+  const WD_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MON_FULL = ['January','February','March','April','May','June','July',
+                     'August','September','October','November','December'];
   const rel = dateRelLabel(calSelectedDay);
 
   let h = '<div class="cal-day-panel">';
@@ -3445,12 +3690,12 @@ function renderCalDayPanel() {
     dObj.getDate() + ' ' + MON_FULL[dObj.getMonth()] + '</h3>';
   if (rel) h += '<span class="cdp-count">' + rel + '</span>';
   h += '<span class="cdp-count">· ' + items.length + ' ' +
-    plural(items.length,'дело','дела','дел') + '</span>';
+    plural(items.length,'task','tasks','tasks') + '</span>';
   h += '</div>';
   h += '<div class="cal-day-panel-body">';
 
   if (!items.length) {
-    h += '<div class="cal-day-empty">На этот день задач с датой нет.</div>';
+    h += '<div class="cal-day-empty">No dated tasks for this day.</div>';
   } else {
     items.forEach(function (e) {
       const t = e.task;
@@ -3469,7 +3714,7 @@ function renderCalDayPanel() {
       h += '</div>';
       h += '</div>';
       if (p) h += '<button class="cal-day-goto" onclick="openProject(' + p.num +
-        ')">↗ Проект</button>';
+        ')">↗ Project</button>';
       h += '</div>';
     });
   }
@@ -3512,7 +3757,7 @@ function collectDayItems(dateISO) {
     (p.tasks || []).forEach(function (t) {
       normalizeTask(t);
       let inDay = false;
-      if (t.type === 'rep') inDay = true;
+      if (t.type === 'rep') inDay = repOccursOn(t, dateISO);
       else if (t.date && t.date === dateISO) inDay = true;
       if (!inDay) return;
       const rec = findDayLog(dateISO, t.tid);
@@ -3608,18 +3853,18 @@ function renderDay() {
   // ---- подпись даты ----
   const parts = dISO.split('-');
   const dObj = new Date(+parts[0], +parts[1] - 1, +parts[2]);
-  const WD_FULL = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
-  const MON_FULL = ['января','февраля','марта','апреля','мая','июня','июля',
-                     'августа','сентября','октября','ноября','декабря'];
+  const WD_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MON_FULL = ['January','February','March','April','May','June','July',
+                     'August','September','October','November','December'];
   document.getElementById('day-date').textContent =
     capitalize(WD_FULL[dObj.getDay()]) + ', ' + dObj.getDate() + ' ' + MON_FULL[dObj.getMonth()];
   const subEl = document.getElementById('day-sub');
   let sub = '', isToday = false;
-  if (dayOffset === 0) { sub = 'сегодня'; isToday = true; }
-  else if (dayOffset === -1) sub = 'вчера';
-  else if (dayOffset === 1) sub = 'завтра';
-  else if (dayOffset < 0) sub = Math.abs(dayOffset) + ' дн. назад';
-  else sub = 'через ' + dayOffset + ' дн.';
+  if (dayOffset === 0) { sub = 'today'; isToday = true; }
+  else if (dayOffset === -1) sub = 'yesterday';
+  else if (dayOffset === 1) sub = 'tomorrow';
+  else if (dayOffset < 0) sub = Math.abs(dayOffset) + ' days ago';
+  else sub = 'in ' + dayOffset + ' days';
   subEl.textContent = sub;
   subEl.classList.toggle('is-today', isToday);
   document.getElementById('day-today-btn').classList.toggle('hidden', dayOffset === 0);
@@ -3635,17 +3880,17 @@ function renderDay() {
   const summary = document.getElementById('day-summary');
   if (items.length) {
     let s = '<span><b>' + openItems.length + '</b> ' +
-      plural(openItems.length,'дело осталось','дела осталось','дел осталось') + '</span>';
+      plural(openItems.length,'task left','tasks left','tasks left') + '</span>';
     if (doneItems.length) {
       s += '<span class="ds-done">✓ <b>' + doneItems.length + '</b> ' +
-        plural(doneItems.length,'выполнено','выполнено','выполнено') + '</span>';
+        plural(doneItems.length,'done','done','done') + '</span>';
     }
     const critOpen = openItems.filter(function (it) {
       return it.task.priority === 'crit';
     }).length;
     if (critOpen) {
       s += '<span style="color:#a33636;">🔴 <b>' + critOpen + '</b> ' +
-        plural(critOpen,'критичное','критичных','критичных') + '</span>';
+        plural(critOpen,'critical','critical','critical') + '</span>';
     }
     summary.innerHTML = s;
   } else {
@@ -3657,8 +3902,8 @@ function renderDay() {
   if (!items.length) {
     body.innerHTML = '<div class="day-empty"><div class="big">' +
       (dayOffset < 0 ? '🌙' : '☀️') + '</div>' +
-      'На этот день дел нет.<br>' +
-      'Поставь задаче дату на странице проекта — она появится здесь.</div>';
+      'No tasks for this day.<br>' +
+      'Give a task a date on the project page and it will show up here.</div>';
     return;
   }
 
@@ -3667,15 +3912,15 @@ function renderDay() {
   // всё выполнено — поощряем
   if (openItems.length === 0 && doneItems.length > 0) {
     h += '<div class="day-alldone"><div class="big">🌿</div>' +
-      'Все дела на ' + (dayOffset === 0 ? 'сегодня' : 'этот день') +
-      ' закрыты. Хорошая работа.</div>';
+      'All tasks for ' + (dayOffset === 0 ? 'today' : 'this day') +
+      ' are done. Nice work.</div>';
   }
 
   // группы по приоритету (среди невыполненных)
   const groups = [
-    { id: 'crit', label: '🔴 Критично — сначала это', cls: 'dg-crit' },
-    { id: 'imp',  label: '🟡 Важно',                  cls: 'dg-imp'  },
-    { id: 'norm', label: '⚪ Обычное',                 cls: 'dg-norm' }
+    { id: 'crit', label: '🔴 Critical — do this first', cls: 'dg-crit' },
+    { id: 'imp',  label: '🟡 Important',              cls: 'dg-imp'  },
+    { id: 'norm', label: '⚪ Normal',                  cls: 'dg-norm' }
   ];
   groups.forEach(function (g) {
     const inGroup = openItems.filter(function (it) {
@@ -3699,7 +3944,7 @@ function renderDay() {
       return (b.logRec.doneAt || 0) - (a.logRec.doneAt || 0);
     });
     h += '<div class="day-group">';
-    h += '<div class="day-group-label dg-done">✓ Выполнено' +
+    h += '<div class="day-group-label dg-done">✓ Done' +
       ' <span style="color:var(--text-faint);font-weight:400;">· ' + doneItems.length + '</span></div>';
     doneItems.forEach(function (it) { h += renderDayTask(it, dISO, -1, 0); });
     h += '</div>';
@@ -3721,7 +3966,7 @@ function renderDayTask(it, dISO, gi, gcount) {
   // галочка
   h += '<div class="day-check' + (done ? ' checked' : '') + '" ' +
     'onclick="toggleDayTask(\'' + dISO + '\',\'' + t.tid + '\')" ' +
-    'title="' + (done ? 'Снять отметку' : 'Отметить выполненным') + '">' +
+    'title="' + (done ? 'Unmark' : 'Mark done') + '">' +
     (done ? '✓' : '') + '</div>';
   h += '<div class="day-task-body">';
   h += '<div class="day-task-top">';
@@ -3734,7 +3979,7 @@ function renderDayTask(it, dISO, gi, gcount) {
     h += '<span class="day-proj-tag" style="background:' + color + '">' +
       escapeHtml(p.short) + '</span>';
   }
-  if (isRep) h += '<span class="day-rep-tag">↻ каждый день</span>';
+  if (isRep) h += '<span class="day-rep-tag">' + escapeHtml(rhythmInfo(t.rhythm).chip) + '</span>';
   h += '</div>';
   if (t.hint) h += '<div class="day-task-hint">' + escapeHtml(t.hint) + '</div>';
   // подзадачи — прогресс + раскрываемый чек-лист (только если есть и задача жива в проекте)
@@ -3743,7 +3988,7 @@ function renderDayTask(it, dISO, gi, gcount) {
     const pct = Math.round(sd / t.subs.length * 100);
     const isOpen = !!daySubsOpen[t.tid];
     h += '<div class="day-subs-line' + (isOpen ? ' open' : '') + '" onclick="toggleDaySubs(\'' + t.tid + '\')">' +
-      '<span class="dsl-arrow">▶</span>Подзадачи: ' + sd + '/' + t.subs.length +
+      '<span class="dsl-arrow">▶</span>Subtasks: ' + sd + '/' + t.subs.length +
       '<span class="dsl-bar"><span class="dsl-fill" style="width:' + pct + '%"></span></span></div>';
     if (isOpen) {
       h += '<div class="day-subs-wrap">';
@@ -3763,28 +4008,28 @@ function renderDayTask(it, dISO, gi, gcount) {
   // строка действий
   h += '<div class="day-task-actions">';
   if (done) {
-    h += '<span style="font-size:11px;color:#1d6b51;">✓ Выполнено' +
+    h += '<span style="font-size:11px;color:#1d6b51;">✓ Done' +
       (it.logRec.doneAt ? ' · ' + fmtTimeShort(it.logRec.doneAt) : '') + '</span>';
     h += '<span class="da-spacer"></span>';
     h += '<button class="day-act-btn" onclick="toggleDayTask(\'' + dISO + '\',\'' +
-      t.tid + '\')">↩ Вернуть в дела</button>';
+      t.tid + '\')">↩ Move back to tasks</button>';
   } else {
     // стрелки перемещения внутри приоритетной группы
     if (gi >= 0 && gcount > 1) {
-      h += '<button class="day-act-btn arrow" title="Выше" ' + (gi === 0 ? 'disabled' : '') +
+      h += '<button class="day-act-btn arrow" title="Up" ' + (gi === 0 ? 'disabled' : '') +
         ' onclick="moveDayTask(\'' + dISO + '\',\'' + t.tid + '\',-1)">▲</button>';
-      h += '<button class="day-act-btn arrow" title="Ниже" ' + (gi === gcount - 1 ? 'disabled' : '') +
+      h += '<button class="day-act-btn arrow" title="Down" ' + (gi === gcount - 1 ? 'disabled' : '') +
         ' onclick="moveDayTask(\'' + dISO + '\',\'' + t.tid + '\',1)">▼</button>';
     }
     if (p) {
       h += '<button class="day-act-btn" onclick="openProject(' + p.num +
-        ')"><span class="ab-ico">↗</span>К проекту</button>';
+        ')"><span class="ab-ico">↗</span>To project</button>';
     }
     h += '<span class="da-spacer"></span>';
     // перенос — только для неповторяющихся
     if (!isRep) {
       h += '<button class="day-act-btn move" onclick="openMoveDialog(\'' +
-        t.tid + '\')"><span class="ab-ico">📅</span>Перенести</button>';
+        t.tid + '\')"><span class="ab-ico">📅</span>Reschedule</button>';
     }
   }
   h += '</div>';
@@ -3844,16 +4089,16 @@ function toggleDayTask(dISO, tid) {
   const isRep = t.type === 'rep';
   let msg;
   if (isRep) {
-    msg = 'Отметить «' + t.name + '» выполненной за этот день?\n\n' +
-      'Задача повторяющаяся — завтра появится снова.';
+    msg = 'Mark \u201c' + t.name + '\u201d done for this day?\n\n' +
+      'This task recurs — it will show up again tomorrow.';
   } else {
-    msg = 'Отметить «' + t.name + '» выполненной?\n\n' +
-      'Дело уйдёт из списка проекта. ' +
-      'Если передумаешь — нажми «Вернуть в дела», задача восстановится.';
+    msg = 'Mark \u201c' + t.name + '\u201d done?\n\n' +
+      'It will leave the project list. ' +
+      'Changed your mind? Click \u201cMove back to tasks\u201d to restore it.';
   }
   confirmModal(msg, function () {
     completeDayTask(dISO, tid);
-  }, { title: 'Выполнено?', okLabel: 'Да, выполнено', okColor: '#1d6b51' });
+  }, { title: 'Done?', okLabel: 'Yes, done', okColor: '#1d6b51' });
 }
 
 function completeDayTask(dISO, tid) {
@@ -3882,6 +4127,7 @@ function completeDayTask(dISO, tid) {
   saveState(true);
   renderDay();
   renderCalendar();
+  if (currentProjectNum !== null) renderProject();
 }
 
 function uncompleteDayTask(dISO, tid) {
@@ -3906,6 +4152,7 @@ function uncompleteDayTask(dISO, tid) {
   saveState(true);
   renderDay();
   renderCalendar();
+  if (currentProjectNum !== null) renderProject();
 }
 
 // ----- перенос задачи -----
@@ -3930,22 +4177,22 @@ function openMoveDialog(tid) {
 
   const bodyHtml =
     '<div style="font-size:12.5px;color:var(--text-dim);margin-bottom:10px;">' +
-    'Перенос «' + escapeHtml(t.name) + '» — выбери новую дату. Без вины: планируем, а не корим себя.</div>' +
+    'Rescheduling “' + escapeHtml(t.name) + '” — pick a new date. No guilt: we plan, we don\'t scold ourselves.</div>' +
     '<div class="move-quick">' +
-      '<button onclick="moveDialogSet(\'' + tomorrow + '\')">Завтра</button>' +
-      '<button onclick="moveDialogSet(\'' + plusDays(1) + '\')">+1 день</button>' +
-      '<button onclick="moveDialogSet(\'' + plusDays(7) + '\')">+1 неделя</button>' +
+      '<button onclick="moveDialogSet(\'' + tomorrow + '\')">Tomorrow</button>' +
+      '<button onclick="moveDialogSet(\'' + plusDays(1) + '\')">+1 day</button>' +
+      '<button onclick="moveDialogSet(\'' + plusDays(7) + '\')">+1 week</button>' +
     '</div>' +
     '<div class="move-modal-row">' +
-      '<div><label>Дата</label>' +
+      '<div><label>Date</label>' +
         '<input type="date" id="move-date" value="' + escapeHtml(t.date || todayISO()) + '"></div>' +
-      '<div><label>Время (по желанию)</label>' +
+      '<div><label>Time (optional)</label>' +
         '<input type="time" id="move-time" value="' + escapeHtml(t.time || '') + '"></div>' +
     '</div>';
 
-  openCustomModal('Перенести задачу', bodyHtml, [
-    { label: 'Отмена', kind: 'ghost', action: closeModal },
-    { label: 'Перенести', kind: 'primary', action: function () {
+  openCustomModal('Reschedule task', bodyHtml, [
+    { label: 'Cancel', kind: 'ghost', action: closeModal },
+    { label: 'Reschedule', kind: 'primary', action: function () {
         const dEl = document.getElementById('move-date');
         const tEl = document.getElementById('move-time');
         applyMove(tid, dEl ? dEl.value : '', tEl ? tEl.value : '');
@@ -4023,8 +4270,8 @@ function renderWeek() {
   // ---- подпись диапазона ----
   const mon = weekMonday(weekOffset);
   const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-  const MON_FULL = ['января','февраля','марта','апреля','мая','июня','июля',
-                     'августа','сентября','октября','ноября','декабря'];
+  const MON_FULL = ['January','February','March','April','May','June','July',
+                     'August','September','October','November','December'];
   let range;
   if (mon.getMonth() === sun.getMonth()) {
     range = mon.getDate() + '–' + sun.getDate() + ' ' + MON_FULL[mon.getMonth()];
@@ -4034,11 +4281,11 @@ function renderWeek() {
   }
   document.getElementById('week-range').textContent = range;
   let sub = '';
-  if (weekOffset === 0) sub = 'текущая неделя';
-  else if (weekOffset === -1) sub = 'прошлая неделя';
-  else if (weekOffset === 1) sub = 'следующая неделя';
-  else if (weekOffset < 0) sub = Math.abs(weekOffset) + ' нед. назад';
-  else sub = 'через ' + weekOffset + ' нед.';
+  if (weekOffset === 0) sub = 'this week';
+  else if (weekOffset === -1) sub = 'last week';
+  else if (weekOffset === 1) sub = 'next week';
+  else if (weekOffset < 0) sub = Math.abs(weekOffset) + ' wk ago';
+  else sub = 'in ' + weekOffset + ' wk';
   document.getElementById('week-sub').textContent = sub;
   document.getElementById('week-today-btn').classList.toggle('hidden', weekOffset === 0);
 
@@ -4047,9 +4294,9 @@ function renderWeek() {
   const orderHint = document.getElementById('week-order-hint');
   if (orderBtn) {
     orderBtn.classList.toggle('on', weekOrderMode);
-    orderBtn.textContent = weekOrderMode ? '✓ Готово' : '↕ Порядок плиток';
+    orderBtn.textContent = weekOrderMode ? '✓ Done' : '↕ Tile order';
     orderHint.textContent = weekOrderMode
-      ? 'Двигай плитки стрелками ▲▼ — порядок свой, «Обзор» не меняется'
+      ? 'Move tiles with the ▲▼ arrows — your own order, “Overview” is unchanged'
       : '';
   }
 
@@ -4065,7 +4312,17 @@ function renderWeek() {
     (p.tasks || []).forEach(function (t) {
       normalizeTask(t);
       if (t.type === 'rep') {
-        rep.push(t);
+        if ((t.rhythm || 'daily') === 'daily') {
+          rep.push(t);
+        } else {
+          // не-ежедневная повторяющаяся: показываем в дни, когда выпадает на этой неделе
+          dates.forEach(function (dISO) {
+            if (repOccursOn(t, dISO)) {
+              const clone = Object.assign({}, t, { date: dISO, _rep: true });
+              dated.push(clone);
+            }
+          });
+        }
       } else if (t.date && t.date >= firstISO && t.date <= lastISO) {
         dated.push(t);
       }
@@ -4086,13 +4343,13 @@ function renderWeek() {
   const summary = document.getElementById('week-summary');
   if (blocks.length) {
     let s = '<span><b>' + totalDated + '</b> ' +
-      plural(totalDated,'задача','задачи','задач') + ' с датой</span>';
+      plural(totalDated,'task','tasks','tasks') + ' dated</span>';
     if (totalCrit > 0) {
       s += '<span class="ws-crit">🔴 <b>' + totalCrit + '</b> ' +
-        plural(totalCrit,'критичная','критичных','критичных') + '</span>';
+        plural(totalCrit,'critical','critical','critical') + '</span>';
     }
-    s += '<span>в <b>' + blocks.length + '</b> ' +
-      plural(blocks.length,'проекте','проектах','проектах') + '</span>';
+    s += '<span>across <b>' + blocks.length + '</b> ' +
+      plural(blocks.length,'project','projects','projects') + '</span>';
     summary.innerHTML = s;
   } else {
     summary.innerHTML = '';
@@ -4102,8 +4359,8 @@ function renderWeek() {
   const body = document.getElementById('week-body');
   if (!blocks.length) {
     body.innerHTML = '<div class="week-empty"><div class="big">🗓️</div>' +
-      'На эту неделю задач с датой нет.<br>' +
-      'Открой проект и задай задаче дату — она появится здесь.</div>';
+      'No dated tasks for this week.<br>' +
+      'Open a project and give a task a date — it will show up here.</div>';
     return;
   }
 
@@ -4156,7 +4413,7 @@ function renderWeekTile(b, dates, todayI, bi, bcount) {
   h += '<div class="week-tile-name">' + escapeHtml(p.short) + '</div>';
   h += '<div class="week-tile-sub">' + (s ? escapeHtml(s.name) : '') + '</div>';
   h += '</div>';
-  if (p.isKey) h += '<span class="week-tile-keytag">ключ</span>';
+  if (p.isKey) h += '<span class="week-tile-keytag">key</span>';
   h += '</div>';
 
   // список важных задач
@@ -4170,13 +4427,13 @@ function renderWeekTile(b, dates, todayI, bi, bcount) {
       h += '<div class="week-task-name">' + escapeHtml(t.name) + '</div>';
       // день недели + время
       const di = dates.indexOf(t.date);
-      let dayName = (di >= 0) ? ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][di] : fmtDateHuman(t.date);
+      let dayName = (di >= 0) ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][di] : fmtDateHuman(t.date);
       let cls = 'wtw-day';
       if (t.date === todayI) cls += ' wtw-today';
       else if (t.date < todayI) cls += ' wtw-over';
       let when = '<span class="' + cls + '">' + dayName +
-        (t.date === todayI ? ' · сегодня' : '') +
-        (t.date < todayI ? ' · просрочено' : '') + '</span>';
+        (t.date === todayI ? ' · today' : '') +
+        (t.date < todayI ? ' · overdue' : '') + '</span>';
       if (t.time) when += ' · ' + t.time;
       h += '<div class="week-task-when">' + when + '</div>';
       // подзадачи — прогресс + раскрываемый чек-лист
@@ -4186,7 +4443,7 @@ function renderWeekTile(b, dates, todayI, bi, bcount) {
         const wOpen = !!weekSubsOpen[t.tid];
         h += '<div class="day-subs-line' + (wOpen ? ' open' : '') +
           '" onclick="event.stopPropagation();toggleWeekSubs(\'' + t.tid + '\')">' +
-          '<span class="dsl-arrow">▶</span>Подзадачи: ' + wsd + '/' + t.subs.length +
+          '<span class="dsl-arrow">▶</span>Subtasks: ' + wsd + '/' + t.subs.length +
           '<span class="dsl-bar"><span class="dsl-fill" style="width:' + wpct + '%"></span></span></div>';
         if (wOpen) {
           h += '<div class="day-subs-wrap">';
@@ -4210,28 +4467,28 @@ function renderWeekTile(b, dates, todayI, bi, bcount) {
   if (hiddenCount > 0) {
     let note;
     if (shown.length === 0) {
-      note = 'обычных задач на неделю: ' + hiddenCount;
+      note = 'normal tasks this week: ' + hiddenCount;
     } else {
-      note = 'ещё ' + hiddenCount + ' ' +
-        plural(hiddenCount,'задача','задачи','задач') + ' на неделю';
+      note = hiddenCount + ' more ' +
+        plural(hiddenCount,'task','tasks','tasks') + ' this week';
     }
-    h += '<div class="week-tile-more">+ ' + note + ' — открой проект</div>';
+    h += '<div class="week-tile-more">+ ' + note + ' — open the project</div>';
   }
 
   // повторяющиеся — компактной строкой
   if (b.rep.length) {
     const names = b.rep.map(function (t) { return escapeHtml(t.name); });
-    h += '<div class="week-rep-line">↻ <b>Каждый день:</b> ' + names.join(' · ') + '</div>';
+    h += '<div class="week-rep-line">↻ <b>Every day:</b> ' + names.join(' · ') + '</div>';
   }
 
   // панель перестановки плитки (режим порядка)
   if (weekOrderMode) {
     h += '<div class="week-tile-order">' +
-      '<button class="move-btn" title="Выше" ' + (bi === 0 ? 'disabled' : '') +
+      '<button class="move-btn" title="Up" ' + (bi === 0 ? 'disabled' : '') +
         ' onclick="moveWeekTile(' + p.num + ',-1)">▲</button>' +
-      '<button class="move-btn" title="Ниже" ' + (bi === bcount - 1 ? 'disabled' : '') +
+      '<button class="move-btn" title="Down" ' + (bi === bcount - 1 ? 'disabled' : '') +
         ' onclick="moveWeekTile(' + p.num + ',1)">▼</button>' +
-      '<span class="wto-label">позиция ' + (bi + 1) + ' из ' + bcount + '</span>' +
+      '<span class="wto-label">position ' + (bi + 1) + ' of ' + bcount + '</span>' +
       '</div>';
   }
 
@@ -4309,15 +4566,15 @@ function renderAll() {
 
 // ===== СТАРТ =====
 function init() {
-  var step = 'старт';
+  var step = 'start';
   try {
     step = 'loadState';
     loadState();
-    step = 'дата';
+    step = 'date';
     const today = new Date();
-    const months = ['января','февраля','марта','апреля','мая','июня','июля',
-                     'августа','сентября','октября','ноября','декабря'];
-    const days = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+    const months = ['January','February','March','April','May','June','July',
+                     'August','September','October','November','December'];
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
     const tl = document.getElementById('today-label');
     if (tl) tl.textContent =
       days[today.getDay()] + ', ' + today.getDate() + ' ' + months[today.getMonth()] +
@@ -4330,12 +4587,12 @@ function init() {
     step = 'renderDay';          renderDay();
     step = 'renderCalendar';     renderCalendar();
     step = 'renderTimeLog';      renderTimeLog();
-    step = 'showTab';            showTab(state.lastTab || 'week');
+    step = 'showTab';            showTab(state.lastTab || 'overview');
     step = 'ticker';             if (state.timer.running) startTicker();
-    step = 'saveStatus';         setSaveStatus('Сохранено', false);
+    step = 'saveStatus';         setSaveStatus('Saved', false);
   } catch (e) {
-    showErrorBar('Не удалось загрузить дашборд. Попробуйте обновить страницу.');
-    console.error('Ошибка инициализации на шаге «' + step + '»:', e);
+    showErrorBar('Could not load the dashboard. Try refreshing the page.');
+    console.error('Init error at step “' + step + '”:', e);
   }
 }
 document.addEventListener('DOMContentLoaded', init);
