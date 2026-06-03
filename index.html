@@ -3173,14 +3173,14 @@ function setTaskDate(idx, val) {
   if (!p || !p.tasks[idx]) return;
   p.tasks[idx].date = val || '';
   saveState(true);
-  renderProject();
+  // без renderProject(): не сбиваем курсор при вводе даты в Chrome
 }
 function setTaskTime(idx, val) {
   const p = currentProject();
   if (!p || !p.tasks[idx]) return;
   p.tasks[idx].time = val || '';
   saveState(true);
-  renderProject();
+  // без renderProject(): не сбиваем курсор при вводе времени
 }
 function clearTaskDate(idx) {
   const p = currentProject();
@@ -3207,7 +3207,9 @@ function setTaskRepFrom(idx, val) {
   if (!p || !p.tasks[idx]) return;
   p.tasks[idx].repFrom = val || '';
   saveState(true);
-  renderProject();
+  // без renderProject(): перерисовка на каждый change уничтожает поле даты и
+  // сбивает курсор при вводе сегментов в Chrome. Значение уже в input,
+  // зависимые подписи обновятся при следующем штатном рендере.
 }
 
 // ----- добавление / правка / удаление задач -----
