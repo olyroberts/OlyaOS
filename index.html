@@ -607,6 +607,8 @@
     white-space: nowrap; transition: all 0.12s; align-self: flex-start; margin-top: 1px;
   }
   .task-edit-toggle:hover { border-color: var(--gold); color: var(--text); }
+  .task-edit-toggle.del { padding: 5px 9px; }
+  .task-edit-toggle.del:hover { border-color: #a33636; color: #a33636; }
   .task-edit-toggle.on { background: #1d6b51; color: #fff; border-color: #1d6b51; }
   .task-card.t-editing { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
   .task-noname { color: var(--text-faint); font-style: italic; }
@@ -2869,6 +2871,12 @@ function renderProject() {
         if ((t.type || '') === tt.id) items.push({ t: t, idx: idx });
       });
       if (!items.length) return;
+      // выполненные сегодня уходят вниз группы (порядок остальных не меняем)
+      items.sort(function (a, b) {
+        const da = findDayLog(todayISO(), a.t.tid) ? 1 : 0;
+        const db = findDayLog(todayISO(), b.t.tid) ? 1 : 0;
+        return da - db;
+      });
       h += '<div class="task-group">';
       h += '<div class="task-group-label tg-' + tt.cls + '">' +
         '<span class="tg-dot"></span>' + escapeHtml(tt.label) +
@@ -2957,6 +2965,7 @@ function renderTaskCard(p, t, idx, gi, gcount) {
   if (!editing) {
     h += '<span class="task-type-pill ttp-' + tt.cls + '">' + escapeHtml(tt.short) + '</span>';
     h += '<button class="task-edit-toggle" title="Edit task" onclick="toggleTaskEdit(\'' + t.tid + '\')">✎ Edit</button>';
+    h += '<button class="task-edit-toggle del" title="Delete task" onclick="deleteTask(' + idx + ')">✕</button>';
   } else {
     h += '<button class="task-edit-toggle on" title="Save task" onclick="saveTaskEdit(\'' + t.tid + '\')">✓ Save</button>';
   }
@@ -4948,8 +4957,8 @@ function toggleDayTask(dISO, tid) {
       'This task recurs — it will show up again tomorrow.';
   } else {
     msg = 'Mark \u201c' + t.name + '\u201d done?\n\n' +
-      'It will leave the project list. ' +
-      'Changed your mind? Click \u201cMove back to tasks\u201d to restore it.';
+      'It will move to the bottom of the project list. ' +
+      'You can untick it any time, or delete it via \u201cEdit\u201d.';
   }
   confirmModal(msg, function () {
     completeDayTask(dISO, tid);
@@ -4974,10 +4983,8 @@ function completeDayTask(dISO, tid) {
     snapshot: JSON.parse(JSON.stringify(t))
   });
 
-  // разовая (любая неповторяющаяся) — уходит из проекта
-  if (!isRep) {
-    p.tasks.splice(found.idx, 1);
-  }
+  // задача остаётся в проекте — выполненная просто уходит вниз списка
+  // (см. сортировку в renderProject); удалить можно вручную через Edit
 
   saveState(true);
   renderDay();
@@ -4990,19 +4997,8 @@ function uncompleteDayTask(dISO, tid) {
     return r.date === dISO && r.tid === tid;
   });
   if (idx === -1) return;
-  const rec = state.dayLog[idx];
 
-  // если это была разовая задача — восстановить её в проект
-  if (!rec.wasRep) {
-    const stillThere = findTaskByTid(tid);
-    if (!stillThere) {
-      const p = state.projects.find(function (x) { return x.num === rec.projectNum; });
-      if (p) {
-        if (!Array.isArray(p.tasks)) p.tasks = [];
-        p.tasks.push(JSON.parse(JSON.stringify(rec.snapshot)));
-      }
-    }
-  }
+  // задача всё это время оставалась в проекте — просто снимаем отметку из лога
   state.dayLog.splice(idx, 1);
   saveState(true);
   renderDay();
