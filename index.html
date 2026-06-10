@@ -673,7 +673,27 @@
   }
   .sub-mini-btn:hover { border-color: var(--gold); color: var(--text); }
   .sub-mini-btn.del:hover { border-color: #a33636; color: #a33636; }
+  .sub-mini-btn.on-date { background: var(--gold); color: #fff; border-color: var(--gold); }
   .sub-mini-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+  .sub-date-chip {
+    font-size: 10.5px; color: var(--gold); white-space: nowrap;
+    margin-left: 4px;
+  }
+  .sub-date-edit {
+    display: flex; align-items: center; gap: 7px;
+    padding: 2px 0 7px 25px;
+  }
+  .sub-date-edit input[type="date"] {
+    font-family: inherit; font-size: 12px; padding: 4px 7px;
+    border-radius: 6px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--text);
+  }
+  .sub-date-clear {
+    font-family: inherit; font-size: 10.5px; padding: 4px 9px;
+    border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--text-dim);
+  }
+  .sub-date-clear:hover { border-color: #a33636; color: #a33636; }
   .sub-actions { display: flex; gap: 3px; flex-shrink: 0; }
   .sub-add-row {
     display: flex; gap: 6px; margin-top: 6px;
@@ -1193,6 +1213,17 @@
     font-size: 10px; letter-spacing: 0.3px;
     background: #dceee6; color: #1d6b51;
     padding: 2px 7px; border-radius: 9px; font-weight: 600;
+  }
+  .day-task-sub { border-left: 2px solid var(--gold); }
+  .day-sub-badge {
+    font-size: 9.5px; letter-spacing: 0.4px; text-transform: uppercase;
+    background: #f3e9cf; color: #8a6d1f;
+    padding: 1px 6px; border-radius: 8px; font-weight: 600;
+  }
+  .day-parent-tag {
+    font-size: 10.5px; color: var(--text-faint);
+    padding: 2px 4px; white-space: nowrap;
+    max-width: 220px; overflow: hidden; text-overflow: ellipsis;
   }
   .day-task-hint {
     font-size: 11px; color: var(--text-faint); font-style: italic;
@@ -1837,6 +1868,10 @@ function normalizeTask(t) {
   }
   if (['crit','imp','norm'].indexOf(t.priority) === -1) t.priority = 'norm';
   if (!Array.isArray(t.subs)) t.subs = [];
+  t.subs.forEach(function (s) {
+    if (typeof s.date !== 'string') s.date = '';
+    if (!s.sid) s.sid = genId();
+  });
   if (!t.tid) t.tid = genId();
   delete t.done;   // выполнение задачи больше не живёт на странице проекта
   return t;
@@ -3033,21 +3068,35 @@ function renderTaskCard(p, t, idx, gi, gcount) {
     h += '<div class="subs-wrap">';
     h += '<div class="subs-edit-label">Subtasks</div>';
     t.subs.forEach(function (sub, si) {
+      const hasDate = !!sub.date;
       h += '<div class="sub-row' + (sub.done ? ' s-done' : '') + '">';
       h += '<div class="sub-check' + (sub.done ? ' checked' : '') + '" ' +
         'onclick="toggleSub(' + idx + ',' + si + ')">' + (sub.done ? '✓' : '') + '</div>';
-      h += '<div class="sub-name">' + escapeHtml(sub.name) + '</div>';
+      h += '<div class="sub-name">' + escapeHtml(sub.name) +
+        (hasDate ? ' <span class="sub-date-chip" title="Shows in the daily plan on this date">📅 ' +
+          escapeHtml(fmtDateHuman(sub.date)) + '</span>' : '') + '</div>';
       h += '<div class="sub-actions">' +
         '<button class="sub-mini-btn" title="Up" ' + (si === 0 ? 'disabled' : '') +
           ' onclick="moveSub(' + idx + ',' + si + ',-1)">▲</button>' +
         '<button class="sub-mini-btn" title="Down" ' + (si === subsTotal - 1 ? 'disabled' : '') +
           ' onclick="moveSub(' + idx + ',' + si + ',1)">▼</button>' +
+        '<button class="sub-mini-btn' + (hasDate ? ' on-date' : '') + '" ' +
+          'title="' + (hasDate ? 'Change/clear date' : 'Set a date — adds it to the daily plan') + '" ' +
+          'onclick="toggleSubDate(' + idx + ',' + si + ')">📅</button>' +
         '<button class="sub-mini-btn" title="Rename" ' +
           'onclick="editSub(' + idx + ',' + si + ')">✎</button>' +
         '<button class="sub-mini-btn del" title="Delete" ' +
           'onclick="deleteSub(' + idx + ',' + si + ')">✕</button>' +
         '</div>';
       h += '</div>';
+      if (subDateOpen[t.tid + ':' + sub.sid]) {
+        h += '<div class="sub-date-edit">' +
+          '<input type="date" value="' + escapeHtml(sub.date || '') + '" ' +
+            'onchange="setSubDate(' + idx + ',' + si + ',this.value)">' +
+          (hasDate ? '<button class="sub-date-clear" onclick="setSubDate(' + idx + ',' + si +
+            ',\'\')">Clear</button>' : '') +
+          '</div>';
+      }
     });
     h += '<div class="sub-add-row">' +
       '<input type="text" id="new-sub-' + idx + '" placeholder="New subtask" ' +
@@ -3329,6 +3378,27 @@ function swapIdxMaps(a, b) {
 }
 
 // ----- подзадачи: добавление / правка / удаление / перемещение -----
+let subDateOpen = {};   // "tid:sid" -> true (открыт ли пикер даты сабтаска)
+function toggleSubDate(tIdx, sIdx) {
+  const p = currentProject();
+  if (!p || !p.tasks[tIdx] || !p.tasks[tIdx].subs[sIdx]) return;
+  const t = p.tasks[tIdx];
+  const sub = t.subs[sIdx];
+  if (!sub.sid) sub.sid = genId();
+  const key = t.tid + ':' + sub.sid;
+  subDateOpen[key] = !subDateOpen[key];
+  renderProject();
+}
+function setSubDate(tIdx, sIdx, val) {
+  const p = currentProject();
+  if (!p || !p.tasks[tIdx] || !p.tasks[tIdx].subs[sIdx]) return;
+  const t = p.tasks[tIdx];
+  const sub = t.subs[sIdx];
+  sub.date = (val || '').trim();
+  if (!sub.date) subDateOpen[t.tid + ':' + sub.sid] = false;
+  saveState(true);
+  renderProject();
+}
 function addSub(tIdx) {
   const p = currentProject();
   if (!p || !p.tasks[tIdx]) return;
@@ -3337,7 +3407,7 @@ function addSub(tIdx) {
   const name = inp.value.trim();
   if (!name) { inp.focus(); return; }
   if (!p.tasks[tIdx].subs) p.tasks[tIdx].subs = [];
-  p.tasks[tIdx].subs.push({ name: name, done: false });
+  p.tasks[tIdx].subs.push({ name: name, done: false, date: '', sid: genId() });
   openSubsFor[tIdx] = true;
   saveState(true);
   renderProject();
@@ -4197,10 +4267,28 @@ function collectDayItems(dateISO) {
       let inDay = false;
       if (t.type === 'rep') inDay = repOccursOn(t, dateISO);
       else if (t.date && t.date === dateISO) inDay = true;
-      if (!inDay) return;
-      const rec = findDayLog(dateISO, t.tid);
-      items.push({ task: t, project: p, fromLog: false, logRec: rec || null });
-      seen[t.tid] = true;
+      if (inDay) {
+        const rec = findDayLog(dateISO, t.tid);
+        items.push({ task: t, project: p, fromLog: false, logRec: rec || null });
+        seen[t.tid] = true;
+      }
+      // подзадачи с датой на этот день — отдельными строками
+      (t.subs || []).forEach(function (sub) {
+        if (!sub.date || sub.date !== dateISO) return;
+        const subTid = t.tid + ':' + sub.sid;
+        const faux = {
+          tid: subTid, name: sub.name,
+          priority: t.priority || 'norm',
+          type: 'once', date: sub.date, time: '',
+          subs: [], rhythm: ''
+        };
+        items.push({
+          task: faux, project: p, fromLog: false,
+          logRec: sub.done ? { done: true } : null,
+          isSub: true, parentTid: t.tid, sid: sub.sid, sub: sub
+        });
+        seen[subTid] = true;
+      });
     });
   });
 
@@ -4612,6 +4700,52 @@ function renderDayTask(it, dISO, gi, gcount) {
   const color = s ? s.color : '#9a7b30';
   const editing = !!dayEditMode[t.tid];
 
+  // ===== строка-подзадача (дело с датой, заведённое как subtask) =====
+  if (it.isSub) {
+    const parent = findTaskByTid(it.parentTid);
+    const parentName = parent ? parent.task.name : '';
+    let sh = '<div class="day-task' + (done ? ' dt-done' : '') + ' day-task-sub">';
+    sh += '<div class="day-task-main">';
+    sh += '<div class="day-check' + (done ? ' checked' : '') + '" ' +
+      'onclick="toggleDaySub(\'' + it.parentTid + '\',\'' + it.sid + '\')" ' +
+      'title="' + (done ? 'Unmark' : 'Mark done') + '">' + (done ? '✓' : '') + '</div>';
+    sh += '<div class="day-task-body">';
+    sh += '<div class="day-task-top">';
+    sh += '<span class="day-task-name">' + escapeHtml(t.name) + '</span>';
+    sh += '<span class="day-sub-badge" title="This is a subtask">subtask</span>';
+    sh += '</div>';
+    sh += '<div class="day-task-meta">';
+    if (p && !p.isInbox) {
+      sh += '<span class="day-proj-tag" style="background:' + color + '">' +
+        escapeHtml(p.short) + '</span>';
+    }
+    if (parentName) {
+      sh += '<span class="day-parent-tag" title="Belongs to this task">↳ ' +
+        escapeHtml(parentName) + '</span>';
+    }
+    sh += '</div>';
+    sh += '</div></div>';   // body, main
+    sh += '<div class="day-task-actions">';
+    if (done) {
+      sh += '<span style="font-size:11px;color:#1d6b51;">✓ Done</span>';
+      sh += '<span class="da-spacer"></span>';
+    } else {
+      if (gi >= 0 && gcount > 1) {
+        sh += '<button class="day-act-btn arrow" title="Up" ' + (gi === 0 ? 'disabled' : '') +
+          ' onclick="moveDayTask(\'' + dISO + '\',\'' + t.tid + '\',-1)">▲</button>';
+        sh += '<button class="day-act-btn arrow" title="Down" ' + (gi === gcount - 1 ? 'disabled' : '') +
+          ' onclick="moveDayTask(\'' + dISO + '\',\'' + t.tid + '\',1)">▼</button>';
+      }
+      if (p) {
+        sh += '<button class="day-act-btn" onclick="openProject(' + p.num +
+          ')"><span class="ab-ico">↗</span>To project</button>';
+      }
+      sh += '<span class="da-spacer"></span>';
+    }
+    sh += '</div></div>';   // actions, day-task
+    return sh;
+  }
+
   // ===== режим инлайн-правки =====
   if (editing) {
     return renderDayTaskEdit(it, dISO);
@@ -4939,6 +5073,17 @@ function addDaySubEdit(dISO, tid) {
 }
 
 // ----- отметка выполнения -----
+// отметка подзадачи (дела с датой) прямо из плана дня — синхронно с проектом
+function toggleDaySub(parentTid, sid) {
+  const found = findTaskByTid(parentTid);
+  if (!found) return;
+  const sub = (found.task.subs || []).find(function (s) { return s.sid === sid; });
+  if (!sub) return;
+  sub.done = !sub.done;
+  saveState(true);
+  renderDay();
+  if (typeof renderProject === 'function' && currentProjectNum != null) renderProject();
+}
 function toggleDayTask(dISO, tid) {
   const existing = findDayLog(dISO, tid);
   if (existing) {
