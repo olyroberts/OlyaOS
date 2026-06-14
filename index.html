@@ -1518,6 +1518,14 @@
     .day-print { display: block !important; color: #000; }
     @page { margin: 16mm; }
   }
+  /* печать недели: вместо дня показываем недельный печатный блок */
+  @media print {
+    body.printing-week .wrap > *:not(#page-week) { display: none !important; }
+    body.printing-week .tab-page#page-day { display: none !important; }
+    body.printing-week .tab-page#page-week { display: block !important; }
+    body.printing-week #page-week > *:not(#week-print) { display: none !important; }
+    body.printing-week #week-print { display: block !important; color: #000; }
+  }
 </style>
 </head>
 <body>
@@ -1596,10 +1604,13 @@
     </div>
     <div class="week-toolbar">
       <button class="ov-mode-btn" id="week-order-btn" onclick="toggleWeekOrder()">↕ Tile order</button>
+      <button class="day-print-btn" onclick="printWeek()" title="Printable list grouped by day">🖨 Print by day</button>
+      <button class="day-print-btn" onclick="exportWeekDocx()" title="Download a Word file grouped by day">⬇ Word (by day)</button>
       <span class="ov-hint" id="week-order-hint"></span>
     </div>
     <div class="week-summary" id="week-summary"></div>
     <div id="week-body"></div>
+    <div id="week-print" class="day-print"></div>
   </div>
 
   <!-- DAY -->
@@ -4689,6 +4700,288 @@ function renderDayPrint(dISO, dObj, WD_FULL, MON_FULL) {
 function printDay() {
   renderDay();   // гарантируем, что печатный блок соответствует текущему дню
   window.print();
+}
+
+// ===== Неделя: список по дням (для печати и DOCX) =====
+const WD_FULL_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MON_FULL_NAMES = ['January','February','March','April','May','June','July',
+                         'August','September','October','November','December'];
+
+// собрать { iso, dObj, items } для каждого дня недели, где есть задачи
+function collectWeekByDay(offset) {
+  const dates = weekDates(offset);
+  const out = [];
+  dates.forEach(function (iso) {
+    const items = collectDayItems(iso);
+    if (!items.length) return;   // только дни с задачами
+    const parts = iso.split('-');
+    const dObj = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+    out.push({ iso: iso, dObj: dObj, items: items });
+  });
+  return out;
+}
+
+// печатная версия недели — по дням
+function renderWeekPrint(offset) {
+  const box = document.getElementById('week-print');
+  if (!box) return;
+  const days = collectWeekByDay(offset);
+
+  const mon = weekMonday(offset);
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  let range;
+  if (mon.getMonth() === sun.getMonth()) {
+    range = mon.getDate() + '–' + sun.getDate() + ' ' + MON_FULL_NAMES[mon.getMonth()] +
+      ' ' + mon.getFullYear();
+  } else {
+    range = mon.getDate() + ' ' + MON_SHORT[mon.getMonth()] + ' – ' +
+      sun.getDate() + ' ' + MON_SHORT[sun.getMonth()] + ' ' + sun.getFullYear();
+  }
+
+  let h = '<div class="day-print-head">';
+  h += '<h1>Weekly plan</h1>';
+  h += '<div class="dp-weekday">' + range + '</div>';
+  h += '</div>';
+
+  if (!days.length) {
+    h += '<div class="day-print-empty">No tasks for this week.</div>';
+    box.innerHTML = h;
+    return;
+  }
+
+  function taskBlock(it) {
+    const t = it.task;
+    const done = !!it.logRec;
+    let b = '<div class="day-print-task' + (done ? ' dp-done' : '') + '">';
+    b += '<div class="day-print-row">';
+    b += '<span class="dp-box">' + (done ? '✓' : '') + '</span>';
+    b += '<span class="dp-name">' + escapeHtml(t.name) +
+      (it.isSub ? ' <span style="font-size:11px;color:#777;">(subtask)</span>' : '') +
+      '</span>';
+    b += '</div>';
+    // обычная задача — показываем её чек-лист подзадач
+    if (!it.isSub && t.subs && t.subs.length) {
+      b += '<div class="day-print-subs">';
+      t.subs.forEach(function (sub) {
+        b += '<div class="day-print-sub' + (sub.done ? ' dp-done' : '') + '">';
+        b += '<span class="dp-box-sm">' + (sub.done ? '✓' : '') + '</span>';
+        b += '<span class="dp-sub-name">' + escapeHtml(sub.name) +
+          (sub.date ? ' <span style="font-size:10px;color:#999;">· ' +
+            escapeHtml(fmtDateHuman(sub.date)) + '</span>' : '') + '</span>';
+        b += '</div>';
+      });
+      b += '</div>';
+    }
+    b += '</div>';
+    return b;
+  }
+
+  days.forEach(function (d) {
+    h += '<div class="day-print-group">';
+    h += '<div class="day-print-group-label">' +
+      d.dObj.getDate() + ' ' + MON_FULL_NAMES[d.dObj.getMonth()] +
+      ' · ' + WD_FULL_NAMES[d.dObj.getDay()] + '</div>';
+    // порядок внутри дня: невыполненные сверху, затем выполненные; по приоритету
+    const order = { crit: 0, imp: 1, norm: 2 };
+    const sorted = d.items.slice().sort(function (a, b) {
+      const da = a.logRec ? 1 : 0, db = b.logRec ? 1 : 0;
+      if (da !== db) return da - db;
+      return (order[a.task.priority] || 2) - (order[b.task.priority] || 2);
+    });
+    sorted.forEach(function (it) { h += taskBlock(it); });
+    h += '</div>';
+  });
+
+  box.innerHTML = h;
+}
+
+function printWeek() {
+  renderWeekPrint(weekOffset);
+  document.body.classList.add('printing-week');
+  const cleanup = function () {
+    document.body.classList.remove('printing-week');
+    window.removeEventListener('afterprint', cleanup);
+  };
+  window.addEventListener('afterprint', cleanup);
+  window.print();
+  // подстраховка, если afterprint не сработал
+  setTimeout(cleanup, 1500);
+}
+
+// ===== Экспорт недели в DOCX (по дням), без внешних библиотек =====
+function exportWeekDocx() {
+  const days = collectWeekByDay(weekOffset);
+  const mon = weekMonday(weekOffset);
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  let range;
+  if (mon.getMonth() === sun.getMonth()) {
+    range = mon.getDate() + '–' + sun.getDate() + ' ' + MON_FULL_NAMES[mon.getMonth()] +
+      ' ' + mon.getFullYear();
+  } else {
+    range = mon.getDate() + ' ' + MON_SHORT[mon.getMonth()] + ' – ' +
+      sun.getDate() + ' ' + MON_SHORT[sun.getMonth()] + ' ' + sun.getFullYear();
+  }
+
+  // --- сборка тела документа в WordprocessingML ---
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function para(text, opts) {
+    opts = opts || {};
+    const runs = '<w:r>' +
+      '<w:rPr>' +
+        (opts.bold ? '<w:b/>' : '') +
+        (opts.size ? '<w:sz w:val="' + opts.size + '"/>' : '') +
+        (opts.color ? '<w:color w:val="' + opts.color + '"/>' : '') +
+        (opts.strike ? '<w:strike/>' : '') +
+      '</w:rPr>' +
+      '<w:t xml:space="preserve">' + esc(text) + '</w:t>' +
+    '</w:r>';
+    const ind = opts.indent ? '<w:ind w:left="' + opts.indent + '"/>' : '';
+    const spc = '<w:spacing w:before="' + (opts.before || 0) +
+      '" w:after="' + (opts.after == null ? 40 : opts.after) + '"/>';
+    return '<w:p><w:pPr>' + spc + ind + '</w:pPr>' + runs + '</w:p>';
+  }
+
+  let bodyXml = '';
+  bodyXml += para('Weekly plan', { bold: true, size: 36, after: 40 });
+  bodyXml += para(range, { size: 24, color: '666666', after: 200 });
+
+  if (!days.length) {
+    bodyXml += para('No tasks for this week.', { size: 22, color: '777777' });
+  } else {
+    const order = { crit: 0, imp: 1, norm: 2 };
+    days.forEach(function (d) {
+      const heading = d.dObj.getDate() + ' ' + MON_FULL_NAMES[d.dObj.getMonth()] +
+        ' · ' + WD_FULL_NAMES[d.dObj.getDay()];
+      bodyXml += para(heading, { bold: true, size: 26, before: 160, after: 80 });
+
+      const sorted = d.items.slice().sort(function (a, b) {
+        const da = a.logRec ? 1 : 0, db = b.logRec ? 1 : 0;
+        if (da !== db) return da - db;
+        return (order[a.task.priority] || 2) - (order[b.task.priority] || 2);
+      });
+
+      sorted.forEach(function (it) {
+        const t = it.task;
+        const done = !!it.logRec;
+        const box = done ? '\u2611 ' : '\u2610 ';   // ☑ / ☐
+        const nameTxt = box + t.name + (it.isSub ? '  (subtask)' : '');
+        bodyXml += para(nameTxt, { size: 22, strike: done, indent: 360, after: 20 });
+        if (!it.isSub && t.subs && t.subs.length) {
+          t.subs.forEach(function (sub) {
+            const sbox = sub.done ? '\u2611 ' : '\u2610 ';
+            const sd = sub.date ? '  · ' + fmtDateHuman(sub.date) : '';
+            bodyXml += para(sbox + sub.name + sd,
+              { size: 20, color: '555555', strike: sub.done, indent: 800, after: 10 });
+          });
+        }
+      });
+    });
+  }
+
+  const documentXml =
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+    '<w:body>' + bodyXml +
+    '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/>' +
+    '<w:pgMar w:top="1134" w:bottom="1134" w:left="1134" w:right="1134"/></w:sectPr>' +
+    '</w:body></w:document>';
+
+  const contentTypes =
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+    '<Default Extension="xml" ContentType="application/xml"/>' +
+    '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+    '</Types>';
+
+  const rels =
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+    '</Relationships>';
+
+  // --- упаковка в ZIP (store, без сжатия) с корректным CRC32 ---
+  const zipBlob = buildZip([
+    { name: '[Content_Types].xml', data: contentTypes },
+    { name: '_rels/.rels', data: rels },
+    { name: 'word/document.xml', data: documentXml }
+  ]);
+
+  const url = URL.createObjectURL(zipBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'weekly-plan-' + weekDates(weekOffset)[0] + '.docx';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// минимальный ZIP-упаковщик (метод store) — возвращает Blob
+function buildZip(files) {
+  const enc = new TextEncoder();
+  const CRC = (function () {
+    const tbl = [];
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      tbl[n] = c >>> 0;
+    }
+    return function (buf) {
+      let crc = 0xFFFFFFFF;
+      for (let i = 0; i < buf.length; i++) crc = (crc >>> 8) ^ tbl[(crc ^ buf[i]) & 0xFF];
+      return (crc ^ 0xFFFFFFFF) >>> 0;
+    };
+  })();
+
+  const chunks = [];
+  const central = [];
+  let offset = 0;
+
+  function u16(n) { return [n & 0xFF, (n >>> 8) & 0xFF]; }
+  function u32(n) { return [n & 0xFF, (n >>> 8) & 0xFF, (n >>> 16) & 0xFF, (n >>> 24) & 0xFF]; }
+
+  files.forEach(function (f) {
+    const nameBytes = enc.encode(f.name);
+    const dataBytes = enc.encode(f.data);
+    const crc = CRC(dataBytes);
+    const localHeader = [].concat(
+      u32(0x04034b50), u16(20), u16(0), u16(0), u16(0), u16(0),
+      u32(crc), u32(dataBytes.length), u32(dataBytes.length),
+      u16(nameBytes.length), u16(0)
+    );
+    chunks.push(new Uint8Array(localHeader));
+    chunks.push(nameBytes);
+    chunks.push(dataBytes);
+
+    const centralHeader = [].concat(
+      u32(0x02014b50), u16(20), u16(20), u16(0), u16(0), u16(0), u16(0),
+      u32(crc), u32(dataBytes.length), u32(dataBytes.length),
+      u16(nameBytes.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset)
+    );
+    central.push({ header: new Uint8Array(centralHeader), name: nameBytes });
+
+    offset += localHeader.length + nameBytes.length + dataBytes.length;
+  });
+
+  const centralStart = offset;
+  let centralSize = 0;
+  central.forEach(function (c) {
+    chunks.push(c.header); chunks.push(c.name);
+    centralSize += c.header.length + c.name.length;
+  });
+
+  const end = [].concat(
+    u32(0x06054b50), u16(0), u16(0),
+    u16(files.length), u16(files.length),
+    u32(centralSize), u32(centralStart), u16(0)
+  );
+  chunks.push(new Uint8Array(end));
+
+  return new Blob(chunks, {
+    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  });
 }
 
 function renderDayTask(it, dISO, gi, gcount) {
